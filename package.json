@@ -1,0 +1,28 @@
+{
+  "name": "action-ln",
+  "version": "0.0.0",
+  "description": "Link files between repositories",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "ncc build main.js --minify --out dist/ --license LICENSE"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nobe4/action-ln.git"
+  },
+  "keywords": [],
+  "author": "nobe4",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nobe4/action-ln/issues"
+  },
+  "homepage": "https://github.com/nobe4/action-ln#readme",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
+  }
+}

@@ -1,0 +1,5 @@
+name: 'ln'
+description: 'Link files between repositories'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
