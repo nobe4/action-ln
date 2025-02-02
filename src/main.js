@@ -3,8 +3,16 @@ const config = require("./config");
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
-	const c = config.Load(configPath);
-	console.log(c);
+
+	config
+		.Load(configPath)
+		.then((c) => {
+			console.log(c);
+		})
+		.catch((e) => {
+			core.error(e);
+			core.setFailed(e);
+		});
 } catch (error) {
 	core.setFailed(error.message);
 }
