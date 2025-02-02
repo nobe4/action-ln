@@ -1,6 +1,12 @@
-name: 'ln'
-description: 'Link files between repositories'
+name: ln
+description: Link files between repositorie
+
+inputs:
+  config-path:
+    description: Relative path to the config file.
+    required: true
+    default: ./ln-config.yaml
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: node20
+  main: dist/index.js
