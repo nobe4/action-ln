@@ -19,6 +19,8 @@ function validate(config) {
 	if (!("from" in config)) {
 		throw "missing `from` in config";
 	}
+
+	return config;
 }
 
 export { Load };
