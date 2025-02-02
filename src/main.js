@@ -7,7 +7,7 @@ try {
 	config
 		.Load(configPath)
 		.then((c) => {
-			console.log(c);
+			core.info(`config: ${c}`);
 		})
 		.catch((e) => {
 			core.setFailed(e);
