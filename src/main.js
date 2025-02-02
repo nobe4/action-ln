@@ -10,7 +10,6 @@ try {
 			console.log(c);
 		})
 		.catch((e) => {
-			core.error(e);
 			core.setFailed(e);
 		});
 } catch (error) {
