@@ -66,7 +66,6 @@ function validateLocation(location) {
 
 	if ("repo" in location) {
 		const [owner, name] = location.repo.split("/");
-		console.log(owner, name);
 		if (
 			owner === "" ||
 			name === "" ||
