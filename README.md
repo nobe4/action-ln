@@ -10,14 +10,14 @@ with the `config-path` action input.
 The format is:
 
 ```yaml
-# Local files
 links:
+  # Local files
   - from:
       path: path/to/file
     to:
       path: path/to/other/file
 
-# Remote files
+  # Remote files
   - from:
       repo: org/repo
       path: path/to/file

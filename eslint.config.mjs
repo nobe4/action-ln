@@ -1,12 +1,12 @@
 import globals from "globals";
 import js from "@eslint/js";
 import prettierRecommended from "eslint-plugin-prettier/recommended";
-import jestRecommended from "eslint-plugin-jest/recommended";
+import jest from "eslint-plugin-jest";
 
 export default [
 	js.configs.recommended,
 	prettierRecommended,
-	jestRecommended,
+	jest.configs["flat/recommended"],
 	{
 		ignores: ["**/coverage", "**/dist", "**/linter", "**/node_modules"],
 	},
@@ -15,6 +15,7 @@ export default [
 			globals: {
 				...globals.browser,
 				...globals.node,
+				...jest.environments.globals.globals,
 			},
 			ecmaVersion: "latest",
 			sourceType: "module",
@@ -26,8 +27,6 @@ export default [
 		},
 	},
 	{
-		rules: {
-
-		},
+		rules: {},
 	},
 ];

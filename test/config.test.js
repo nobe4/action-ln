@@ -3,30 +3,22 @@ const yaml = require("js-yaml");
 
 describe("config", () => {
 	describe("read", () => {
-		test("missing file", async () => {
-			expect.assertions(1);
-
-			return config.read("./test/fixtures/config/not_a_file").catch((e) => {
-				expect(e.message).toMatch(/ENOENT: no such file or directory, open /);
-			});
+		test("missing file", () => {
+			return expect(
+				config.read("./test/fixtures/config/not_a_file"),
+			).rejects.toThrow(/ENOENT: no such file or directory, open /);
 		});
 
-		test("not a YAML file", async () => {
-			expect.assertions(1);
-
-			return config.read("./test/fixtures/config/not_yaml.txt").catch((e) => {
-				expect(e).toBeInstanceOf(yaml.YAMLException);
-			});
+		test("not a YAML file", () => {
+			return expect(
+				config.read("./test/fixtures/config/not_yaml.txt"),
+			).rejects.toThrow(yaml.YAMLException);
 		});
 
-		test("invalid YAML config", async () => {
-			expect.assertions(1);
-
-			return config
-				.read("./test/fixtures/config/invalid_config.yaml")
-				.then((e) => {
-					expect(e).not.toBeNull();
-				});
+		test("invalid YAML config", () => {
+			return expect(
+				config.read("./test/fixtures/config/invalid_config.yaml"),
+			).resolves.not.toBeNull();
 		});
 	});
 
@@ -47,15 +39,21 @@ describe("config", () => {
 					links: [
 						{
 							from: {},
+						},
+					],
+				},
+				{
+					links: [
+						{
+							from: {},
 							to: {},
 						},
 					],
 				},
 			])("%p", (c) => {
-				expect.assertions(1);
-				config.validate(c).catch((e) => {
-					expect(e).toBeInstanceOf(config.ValidationError);
-				});
+				return expect(config.validate(c)).rejects.toBeInstanceOf(
+					config.ValidationError,
+				);
 			});
 		});
 
@@ -87,10 +85,7 @@ describe("config", () => {
 					],
 				},
 			])("%p", (c) => {
-				expect.assertions(1);
-				config.validate(c).then((c) => {
-					expect(c).not.toBeNull();
-				});
+				return expect(config.validate(c)).resolves.toBe(c);
 			});
 		});
 	});
