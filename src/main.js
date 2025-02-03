@@ -5,7 +5,7 @@ try {
 	const configPath = core.getInput("config-path", { required: true });
 
 	config
-		.Load(configPath)
+		.load(configPath)
 		.then((c) => {
 			core.info(`config: ${c}`);
 		})
