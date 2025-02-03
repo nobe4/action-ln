@@ -1,6 +1,18 @@
 const config = require("../src/config");
 const yaml = require("js-yaml");
 
+const github = require("@actions/github");
+jest.mock("@actions/github");
+
+beforeEach(() => {
+	github.context = {
+		repo: {
+			owner: "owner",
+			name: "name",
+		},
+	};
+});
+
 describe("config", () => {
 	describe("read", () => {
 		test("missing file", () => {
@@ -50,7 +62,47 @@ describe("config", () => {
 						},
 					],
 				},
-			])("%p", (c) => {
+				{
+					links: [
+						{
+							from: { path: "" },
+							to: {},
+						},
+					],
+				},
+				{
+					links: [
+						{
+							from: { path: "non-empty" },
+							to: { path: "" },
+						},
+					],
+				},
+				{
+					links: [
+						{
+							from: { path: "a", repo: "x" },
+							to: { path: "a" },
+						},
+					],
+				},
+				{
+					links: [
+						{
+							from: { path: "a", repo: "x/y" },
+							to: { path: "a", repo: "z" },
+						},
+					],
+				},
+				{
+					links: [
+						{
+							from: { path: "a", repo: "x/" },
+							to: { path: "a", repo: "z" },
+						},
+					],
+				},
+			])("%# %j", (c) => {
 				return expect(config.validate(c)).rejects.toBeInstanceOf(
 					config.ValidationError,
 				);
@@ -59,33 +111,75 @@ describe("config", () => {
 
 		describe("succeeds", () => {
 			it.each([
+				{ c: { links: [] }, want: { links: [] } },
 				{
-					links: [],
-				},
-				{
-					links: [
-						{
-							from: { path: "a/b" },
-							to: { path: "b/c" },
-						},
-					],
-				},
-				{
-					links: [
-						{
-							from: {
-								path: "a/b",
-								repo: "x",
+					c: {
+						links: [
+							{
+								from: { path: "a/b" },
+								to: { path: "b/c" },
 							},
-							to: {
-								path: "b/c",
-								repo: "y",
+						],
+					},
+					want: {
+						links: [
+							{
+								from: {
+									path: "a/b",
+									repo: {
+										owner: "owner",
+										name: "name",
+									},
+								},
+								to: {
+									path: "b/c",
+									repo: {
+										owner: "owner",
+										name: "name",
+									},
+								},
 							},
-						},
-					],
+						],
+					},
 				},
-			])("%p", (c) => {
-				return expect(config.validate(c)).resolves.toBe(c);
+				{
+					c: {
+						links: [
+							{
+								from: {
+									path: "a/b",
+									repo: "x/y",
+								},
+								to: {
+									path: "b/c",
+									repo: "y/z",
+								},
+							},
+						],
+					},
+					want: {
+						links: [
+							{
+								from: {
+									path: "a/b",
+									repo: {
+										owner: "x",
+										name: "y",
+									},
+								},
+								to: {
+									path: "b/c",
+									repo: {
+										owner: "y",
+										name: "z",
+									},
+								},
+							},
+						],
+					},
+				},
+			])("%# %j", ({ c, want }) => {
+				return expect(config.validate(c)).resolves.toStrictEqual(want);
 			});
 		});
 	});
