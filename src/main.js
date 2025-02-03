@@ -7,7 +7,7 @@ try {
 	config
 		.load(configPath)
 		.then((c) => {
-			core.info(`config: ${c}`);
+			core.info(`config: ${JSON.stringify(c)}`);
 		})
 		.catch((e) => {
 			core.setFailed(e);
