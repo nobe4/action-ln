@@ -32,7 +32,9 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 			Buffer.from(content, "base64").toString("utf-8"),
 		)
 		.catch((e) => {
-			core.error(`failed to fetch ${owner}/${repo}:${path}: ${e}`);
+			// This can fail if the file is missing, or if the repo is not
+			// accessible. There's no way to differentiate that here.
+			core.warning(`failed to fetch ${owner}/${repo}:${path}: ${e}`);
 		});
 }
 

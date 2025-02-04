@@ -7,7 +7,9 @@ try {
 	const configPath = core.getInput("config-path", { required: true });
 	let token = core.getInput("token", { required: true });
 
-	const octokit = github.getOctokit(token);
+	const octokit = github.getOctokit(token, {
+		log: console,
+	});
 
 	config
 		.load(configPath)
