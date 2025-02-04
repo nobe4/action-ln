@@ -27,11 +27,14 @@ async function fetchAll(octokit, config) {
 async function fetch(octokit, { repo: { owner, repo }, path }) {
 	core.debug(`fetching ${owner}/${repo}:${path}`);
 
-	return octokit.rest.repos.getContent({
-		owner: owner,
-		repo: repo,
-		path: path,
-	});
+	return octokit.rest.repos
+		.getContent({
+			owner: owner,
+			repo: repo,
+			path: path,
+		})
+		.then(({ data: { content } }) => content)
+		.then((encoded) => Buffer.from(encoded, "base64").toString("utf-8"));
 }
 
 module.exports = { fetchAll };
