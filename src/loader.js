@@ -33,8 +33,9 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 			repo: repo,
 			path: path,
 		})
-		.then(({ data: { content } }) => content)
-		.then((encoded) => Buffer.from(encoded, "base64").toString("utf-8"));
+		.then(({ data: { content } }) =>
+			Buffer.from(content, "base64").toString("utf-8"),
+		);
 }
 
 module.exports = { fetchAll };
