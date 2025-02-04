@@ -28,8 +28,8 @@ try {
 			core.error(e.stack);
 			core.setFailed(e.message);
 		});
-} catch (error) {
+} catch (e) {
 	core.error(e);
 	core.error(e.stack);
-	core.setFailed(error.message);
+	core.setFailed(e.message);
 }
