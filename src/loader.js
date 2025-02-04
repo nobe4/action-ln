@@ -3,38 +3,14 @@ const core = require("@actions/core");
 async function fetchAll(octokit, config) {
 	const promises = [];
 
-	//for (let l of config.links) {
-	//	promises.push(
-	//		fetch(octokit, l.from).then((c) => {
-	//			core.debug(`fetched ${JSON.stringify(l.from)}: ${JSON.stringify(c)}`);
-	//			l.from.content = c;
-	//			return l.from;
-	//		}),
-	//	);
-	//	promises.push(
-	//		fetch(octokit, l.to).then((c) => {
-	//			core.debug(`fetched ${JSON.stringify(l.to)}: ${JSON.stringify(c)}`);
-	//			l.to.content = c;
-	//
-	//			return l.to;
-	//		}),
-	//	);
-	//}
-
 	for (let i in config.links) {
 		promises.push(
 			fetch(octokit, config.links[i].from).then((c) => {
-				core.debug(
-					`fetched ${JSON.stringify(config.links[i].from)}: ${JSON.stringify(c)}`,
-				);
 				config.links[i].from.content = c;
 			}),
 		);
 		promises.push(
 			fetch(octokit, config.links[i].to).then((c) => {
-				core.debug(
-					`fetched ${JSON.stringify(config.links[i].to)}: ${JSON.stringify(c)}`,
-				);
 				config.links[i].to.content = c;
 			}),
 		);
@@ -57,7 +33,6 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 		)
 		.catch((e) => {
 			core.error(`failed to fetch ${owner}/${repo}:${path}: ${e}`);
-			return undefined;
 		});
 }
 
