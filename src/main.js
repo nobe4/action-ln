@@ -24,8 +24,12 @@ try {
 			core.info(`config after fetch: ${JSON.stringify(c)}`);
 		})
 		.catch((e) => {
-			core.setFailed(e);
+			core.error(e);
+			core.error(e.stack);
+			core.setFailed(e.message);
 		});
 } catch (error) {
+	core.error(e);
+	core.error(e.stack);
 	core.setFailed(error.message);
 }
