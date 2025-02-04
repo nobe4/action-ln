@@ -6,14 +6,17 @@ async function fetchAll(octokit, config) {
 	for (let l of config.links) {
 		promises.push(
 			fetch(octokit, l.from).then((c) => {
-				core.debug(`fetched ${l.from}: ${c}`);
+				core.debug(`fetched ${JSON.stringify(l.from)}: ${JSON.stringify(c)}`);
 				l.from.content = c;
+				return l.from;
 			}),
 		);
 		promises.push(
 			fetch(octokit, l.to).then((c) => {
-				core.debug(`fetched ${l.to}: ${c}`);
+				core.debug(`fetched ${JSON.stringify(l.to)}: ${JSON.stringify(c)}`);
 				l.to.content = c;
+
+				return l.to;
 			}),
 		);
 	}
