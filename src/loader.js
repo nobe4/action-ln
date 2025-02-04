@@ -35,7 +35,12 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 		})
 		.then(({ data: { content } }) =>
 			Buffer.from(content, "base64").toString("utf-8"),
-		);
+		)
+		.catch((e) => {
+			core.error(`failed to fetch ${owner}/${repo}:${path}: ${e}`);
+
+			return null;
+		});
 }
 
 module.exports = { fetchAll };
