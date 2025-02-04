@@ -38,8 +38,6 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 		)
 		.catch((e) => {
 			core.error(`failed to fetch ${owner}/${repo}:${path}: ${e}`);
-
-			return null;
 		});
 }
 
