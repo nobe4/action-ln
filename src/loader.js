@@ -24,7 +24,7 @@ async function fetchAll(octokit, config) {
 async function fetch(octokit, { repo: { owner, repo }, path }) {
 	core.debug(`fetching ${owner}/${repo}:${path}`);
 
-	octokit.rest.repos.getContent({
+	return octokit.rest.repos.getContent({
 		owner: owner,
 		repo: repo,
 		path: path,
