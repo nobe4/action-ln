@@ -5,12 +5,7 @@ const { fetchAll } = require("./loader");
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
-	let token = core.getInput("token", { required: false });
-
-	if (token === "") {
-		core.debug("Input `token` is empty, using default GITHUB_TOKEN.");
-		token = github.token;
-	}
+	let token = core.getInput("token", { required: true });
 
 	const octokit = github.getOctokit(token);
 
