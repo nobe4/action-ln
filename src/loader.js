@@ -6,13 +6,13 @@ async function fetchAll(octokit, config) {
 	for (let l of config.links) {
 		promises.push(
 			fetch(octokit, l.from).then((c) => {
-				core.debug(`fetched ${l.from.path}: ${c}`);
+				core.debug(`fetched ${l.from}: ${c}`);
 				l.from.content = c;
 			}),
 		);
 		promises.push(
 			fetch(octokit, l.to).then((c) => {
-				core.debug(`fetched ${l.to.path}: ${c}`);
+				core.debug(`fetched ${l.to}: ${c}`);
 				l.to.content = c;
 			}),
 		);
@@ -21,12 +21,12 @@ async function fetchAll(octokit, config) {
 	return Promise.all(promises);
 }
 
-async function fetch(octokit, { repo: { owner, name }, path }) {
-	core.debug(`fetching ${owner}/${name}:${path}`);
+async function fetch(octokit, { repo: { owner, repo }, path }) {
+	core.debug(`fetching ${owner}/${repo}:${path}`);
 
 	octokit.rest.repos.getContent({
 		owner: owner,
-		repo: name,
+		repo: repo,
 		path: path,
 	});
 }

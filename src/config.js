@@ -65,16 +65,16 @@ function validateLocation(location) {
 	}
 
 	if ("repo" in location) {
-		const [owner, name] = location.repo.split("/");
+		const [owner, repo] = location.repo.split("/");
 		if (
 			owner === "" ||
-			name === "" ||
+			repo === "" ||
 			owner === undefined ||
-			name === undefined
+			repo === undefined
 		) {
 			throw new ValidationError("`repo` must be in the format `owner/name`");
 		}
-		location.repo = { owner, name };
+		location.repo = { owner, repo };
 	} else {
 		location.repo = github.context.repo;
 	}

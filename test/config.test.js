@@ -8,7 +8,7 @@ beforeEach(() => {
 	github.context = {
 		repo: {
 			owner: "owner",
-			name: "name",
+			repo: "repo",
 		},
 	};
 });
@@ -128,14 +128,14 @@ describe("config", () => {
 									path: "a/b",
 									repo: {
 										owner: "owner",
-										name: "name",
+										repo: "repo",
 									},
 								},
 								to: {
 									path: "b/c",
 									repo: {
 										owner: "owner",
-										name: "name",
+										repo: "repo",
 									},
 								},
 							},
@@ -164,14 +164,14 @@ describe("config", () => {
 									path: "a/b",
 									repo: {
 										owner: "x",
-										name: "y",
+										repo: "y",
 									},
 								},
 								to: {
 									path: "b/c",
 									repo: {
 										owner: "y",
-										name: "z",
+										repo: "z",
 									},
 								},
 							},
