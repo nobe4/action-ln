@@ -1,7 +1,7 @@
 async function fetchAll(octokit, config) {
 	const promises = [];
 
-	for (let l of config) {
+	for (let l of config.links) {
 		promises.push(fetch(octokit, l.from).then((c) => (l.from.content = c)));
 		promises.push(fetch(octokit, l.to).then((c) => (l.to.content = c)));
 	}
