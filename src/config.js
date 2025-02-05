@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const yaml = require("js-yaml");
 const fs = require("fs");
+const { indent } = require("./utils");
 
 class ValidationError extends Error {
 	constructor(message) {
@@ -10,76 +11,147 @@ class ValidationError extends Error {
 	}
 }
 
-async function load(path) {
-	core.notice(`Using config file: ${path}`);
-
-	return read(path).then(validate);
-}
-
-async function read(path) {
-	return fs.promises.readFile(path, "utf8").then(yaml.load);
-}
-
-async function validate(config) {
-	if (config == null) {
-		throw new ValidationError("config must not be null");
+class Config {
+	constructor(path) {
+		this.path = path;
+		this.data = {};
 	}
 
-	if (!("links" in config)) {
-		throw new ValidationError("`links` must be present");
+	toString() {
+		return [
+			`path: ${this.path}`,
+			`links:`,
+			...this.data.links.map((l) => "  -\n" + indent(l.toString())),
+		].join("\n");
 	}
 
-	if (!Array.isArray(config.links)) {
-		throw new ValidationError("`links` must be an array");
+	async load() {
+		core.notice(`Using config file: ${this.path}`);
+
+		return this.read().then(() => this.parse());
 	}
 
-	config.links.forEach((link, i) => {
-		config.links[i] = validateLink(link);
-	});
-
-	return config;
-}
-
-function validateLink(link) {
-	if (typeof link !== "object") {
-		throw new ValidationError("`links` must be an array of objects");
+	async read() {
+		return fs.promises
+			.readFile(this.path, "utf8")
+			.then(yaml.load)
+			.then((data) => (this.data = data));
 	}
 
-	if (!("from" in link)) {
-		throw new ValidationError("`from` must be present");
-	}
-
-	if (!("to" in link)) {
-		throw new ValidationError("`to` must be present");
-	}
-
-	link.from = validateLocation(link.from);
-	link.to = validateLocation(link.to);
-
-	return link;
-}
-
-function validateLocation(location) {
-	if (!("path" in location) || location.path == "") {
-		throw new ValidationError("`path` must be present");
-	}
-
-	if ("repo" in location) {
-		const [owner, name] = location.repo.split("/");
-		if (
-			owner === "" ||
-			name === "" ||
-			owner === undefined ||
-			name === undefined
-		) {
-			throw new ValidationError("`repo` must be in the format `owner/name`");
+	parse() {
+		if (!this.data) {
+			throw new ValidationError("config must not be null");
 		}
-		location.repo = { owner, name };
-	} else {
-		location.repo = github.context.repo;
-	}
 
-	return location;
+		if (!("links" in this.data)) {
+			throw new ValidationError("`links` must be present");
+		}
+
+		if (!Array.isArray(this.data.links)) {
+			throw new ValidationError("`links` must be an array");
+		}
+
+		this.data.links.forEach((l, i) => {
+			this.data.links[i] = new Link(l).parse();
+		});
+
+		return this;
+	}
 }
 
-module.exports = { read, load, validate, ValidationError };
+class Link {
+	constructor(raw) {
+		this.raw = raw;
+	}
+
+	toString() {
+		return `from:\n${indent(this.from.toString())}\nto:\n${indent(this.to.toString())}`;
+	}
+
+	parse() {
+		if (!this.raw || typeof this.raw !== "object") {
+			throw new ValidationError("`links` must be an array of objects");
+		}
+
+		if (!("from" in this.raw)) {
+			throw new ValidationError("`from` must be present");
+		}
+
+		if (!("to" in this.raw)) {
+			throw new ValidationError("`to` must be present");
+		}
+
+		this.from = new File(this.raw.from).parse();
+		this.to = new File(this.raw.to).parse();
+
+		delete this.raw;
+		return this;
+	}
+}
+
+class File {
+	constructor(raw) {
+		this.raw = raw;
+	}
+
+	toString() {
+		let out = `${this.repo.owner}/${this.repo.repo}:${this.path}`;
+		if (this.content) {
+			out += `\n${this.content}`;
+		}
+		return out;
+	}
+
+	parse() {
+		if (!this.raw) {
+			throw new ValidationError("location must not be null");
+		}
+
+		this.parsePath();
+		this.parseRepo();
+
+		delete this.raw;
+		return this;
+	}
+
+	parsePath() {
+		if (!("path" in this.raw) || !this.raw.path) {
+			throw new ValidationError("`path` must be present");
+		}
+
+		const path = this.raw.path.trim();
+		if (!path) {
+			throw new ValidationError("`path` must be not be empty");
+		}
+
+		return (this.path = path);
+	}
+
+	parseRepo() {
+		if (!("repo" in this.raw) || !this.raw.repo) {
+			return (this.repo = github.context.repo);
+		}
+
+		if (typeof this.raw.repo === "object") {
+			if (
+				!("repo" in this.raw.repo) ||
+				!this.raw.repo.repo ||
+				!("owner" in this.raw.repo) ||
+				!this.raw.repo.owner
+			) {
+				throw new ValidationError("`repo` object must have `owner` and `repo`");
+			}
+
+			return (this.repo = this.raw.repo);
+		}
+
+		const [owner, repo] = this.raw.repo.split("/");
+		if (!owner || !repo) {
+			throw new ValidationError("`repo` must be in the format `owner/repo`");
+		}
+
+		return (this.repo = { owner, repo });
+	}
+}
+
+module.exports = { Config, Link, File, ValidationError };

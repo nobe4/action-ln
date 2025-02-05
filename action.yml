@@ -2,6 +2,10 @@ name: ln
 description: Link files between repositorie
 
 inputs:
+  token:
+    description: GitHub token to authenticate with.
+    required: false
+    default: ${{ github.token }}
   config-path:
     description: Relative path to the config file.
     required: true

@@ -6,10 +6,12 @@
 	"scripts": {
 		"all": "npm run format && npm run lint && npm run test && npm run build",
 		"test": "jest",
-		"build": "ncc build src/main.js --minify --out dist/ --license LICENSE",
+		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
+		"watch:test": "find ./src/ ./test/ -type f | entr npm test"
 	},
 	"repository": {
 		"type": "git",
