@@ -3,15 +3,15 @@ const core = require("@actions/core");
 async function fetchAll(octokit, config) {
 	const promises = [];
 
-	for (let i in config.links) {
+	for (let i in config.data.links) {
 		promises.push(
 			fetch(octokit, config.links[i].from.data).then((c) => {
-				config.links[i].from.data.content = c;
+				config.data.links[i].from.data.content = c;
 			}),
 		);
 		promises.push(
 			fetch(octokit, config.links[i].to.data).then((c) => {
-				config.links[i].to.data.content = c;
+				config.data.links[i].to.data.content = c;
 			}),
 		);
 	}
