@@ -106,8 +106,8 @@ class Link {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.from = new File(raw.from).parse();
-		this.to = new File(raw.to).parse();
+		this.from = new File().parse(raw.from);
+		this.to = new File().parse(raw.to);
 
 		return this;
 	}
