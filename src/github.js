@@ -29,7 +29,7 @@ class GitHub {
 				}
 
 				// However, any non-404 error is a real problem.
-				core.error(
+				core.setFailed(
 					`failed to fetch ${owner}/${repo}:${path}: ${JSON.stringify(e)}`,
 				);
 			});
@@ -48,7 +48,7 @@ class GitHub {
 			.then((b) => this.createBranch(link.to.repo, headBranch, b.object.sha))
 			.then((b) => this.getCommit(link.to.repo, b.object.sha))
 			.then((c) => this.createCommit(link.to.repo, newContent, c))
-			.then((c) => this.updateRef(link.to.repo, headBranch, c.sha))
+			.then((c) => this.updateBranch(link.to.repo, headBranch, c.sha))
 			.then(() =>
 				this.createPullRequest(
 					link.to.repo,
@@ -59,7 +59,7 @@ class GitHub {
 				),
 			)
 			.catch((e) => {
-				core.error(
+				core.setFailed(
 					`failed to create PR for ${link.toString(true)}: ${e} ${JSON.stringify(e)}`,
 				);
 			});
