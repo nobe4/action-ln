@@ -35,27 +35,32 @@ class GitHub {
 			});
 	}
 
-	async createPRForLink({ from, to }) {
+	async createPRForLink(link) {
 		let baseBranch = "";
-		let headBranch = `link-${from.repo}-${from.path}`;
-		const newContent = this.createTree(to.path, from.content);
+		let headBranch = `link-${link.from.repo}-${link.from.path}`;
+		const newContent = this.createTree(link.to.path, link.from.content);
 
-		return this.getBaseBranch(to.repo)
+		return this.getBaseBranch(link.to.repo)
 			.then((b) => (baseBranch = b))
-			.then((b) => this.getBranch(to.repo, b))
-			.then((b) => this.createBranch(to.repo, headBranch, b.object.sha))
-			.then((b) => this.getCommit(to.repo, b.object.sha))
-			.then((c) => this.createCommit(to.repo, newContent, c))
-			.then((c) => this.updateRef(to.repo, headBranch, c.sha))
+			.then((b) => this.getBranch(link.to.repo, b))
+			.then((b) => this.createBranch(link.to.repo, headBranch, b.object.sha))
+			.then((b) => this.getCommit(link.to.repo, b.object.sha))
+			.then((c) => this.createCommit(link.to.repo, newContent, c))
+			.then((c) => this.updateRef(link.to.repo, headBranch, c.sha))
 			.then(() =>
 				this.pusher.createPullRequest(
-					to.repo,
+					link.to.repo,
 					headBranch,
 					baseBranch,
 					"body test",
 					"title test",
 				),
-			);
+			)
+			.catch((e) => {
+				core.error(
+					`failed to create PR for ${link.toString(true)}:\n${JSON.stringify(e)}`,
+				);
+			});
 	}
 
 	async getBaseBranch({ owner, repo }) {

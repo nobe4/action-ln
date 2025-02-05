@@ -83,7 +83,11 @@ class Link {
 		this.to = to;
 	}
 
-	toString() {
+	toString(short = false) {
+		if (short) {
+			return `${this.from.repo.owner}/${this.from.repo.repo}:${this.from.path} -> ${this.to.repo.owner}/${this.to.repo.repo}:${this.to.path}`;
+		}
+
 		return [
 			"from:",
 			indent(this.from.toString()),

@@ -22,7 +22,7 @@ try {
 					continue;
 				}
 
-				core.info(`updating: ${link}`);
+				core.info(`updating: ${link.toString(true)}`);
 				promises.push(gh.createPRForLink(link));
 			}
 
