@@ -95,7 +95,9 @@ describe("Link", () => {
 					.mockImplementation(() => "parsed");
 
 				l.raw = raw;
-				expect(l.parse().data).toStrictEqual({ from: "parsed", to: "parsed" });
+				l.parse();
+				expect(l.from).toStrictEqual("parsed");
+				expect(l.to).toStrictEqual("parsed");
 				expect(mockLocationParse).toHaveBeenCalled();
 			});
 		});
@@ -125,7 +127,7 @@ describe("Location", () => {
 
 				l.raw = raw;
 
-				expect(l.parse().data).toStrictEqual({});
+				expect(l.parse()).toStrictEqual(l);
 				expect(mockParsePath).toHaveBeenCalled();
 				expect(mockParseRepo).toHaveBeenCalled();
 			});

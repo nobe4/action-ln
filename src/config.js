@@ -53,7 +53,6 @@ class Config {
 class Link {
 	constructor(raw) {
 		this.raw = raw;
-		this.data = {};
 	}
 
 	parse() {
@@ -69,8 +68,8 @@ class Link {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.data.from = new Location(this.raw.from).parse();
-		this.data.to = new Location(this.raw.to).parse();
+		this.from = new Location(this.raw.from).parse();
+		this.to = new Location(this.raw.to).parse();
 
 		return this;
 	}
@@ -79,7 +78,6 @@ class Link {
 class Location {
 	constructor(raw) {
 		this.raw = raw;
-		this.data = {};
 	}
 
 	parse() {
@@ -103,12 +101,12 @@ class Location {
 			throw new ValidationError("`path` must be not be empty");
 		}
 
-		return (this.data.path = path);
+		return (this.path = path);
 	}
 
 	parseRepo() {
 		if (!("repo" in this.raw) || !this.raw.repo) {
-			return (this.data.repo = github.context.repo);
+			return (this.repo = github.context.repo);
 		}
 
 		if (typeof this.raw.repo === "object") {
@@ -121,7 +119,7 @@ class Location {
 				throw new ValidationError("`repo` object must have `owner` and `repo`");
 			}
 
-			return (this.data.repo = this.raw.repo);
+			return (this.repo = this.raw.repo);
 		}
 
 		const [owner, repo] = this.raw.repo.split("/");
@@ -129,7 +127,7 @@ class Location {
 			throw new ValidationError("`repo` must be in the format `owner/repo`");
 		}
 
-		return (this.data.repo = { owner, repo });
+		return (this.repo = { owner, repo });
 	}
 }
 
