@@ -5,12 +5,12 @@ async function fetchAll(octokit, config) {
 
 	for (let i in config.data.links) {
 		promises.push(
-			fetch(octokit, config.links[i].from.data).then((c) => {
+			fetch(octokit, config.data.links[i].from.data).then((c) => {
 				config.data.links[i].from.data.content = c;
 			}),
 		);
 		promises.push(
-			fetch(octokit, config.links[i].to.data).then((c) => {
+			fetch(octokit, config.data.links[i].to.data).then((c) => {
 				config.data.links[i].to.data.content = c;
 			}),
 		);
