@@ -1,23 +1,18 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
 const { Config } = require("./config");
-const { fetchAll } = require("./loader");
+const { GitHub } = require("./github");
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
 	let token = core.getInput("token", { required: true });
 
-	const octokit = github.getOctokit(token, {
-		log: console,
-	});
-
-	const config = new Config(configPath);
+	const gh = new GitHub(token);
+	const config = new Config(configPath, gh);
 
 	config
 		.load()
-		.then((c) => fetchAll(octokit, c))
 		.then((c) => {
-			core.info(`parsed and enriched config:\n${c}`);
+			core.info(`config:\n${c}`);
 		})
 		.catch((e) => {
 			core.error(e);
