@@ -37,4 +37,8 @@ links:
   ```
 
 - If using from an org, you need to enable `Allow GitHub Actions to create and
-approve pull requests` from `https://github.com/organizations/<org>/settings/actions`
+approve pull requests` from
+`https://github.com/organizations/<org>/settings/actions`
+
+- For Classic tokens `repo` scope is needed, assuming you have write access to
+all the updated repositories.
