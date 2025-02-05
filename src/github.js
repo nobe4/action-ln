@@ -54,8 +54,8 @@ class GitHub {
 					link.to.repo,
 					headBranch,
 					baseBranch,
-					"body test",
-					"title test",
+					"TODO",
+					"TODO",
 				),
 			)
 			.catch((e) => {
