@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const yaml = require("js-yaml");
 const fs = require("fs");
+const { indent } = require("./utils");
 
 class ValidationError extends Error {
 	constructor(message) {
@@ -14,6 +15,14 @@ class Config {
 	constructor(path) {
 		this.path = path;
 		this.data = {};
+	}
+
+	toString() {
+		return [
+			`path: ${this.path}`,
+			`links:`,
+			...this.data.links.map((l) => "  -\n" + indent(l.toString())),
+		].join("\n");
 	}
 
 	async load() {
@@ -55,6 +64,10 @@ class Link {
 		this.raw = raw;
 	}
 
+	toString() {
+		return `from:\n${indent(this.from.toString())}\nto:\n${indent(this.to.toString())}`;
+	}
+
 	parse() {
 		if (!this.raw || typeof this.raw !== "object") {
 			throw new ValidationError("`links` must be an array of objects");
@@ -68,17 +81,25 @@ class Link {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.from = new Location(this.raw.from).parse();
-		this.to = new Location(this.raw.to).parse();
+		this.from = new File(this.raw.from).parse();
+		this.to = new File(this.raw.to).parse();
 
 		delete this.raw;
 		return this;
 	}
 }
 
-class Location {
+class File {
 	constructor(raw) {
 		this.raw = raw;
+	}
+
+	toString() {
+		let out = `${this.repo.owner}/${this.repo.repo}:${this.path}`;
+		if (this.content) {
+			out += `\n${this.content}`;
+		}
+		return out;
 	}
 
 	parse() {
@@ -133,4 +154,4 @@ class Location {
 	}
 }
 
-module.exports = { Config, Link, Location, ValidationError };
+module.exports = { Config, Link, File, ValidationError };

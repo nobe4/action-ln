@@ -1,9 +1,48 @@
-const { Config, Link, Location, ValidationError } = require("../src/config");
+const { Config, Link, File, ValidationError } = require("../src/config");
 const yaml = require("js-yaml");
 const github = require("@actions/github");
+const { dedent } = require("../src/utils");
 
 describe("Config", () => {
 	let c = new Config();
+
+	describe("toString", () => {
+		it("formats correctly", () => {
+			const l1 = new Link();
+			l1.from = new File();
+			l1.from.repo = { repo: "repo", owner: "owner" };
+			l1.from.path = "path";
+			l1.from.content = "content";
+			l1.to = "to";
+
+			const l2 = new Link();
+			l2.from = "from2";
+			l2.to = "to2";
+
+			c.data.links = [l1, l2];
+			c.path = "path";
+
+			expect(c.toString()).toStrictEqual(
+				dedent(
+					`
+					path: path
+					links:
+					  -
+					    from:
+					        owner/repo:path
+					        content
+					    to:
+					        to
+					  -
+					    from:
+					        from2
+					    to:
+					        to2
+					`,
+				).trim(),
+			);
+		});
+	});
 
 	describe("load", () => {
 		test("calls read and parse", async () => {
@@ -77,6 +116,14 @@ describe("Config", () => {
 describe("Link", () => {
 	let l = new Link();
 
+	describe("toString", () => {
+		it("formats correctly", () => {
+			l.from = "from";
+			l.to = "to";
+			expect(l.toString()).toStrictEqual("from:\n    from\nto:\n    to");
+		});
+	});
+
 	describe("parse", () => {
 		describe("fails", () => {
 			it.each([undefined, "a", 1, {}, { from: {} }, { to: {} }])(
@@ -90,22 +137,36 @@ describe("Link", () => {
 
 		describe("succeeds", () => {
 			it.each([{ from: {}, to: {} }])("%# %p", (raw) => {
-				const mockLocationParse = jest
-					.spyOn(Location.prototype, "parse")
+				const mockFileParse = jest
+					.spyOn(File.prototype, "parse")
 					.mockImplementation(() => "parsed");
 
 				l.raw = raw;
 				l.parse();
 				expect(l.from).toStrictEqual("parsed");
 				expect(l.to).toStrictEqual("parsed");
-				expect(mockLocationParse).toHaveBeenCalled();
+				expect(mockFileParse).toHaveBeenCalled();
 			});
 		});
 	});
 });
 
-describe("Location", () => {
-	let l = new Location();
+describe("File", () => {
+	let l = new File();
+
+	describe("toString", () => {
+		it("formats correctly", () => {
+			l.repo = { repo: "repo", owner: "owner" };
+			l.path = "path";
+			expect(l.toString()).toStrictEqual("owner/repo:path");
+		});
+		it("formats correctly with a content", () => {
+			l.repo = { repo: "repo", owner: "owner" };
+			l.path = "path";
+			l.content = "some\ncontent";
+			expect(l.toString()).toStrictEqual("owner/repo:path\nsome\ncontent");
+		});
+	});
 
 	describe("parse", () => {
 		describe("fails", () => {
@@ -118,11 +179,11 @@ describe("Location", () => {
 		describe("succeeds", () => {
 			it.each(["non-nil"])("%# %p", (raw) => {
 				const mockParsePath = jest
-					.spyOn(Location.prototype, "parsePath")
+					.spyOn(File.prototype, "parsePath")
 					.mockImplementation(() => {});
 
 				const mockParseRepo = jest
-					.spyOn(Location.prototype, "parseRepo")
+					.spyOn(File.prototype, "parseRepo")
 					.mockImplementation(() => {});
 
 				l.raw = raw;
