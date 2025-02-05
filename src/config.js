@@ -19,7 +19,7 @@ class Config {
 	async load() {
 		core.notice(`Using config file: ${this.path}`);
 
-		return this.read().then(this.validate);
+		return this.read().then(() => this.validate());
 	}
 
 	async read() {
