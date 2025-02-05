@@ -51,8 +51,8 @@ class Config {
 			throw new ValidationError("`links` must be an array");
 		}
 
-		this.data.links.forEach((l, i) => {
-			this.data.links[i] = new Link(l).parse();
+		this.data.links.forEach((raw, i) => {
+			this.data.links[i] = new Link().parse(raw);
 		});
 
 		return this;
@@ -60,8 +60,9 @@ class Config {
 }
 
 class Link {
-	constructor(raw) {
-		this.raw = raw;
+	constructor({ from, to } = {}) {
+		this.from = from;
+		this.to = to;
 	}
 
 	toString() {
@@ -74,23 +75,22 @@ class Link {
 		].join("\n");
 	}
 
-	parse() {
-		if (!this.raw || typeof this.raw !== "object") {
+	parse(raw) {
+		if (!raw || typeof raw !== "object") {
 			throw new ValidationError("`links` must be an array of objects");
 		}
 
-		if (!("from" in this.raw)) {
+		if (!("from" in raw)) {
 			throw new ValidationError("`from` must be present");
 		}
 
-		if (!("to" in this.raw)) {
+		if (!("to" in raw)) {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.from = new File(this.raw.from).parse();
-		this.to = new File(this.raw.to).parse();
+		this.from = new File(raw.from).parse();
+		this.to = new File(raw.to).parse();
 
-		delete this.raw;
 		return this;
 	}
 
@@ -112,8 +112,10 @@ class Link {
 }
 
 class File {
-	constructor(raw) {
-		this.raw = raw;
+	constructor({ repo, path, content } = {}) {
+		this.repo = repo;
+		this.path = path;
+		this.content = content;
 	}
 
 	toString() {
@@ -124,24 +126,23 @@ class File {
 		return out;
 	}
 
-	parse() {
-		if (!this.raw) {
+	parse(raw) {
+		if (!raw) {
 			throw new ValidationError("location must not be null");
 		}
 
-		this.parsePath();
-		this.parseRepo();
+		this.parsePath(raw);
+		this.parseRepo(raw);
 
-		delete this.raw;
 		return this;
 	}
 
-	parsePath() {
-		if (!("path" in this.raw) || !this.raw.path) {
+	parsePath(raw) {
+		if (!("path" in raw) || !raw.path) {
 			throw new ValidationError("`path` must be present");
 		}
 
-		const path = this.raw.path.trim();
+		const path = raw.path.trim();
 		if (!path) {
 			throw new ValidationError("`path` must be not be empty");
 		}
@@ -149,25 +150,25 @@ class File {
 		return (this.path = path);
 	}
 
-	parseRepo() {
-		if (!("repo" in this.raw) || !this.raw.repo) {
+	parseRepo(raw) {
+		if (!("repo" in raw) || !raw.repo) {
 			return (this.repo = github.context.repo);
 		}
 
-		if (typeof this.raw.repo === "object") {
+		if (typeof raw.repo === "object") {
 			if (
-				!("repo" in this.raw.repo) ||
-				!this.raw.repo.repo ||
-				!("owner" in this.raw.repo) ||
-				!this.raw.repo.owner
+				!("repo" in raw.repo) ||
+				!raw.repo.repo ||
+				!("owner" in raw.repo) ||
+				!raw.repo.owner
 			) {
 				throw new ValidationError("`repo` object must have `owner` and `repo`");
 			}
 
-			return (this.repo = this.raw.repo);
+			return (this.repo = raw.repo);
 		}
 
-		const [owner, repo] = this.raw.repo.split("/");
+		const [owner, repo] = raw.repo.split("/");
 		if (!owner || !repo) {
 			throw new ValidationError("`repo` must be in the format `owner/repo`");
 		}

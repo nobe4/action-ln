@@ -8,25 +8,30 @@ describe("Config", () => {
 
 	describe("toString", () => {
 		it("formats correctly", () => {
-			const l1 = new Link();
-			l1.from = new File();
-			l1.from.repo = { repo: "repo", owner: "owner" };
-			l1.from.path = "path";
-			l1.from.content = "content";
-			l1.to = new File();
-			l1.to.repo = { repo: "repo", owner: "owner" };
-			l1.to.path = "path";
-			l1.to.content = "content";
-
-			const l2 = new Link();
-			l2.from = new File();
-			l2.from.repo = { repo: "repo", owner: "owner" };
-			l2.from.path = "path";
-			l2.from.content = "content";
-			l2.to = new File();
-			l2.to.repo = { repo: "repo", owner: "owner" };
-			l2.to.path = "path";
-			l2.to.content = "other content";
+			const l1 = new Link({
+				from: new File({
+					repo: { repo: "repo", owner: "owner" },
+					path: "path",
+					content: "content",
+				}),
+				to: new File({
+					repo: { repo: "repo", owner: "owner" },
+					path: "path",
+					content: "content",
+				}),
+			});
+			const l2 = new Link({
+				from: new File({
+					repo: { repo: "repo", owner: "owner" },
+					path: "path",
+					content: "content",
+				}),
+				to: new File({
+					repo: { repo: "repo", owner: "owner" },
+					path: "path",
+					content: "other content",
+				}),
+			});
 
 			c.data.links = [l1, l2];
 			c.path = "path";
@@ -159,8 +164,7 @@ describe("Link", () => {
 			it.each([undefined, "a", 1, {}, { from: {} }, { to: {} }])(
 				"%# %p",
 				(raw) => {
-					l.raw = raw;
-					return expect(() => l.parse()).toThrow(ValidationError);
+					return expect(() => l.parse(raw)).toThrow(ValidationError);
 				},
 			);
 		});
@@ -171,8 +175,7 @@ describe("Link", () => {
 					.spyOn(File.prototype, "parse")
 					.mockImplementation(() => "parsed");
 
-				l.raw = raw;
-				l.parse();
+				l.parse(raw);
 				expect(l.from).toStrictEqual("parsed");
 				expect(l.to).toStrictEqual("parsed");
 				expect(mockFileParse).toHaveBeenCalled();
@@ -229,8 +232,7 @@ describe("File", () => {
 	describe("parse", () => {
 		describe("fails", () => {
 			it.each([null, undefined, ""])("%# %p", (raw) => {
-				l.raw = raw;
-				return expect(() => l.parse()).toThrow(ValidationError);
+				return expect(() => l.parse(raw)).toThrow(ValidationError);
 			});
 		});
 
@@ -244,9 +246,7 @@ describe("File", () => {
 					.spyOn(File.prototype, "parseRepo")
 					.mockImplementation(() => {});
 
-				l.raw = raw;
-
-				expect(l.parse()).toStrictEqual(l);
+				expect(l.parse(raw)).toStrictEqual(l);
 				expect(mockParsePath).toHaveBeenCalled();
 				expect(mockParseRepo).toHaveBeenCalled();
 			});
@@ -256,8 +256,9 @@ describe("File", () => {
 	describe("parsePath", () => {
 		describe("fails", () => {
 			it.each([null, undefined, "", "\n", "    ", " \t"])("%# %p", (raw) => {
-				l.raw = { path: raw };
-				return expect(() => l.parsePath()).toThrow(ValidationError);
+				return expect(() => l.parsePath({ path: raw })).toThrow(
+					ValidationError,
+				);
 			});
 		});
 
@@ -268,8 +269,7 @@ describe("File", () => {
 					want: "a",
 				},
 			])("%# %p", ({ raw, want }) => {
-				l.raw = { path: raw };
-				return expect(l.parsePath()).toStrictEqual(want);
+				return expect(l.parsePath({ path: raw })).toStrictEqual(want);
 			});
 		});
 	});
@@ -287,8 +287,7 @@ describe("File", () => {
 				{ repo: { repo: "", owner: undefined } },
 				{ repo: { repo: undefined, owner: "" } },
 			])("%# %p", (raw) => {
-				l.raw = raw;
-				return expect(() => l.parseRepo()).toThrow(ValidationError);
+				return expect(() => l.parseRepo(raw)).toThrow(ValidationError);
 			});
 		});
 
@@ -330,8 +329,7 @@ describe("File", () => {
 					},
 				},
 			])("%# %p", ({ raw, want }) => {
-				l.raw = { repo: raw };
-				return expect(l.parseRepo()).toStrictEqual(want);
+				return expect(l.parseRepo({ repo: raw })).toStrictEqual(want);
 			});
 		});
 	});
