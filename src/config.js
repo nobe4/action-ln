@@ -42,54 +42,93 @@ class Config {
 			throw new ValidationError("`links` must be an array");
 		}
 
-		this.data.links.forEach((link, i) => {
-			this.data.links[i] = this.validateLink(link);
+		this.data.links.forEach((l, i) => {
+			this.data.links[i] = new Link(l);
 		});
 
 		return this.data;
 	}
+}
 
-	validateLink(link) {
-		if (typeof link !== "object") {
+class Link {
+	contructor(raw) {
+		this.raw = raw;
+		this.data = {};
+	}
+
+	parse() {
+		if (typeof this.raw !== "object") {
 			throw new ValidationError("`links` must be an array of objects");
 		}
 
-		if (!("from" in link)) {
+		if (!("from" in this.raw)) {
 			throw new ValidationError("`from` must be present");
 		}
 
-		if (!("to" in link)) {
+		if (!("to" in this.raw)) {
 			throw new ValidationError("`to` must be present");
 		}
 
-		link.from = this.validateLocation(link.from);
-		link.to = this.validateLocation(link.to);
-
-		return link;
-	}
-
-	validateLocation(location) {
-		if (!("path" in location) || location.path == "") {
-			throw new ValidationError("`path` must be present");
-		}
-
-		if ("repo" in location) {
-			const [owner, repo] = location.repo.split("/");
-			if (
-				owner === "" ||
-				repo === "" ||
-				owner === undefined ||
-				repo === undefined
-			) {
-				throw new ValidationError("`repo` must be in the format `owner/name`");
-			}
-			location.repo = { owner, repo };
-		} else {
-			location.repo = github.context.repo;
-		}
-
-		return location;
+		this.data.from = new Location(this.raw.from);
+		this.data.to = new Location(this.raw.to);
 	}
 }
 
-module.exports = { Config, ValidationError };
+class Location {
+	constructor(raw) {
+		this.raw = raw;
+		this.data = {};
+	}
+
+	parse() {
+		if (!this.raw) {
+			throw new ValidationError("location must not be null");
+		}
+
+		this.parsePath();
+		this.parseRepo();
+
+		return this.data;
+	}
+
+	parsePath() {
+		if (!("path" in this.raw) || !this.raw.path) {
+			throw new ValidationError("`path` must be present");
+		}
+
+		const path = this.raw.path.trim();
+		if (!path) {
+			throw new ValidationError("`path` must be not be empty");
+		}
+
+		return (this.data.path = path);
+	}
+
+	parseRepo() {
+		if (!("repo" in this.raw) || !this.raw.repo) {
+			return (this.data.repo = github.context.repo);
+		}
+
+		if (typeof this.raw.repo === "object") {
+			if (
+				!("repo" in this.raw.repo) ||
+				!this.raw.repo.repo ||
+				!("owner" in this.raw.repo) ||
+				!this.raw.repo.owner
+			) {
+				throw new ValidationError("`repo` object must have `owner` and `repo`");
+			}
+
+			return (this.data.repo = this.raw.repo);
+		}
+
+		const [owner, repo] = this.raw.repo.split("/");
+		if (!owner || !repo) {
+			throw new ValidationError("`repo` must be in the format `owner/repo`");
+		}
+
+		return (this.data.repo = { owner, repo });
+	}
+}
+
+module.exports = { Config, Link, Location, ValidationError };

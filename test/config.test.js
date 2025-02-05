@@ -1,19 +1,19 @@
-const { Config, ValidationError } = require("../src/config");
+const { Config, Location, ValidationError } = require("../src/config");
 const yaml = require("js-yaml");
 
 const github = require("@actions/github");
 jest.mock("@actions/github");
 
+const defaultRepo = {
+	owner: "owner",
+	repo: "repo",
+};
+
 beforeEach(() => {
-	github.context = {
-		repo: {
-			owner: "owner",
-			repo: "repo",
-		},
-	};
+	github.context = { repo: defaultRepo };
 });
 
-describe("config", () => {
+describe("Config", () => {
 	describe("read", () => {
 		test("missing file", () => {
 			return expect(
@@ -184,6 +184,110 @@ describe("config", () => {
 			])("%# %j", ({ data, want }) => {
 				c.data = data;
 				return expect(c.validate()).toStrictEqual(want);
+			});
+		});
+	});
+});
+
+describe("Location", () => {
+	let l = new Location();
+
+	describe("parse", () => {
+		describe("fails", () => {
+			it.each([null, undefined, ""])("%# %p", (raw) => {
+				l.raw = raw;
+				return expect(() => l.parse()).toThrow(ValidationError);
+			});
+		});
+
+		describe("succeeds", () => {
+			it.each(["non-nil"])("%# %p", (raw) => {
+				const mockParsePath = jest
+					.spyOn(Location.prototype, "parsePath")
+					.mockImplementation(() => {});
+
+				const mockParseRepo = jest
+					.spyOn(Location.prototype, "parseRepo")
+					.mockImplementation(() => {});
+
+				l.raw = raw;
+
+				expect(l.parse()).toStrictEqual({});
+				expect(mockParsePath).toHaveBeenCalled();
+				expect(mockParseRepo).toHaveBeenCalled();
+			});
+		});
+	});
+
+	describe("parsePath", () => {
+		describe("fails", () => {
+			it.each([null, undefined, "", "\n", "    ", " \t"])("%# %p", (raw) => {
+				l.raw = { path: raw };
+				return expect(() => l.parsePath()).toThrow(ValidationError);
+			});
+		});
+
+		describe("succeeds", () => {
+			it.each([
+				{
+					raw: "a",
+					want: "a",
+				},
+			])("%# %p", ({ raw, want }) => {
+				l.raw = { path: raw };
+				return expect(l.parsePath()).toStrictEqual(want);
+			});
+		});
+	});
+
+	describe("parseRepo", () => {
+		describe("fails", () => {
+			it.each([
+				{ repo: "a" },
+				{ repo: "a/" },
+				{ repo: "/a" },
+				{ repo: "/" },
+				{ repo: {} },
+				{ repo: { owner: "" } },
+				{ repo: { repo: "" } },
+				{ repo: { repo: "", owner: undefined } },
+				{ repo: { repo: undefined, owner: "" } },
+			])("%# %p", (raw) => {
+				l.raw = raw;
+				return expect(() => l.parseRepo()).toThrow(ValidationError);
+			});
+		});
+
+		describe("succeeds", () => {
+			it.each([
+				{
+					raw: undefined,
+					want: defaultRepo,
+				},
+				{
+					raw: "",
+					want: defaultRepo,
+				},
+				{
+					raw: "owner/repo",
+					want: {
+						repo: "repo",
+						owner: "owner",
+					},
+				},
+				{
+					raw: {
+						repo: "repo",
+						owner: "owner",
+					},
+					want: {
+						repo: "repo",
+						owner: "owner",
+					},
+				},
+			])("%# %p", ({ raw, want }) => {
+				l.raw = { repo: raw };
+				return expect(l.parseRepo()).toStrictEqual(want);
 			});
 		});
 	});
