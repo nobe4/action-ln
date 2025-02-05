@@ -34,7 +34,13 @@ async function fetch(octokit, { repo: { owner, repo }, path }) {
 		.catch((e) => {
 			// This can fail if the file is missing, or if the repo is not
 			// accessible. There's no way to differentiate that here.
-			core.warning(
+			if (e.status === 404) {
+				core.warning(`${owner}/${repo}:${path} not found`);
+				return;
+			}
+
+			// However, any non-404 error is a real problem.
+			core.error(
 				`failed to fetch ${owner}/${repo}:${path}: ${JSON.stringify(e)}`,
 			);
 		});

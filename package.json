@@ -9,7 +9,9 @@
 		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
+		"watch:test": "find ./src/ ./test/ -type f | entr npm test"
 	},
 	"repository": {
 		"type": "git",

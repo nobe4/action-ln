@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
-const config = require("./config");
+const { Config } = require("./config");
 const { fetchAll } = require("./loader");
 
 try {
@@ -11,8 +11,10 @@ try {
 		log: console,
 	});
 
+	const config = new Config(configPath);
+
 	config
-		.load(configPath)
+		.load()
 		.then((c) => {
 			core.info(`config: ${JSON.stringify(c, null, "  ")}`);
 			return fetchAll(octokit, c);

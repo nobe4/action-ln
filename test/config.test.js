@@ -1,4 +1,4 @@
-const config = require("../src/config");
+const { Config, ValidationError } = require("../src/config");
 const yaml = require("js-yaml");
 
 const github = require("@actions/github");
@@ -17,24 +17,26 @@ describe("config", () => {
 	describe("read", () => {
 		test("missing file", () => {
 			return expect(
-				config.read("./test/fixtures/config/not_a_file"),
+				new Config("./test/fixtures/config/not_a_file").read(),
 			).rejects.toThrow(/ENOENT: no such file or directory, open /);
 		});
 
 		test("not a YAML file", () => {
 			return expect(
-				config.read("./test/fixtures/config/not_yaml.txt"),
+				new Config("./test/fixtures/config/not_yaml.txt").read(),
 			).rejects.toThrow(yaml.YAMLException);
 		});
 
 		test("invalid YAML config", () => {
 			return expect(
-				config.read("./test/fixtures/config/invalid_config.yaml"),
+				new Config("./test/fixtures/config/invalid_config.yaml").read(),
 			).resolves.not.toBeNull();
 		});
 	});
 
 	describe("validate", () => {
+		let c = new Config();
+
 		describe("fails", () => {
 			it.each([
 				null,
@@ -102,18 +104,19 @@ describe("config", () => {
 						},
 					],
 				},
-			])("%# %j", (c) => {
-				return expect(config.validate(c)).rejects.toBeInstanceOf(
-					config.ValidationError,
-				);
+			])("%# %j", (data) => {
+				c.data = data;
+				// Gotcha: c needs to keep its `this`, so wrapping it let it
+				// keeps it.
+				return expect(() => c.validate()).toThrow(ValidationError);
 			});
 		});
 
 		describe("succeeds", () => {
 			it.each([
-				{ c: { links: [] }, want: { links: [] } },
+				{ data: { links: [] }, want: { links: [] } },
 				{
-					c: {
+					data: {
 						links: [
 							{
 								from: { path: "a/b" },
@@ -143,7 +146,7 @@ describe("config", () => {
 					},
 				},
 				{
-					c: {
+					data: {
 						links: [
 							{
 								from: {
@@ -178,8 +181,9 @@ describe("config", () => {
 						],
 					},
 				},
-			])("%# %j", ({ c, want }) => {
-				return expect(config.validate(c)).resolves.toStrictEqual(want);
+			])("%# %j", ({ data, want }) => {
+				c.data = data;
+				return expect(c.validate()).toStrictEqual(want);
 			});
 		});
 	});
