@@ -19,7 +19,7 @@ class Config {
 	async load() {
 		core.notice(`Using config file: ${this.path}`);
 
-		return this.read().then(() => this.validate());
+		return this.read().then(() => this.parse());
 	}
 
 	async read() {
@@ -29,8 +29,8 @@ class Config {
 			.then((data) => (this.data = data));
 	}
 
-	validate() {
-		if (this.data == null) {
+	parse() {
+		if (!this.data) {
 			throw new ValidationError("config must not be null");
 		}
 
@@ -43,10 +43,10 @@ class Config {
 		}
 
 		this.data.links.forEach((l, i) => {
-			this.data.links[i] = new Link(l);
+			this.data.links[i] = new Link(l).parse();
 		});
 
-		return this.data;
+		return this;
 	}
 }
 
@@ -72,7 +72,7 @@ class Link {
 		this.data.from = new Location(this.raw.from).parse();
 		this.data.to = new Location(this.raw.to).parse();
 
-		return this.data;
+		return this;
 	}
 }
 
@@ -90,7 +90,7 @@ class Location {
 		this.parsePath();
 		this.parseRepo();
 
-		return this.data;
+		return this;
 	}
 
 	parsePath() {
