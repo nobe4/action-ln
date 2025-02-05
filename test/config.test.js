@@ -179,6 +179,34 @@ describe("Link", () => {
 			});
 		});
 	});
+
+	describe("needsUpdate", () => {
+		describe("fails", () => {
+			it.each([
+				{ from: {} },
+				{ to: {} },
+				{ from: {}, to: {} },
+				{ from: {}, to: { content: "a" } },
+				{ from: { content: "" }, to: {} },
+			])("%# %p", ({ from, to }) => {
+				l.from = from;
+				l.to = to;
+				return expect(() => l.needsUpdate).toThrow(ValidationError);
+			});
+		});
+
+		describe("succeeds", () => {
+			it.each([
+				{ from: { content: "a" }, to: {}, want: true },
+				{ from: { content: "a" }, to: { content: "a" }, want: false },
+				{ from: { content: "a" }, to: { content: "b" }, want: true },
+			])("%# %p", ({ from, to, want }) => {
+				l.from = from;
+				l.to = to;
+				return expect(l.needsUpdate).toBe(want);
+			});
+		});
+	});
 });
 
 describe("File", () => {
