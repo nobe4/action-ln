@@ -1,20 +1,25 @@
 const { Config, Link, Location, ValidationError } = require("../src/config");
 const yaml = require("js-yaml");
-
 const github = require("@actions/github");
-jest.mock("@actions/github");
-
-const defaultRepo = {
-	owner: "owner",
-	repo: "repo",
-};
-
-beforeEach(() => {
-	github.context = { repo: defaultRepo };
-});
 
 describe("Config", () => {
 	let c = new Config();
+
+	describe("load", () => {
+		test("calls read and parse", async () => {
+			const mockRead = jest
+				.spyOn(Config.prototype, "read")
+				.mockResolvedValue("read");
+
+			const mockParse = jest
+				.spyOn(Config.prototype, "parse")
+				.mockResolvedValue("parsed");
+
+			await expect(c.load()).resolves.toStrictEqual("parsed");
+			expect(mockRead).toHaveBeenCalled();
+			expect(mockParse).toHaveBeenCalled();
+		});
+	});
 
 	describe("read", () => {
 		test("missing file", () => {
@@ -167,6 +172,16 @@ describe("Location", () => {
 		});
 
 		describe("succeeds", () => {
+			const defaultRepo = {
+				owner: "owner",
+				repo: "repo",
+			};
+
+			jest.mock("@actions/github");
+			beforeEach(() => {
+				github.context = { repo: defaultRepo };
+			});
+
 			it.each([
 				{
 					raw: undefined,
