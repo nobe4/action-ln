@@ -15,12 +15,9 @@ try {
 
 	config
 		.load()
+		.then((c) => fetchAll(octokit, c))
 		.then((c) => {
-			core.info(`config: ${JSON.stringify(c, null, "  ")}`);
-			return fetchAll(octokit, c);
-		})
-		.then((c) => {
-			core.info(`config after fetch: ${JSON.stringify(c, null, "  ")}`);
+			core.info(`parsed and enriched config:\n${c}`);
 		})
 		.catch((e) => {
 			core.error(e);
