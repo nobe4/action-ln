@@ -37,7 +37,9 @@ class GitHub {
 
 	async createPRForLink(link) {
 		let baseBranch = "";
-		let headBranch = `link-${link.from.repo}-${link.from.path}`;
+		let headBranch = this.normalizeBranch(
+			`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
+		);
 		const newContent = this.createTree(link.to.path, link.from.content);
 
 		return this.getBaseBranch(link.to.repo)
@@ -61,6 +63,10 @@ class GitHub {
 					`failed to create PR for ${link.toString(true)}:\n${JSON.stringify(e)}`,
 				);
 			});
+	}
+
+	normalizeBranch(branch) {
+		return branch.replace(/[^a-zA-Z0-9]/g, "-");
 	}
 
 	async getBaseBranch({ owner, repo }) {
