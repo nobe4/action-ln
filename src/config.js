@@ -65,7 +65,13 @@ class Link {
 	}
 
 	toString() {
-		return `from:\n${indent(this.from.toString())}\nto:\n${indent(this.to.toString())}`;
+		return [
+			"from:",
+			indent(this.from.toString()),
+			"to:",
+			indent(this.to.toString()),
+			`needs update: ${this.needsUpdate}`,
+		].join("\n");
 	}
 
 	parse() {
@@ -86,6 +92,22 @@ class Link {
 
 		delete this.raw;
 		return this;
+	}
+
+	get needsUpdate() {
+		if (!this.from || !this.to) {
+			throw new ValidationError("`from` and `to` must be defined");
+		}
+
+		if (!this.from.content) {
+			throw new ValidationError("`from` must have a content");
+		}
+
+		if (!this.to.content) {
+			return true;
+		}
+
+		return this.from.content !== this.to.content;
 	}
 }
 
