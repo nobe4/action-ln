@@ -71,6 +71,7 @@ class Link {
 		this.from = new Location(this.raw.from).parse();
 		this.to = new Location(this.raw.to).parse();
 
+		delete this.raw;
 		return this;
 	}
 }
@@ -88,6 +89,7 @@ class Location {
 		this.parsePath();
 		this.parseRepo();
 
+		delete this.raw;
 		return this;
 	}
 
