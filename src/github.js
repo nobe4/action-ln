@@ -60,7 +60,7 @@ class GitHub {
 			)
 			.catch((e) => {
 				core.error(
-					`failed to create PR for ${link.toString(true)}:\n${JSON.stringify(e)}`,
+					`failed to create PR for ${link.toString(true)}: ${e} ${JSON.stringify(e)}`,
 				);
 			});
 	}
