@@ -13,6 +13,20 @@ try {
 		.load()
 		.then((c) => {
 			core.info(`config:\n${c}`);
+
+			const promises = [];
+			for (let link of c.data.links) {
+				core.debug(`link: ${link}`);
+
+				if (!link.needsUpdate) {
+					continue;
+				}
+
+				core.info(`updating: ${link}`);
+				promises.push(gh.createPRForLink(link));
+			}
+
+			return Promise.all(promises);
 		})
 		.catch((e) => {
 			core.error(e);

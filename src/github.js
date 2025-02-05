@@ -35,6 +35,29 @@ class GitHub {
 			});
 	}
 
+	async createPRForLink({ from, to }) {
+		let baseBranch = "";
+		let headBranch = `link-${from.repo}-${from.path}`;
+		const newContent = this.createTree(to.path, from.content);
+
+		return this.getBaseBranch(to.repo)
+			.then((b) => (baseBranch = b))
+			.then((b) => this.getBranch(to.repo, b))
+			.then((b) => this.createBranch(to.repo, headBranch, b.object.sha))
+			.then((b) => this.getCommit(to.repo, b.object.sha))
+			.then((c) => this.createCommit(to.repo, newContent, c))
+			.then((c) => this.updateRef(to.repo, headBranch, c.sha))
+			.then(() =>
+				this.pusher.createPullRequest(
+					to.repo,
+					headBranch,
+					baseBranch,
+					"body test",
+					"title test",
+				),
+			);
+	}
+
 	async getBaseBranch({ owner, repo }) {
 		return this.octokit.rest.repos
 			.get({ owner: owner, repo: repo })
@@ -72,7 +95,7 @@ class GitHub {
 			.then(({ data }) => data);
 	}
 
-	createTreeHash(path, content) {
+	createTree(path, content) {
 		return [
 			{
 				path: path,
