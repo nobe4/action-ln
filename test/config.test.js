@@ -1,4 +1,4 @@
-const { Config, Location, ValidationError } = require("../src/config");
+const { Config, Link, Location, ValidationError } = require("../src/config");
 const yaml = require("js-yaml");
 
 const github = require("@actions/github");
@@ -184,6 +184,34 @@ describe("Config", () => {
 			])("%# %j", ({ data, want }) => {
 				c.data = data;
 				return expect(c.validate()).toStrictEqual(want);
+			});
+		});
+	});
+});
+
+describe("Link", () => {
+	let l = new Link();
+
+	describe("parse", () => {
+		describe("fails", () => {
+			it.each([undefined, "a", 1, {}, { from: {} }, { to: {} }])(
+				"%# %p",
+				(raw) => {
+					l.raw = raw;
+					return expect(() => l.parse()).toThrow(ValidationError);
+				},
+			);
+		});
+
+		describe("succeeds", () => {
+			it.each([{ from: {}, to: {} }])("%# %p", (raw) => {
+				const mockLocationParse = jest
+					.spyOn(Location.prototype, "parse")
+					.mockImplementation(() => "parsed");
+
+				l.raw = raw;
+				expect(l.parse()).toStrictEqual({ from: "parsed", to: "parsed" });
+				expect(mockLocationParse).toHaveBeenCalled();
 			});
 		});
 	});

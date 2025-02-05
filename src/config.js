@@ -51,13 +51,13 @@ class Config {
 }
 
 class Link {
-	contructor(raw) {
+	constructor(raw) {
 		this.raw = raw;
 		this.data = {};
 	}
 
 	parse() {
-		if (typeof this.raw !== "object") {
+		if (!this.raw || typeof this.raw !== "object") {
 			throw new ValidationError("`links` must be an array of objects");
 		}
 
@@ -69,8 +69,10 @@ class Link {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.data.from = new Location(this.raw.from);
-		this.data.to = new Location(this.raw.to);
+		this.data.from = new Location(this.raw.from).parse();
+		this.data.to = new Location(this.raw.to).parse();
+
+		return this.data;
 	}
 }
 
