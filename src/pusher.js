@@ -75,12 +75,12 @@ async function createCommit(octokit, { owner, repo }, tree, parent) {
 		.then(({ data }) => data);
 }
 
-async function updateRef(octokit, { owner, repo }, ref, sha) {
+async function updateBranch(octokit, { owner, repo }, branch, sha) {
 	return octokit.rest.git
 		.updateRef({
 			owner: owner,
 			repo: repo,
-			ref: `heads/${ref}`, // TODO: make  this consistent
+			ref: `heads/${branch}`, // TODO: make  this consistent
 			sha: sha,
 		})
 		.then(({ data }) => data);
@@ -114,5 +114,5 @@ module.exports = {
 	createTreeHash,
 	createBranch,
 	createPullRequest,
-	updateRef,
+	updateRef: updateBranch,
 };
