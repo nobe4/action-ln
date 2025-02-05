@@ -50,7 +50,7 @@ class GitHub {
 			.then((c) => this.createCommit(link.to.repo, newContent, c))
 			.then((c) => this.updateRef(link.to.repo, headBranch, c.sha))
 			.then(() =>
-				this.pusher.createPullRequest(
+				this.createPullRequest(
 					link.to.repo,
 					headBranch,
 					baseBranch,
