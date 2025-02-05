@@ -10,9 +10,6 @@ jest.mock("js-yaml");
 const { Config, Link, File, ValidationError } = require("../src/config");
 const { dedent } = require("../src/utils");
 
-const { GitHub } = require("../src/github");
-jest.mock("../src/github");
-
 describe("Config", () => {
 	let c = new Config();
 
@@ -144,12 +141,6 @@ describe("Config", () => {
 			};
 		});
 
-		afterEach(() => {
-			files.forEach((f) =>
-				expect(mockGithub.getContents).toHaveBeenCalledWith(f),
-			);
-		});
-
 		describe("fails", () => {
 			it("getContents fails for one file", async () => {
 				mockGithub.getContents.mockImplementation((file) => {
@@ -164,6 +155,9 @@ describe("Config", () => {
 				await expect(() => c.getContents()).rejects.toThrow(
 					/Error getting contents/,
 				);
+				files.forEach((f) =>
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
+				);
 			});
 		});
 
@@ -175,6 +169,9 @@ describe("Config", () => {
 
 				await expect(c.getContents()).resolves.toEqual(c);
 				files.forEach((f, i) => expect(f.content).toEqual(i));
+				files.forEach((f) =>
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
+				);
 			});
 		});
 	});
