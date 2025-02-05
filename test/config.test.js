@@ -13,11 +13,20 @@ describe("Config", () => {
 			l1.from.repo = { repo: "repo", owner: "owner" };
 			l1.from.path = "path";
 			l1.from.content = "content";
-			l1.to = "to";
+			l1.to = new File();
+			l1.to.repo = { repo: "repo", owner: "owner" };
+			l1.to.path = "path";
+			l1.to.content = "content";
 
 			const l2 = new Link();
-			l2.from = "from2";
-			l2.to = "to2";
+			l2.from = new File();
+			l2.from.repo = { repo: "repo", owner: "owner" };
+			l2.from.path = "path";
+			l2.from.content = "content";
+			l2.to = new File();
+			l2.to.repo = { repo: "repo", owner: "owner" };
+			l2.to.path = "path";
+			l2.to.content = "other content";
 
 			c.data.links = [l1, l2];
 			c.path = "path";
@@ -32,12 +41,17 @@ describe("Config", () => {
 					        owner/repo:path
 					        content
 					    to:
-					        to
+					        owner/repo:path
+					        content
+					    needs update: false
 					  -
 					    from:
-					        from2
+					        owner/repo:path
+					        content
 					    to:
-					        to2
+					        owner/repo:path
+					        other content
+					    needs update: true
 					`,
 				).trim(),
 			);
@@ -118,9 +132,25 @@ describe("Link", () => {
 
 	describe("toString", () => {
 		it("formats correctly", () => {
-			l.from = "from";
-			l.to = "to";
-			expect(l.toString()).toStrictEqual("from:\n    from\nto:\n    to");
+			l.from = new File();
+			l.from.repo = { repo: "repo", owner: "owner" };
+			l.from.path = "path";
+			l.from.content = "content";
+			l.to = new File();
+			l.to.repo = { repo: "repo", owner: "owner" };
+			l.to.path = "path";
+			l.to.content = "content";
+			expect(l.toString()).toStrictEqual(
+				dedent(`
+				from:
+				    owner/repo:path
+				    content
+				to:
+				    owner/repo:path
+				    content
+				needs update: false
+				`).trim(),
+			);
 		});
 	});
 
