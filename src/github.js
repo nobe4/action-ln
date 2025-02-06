@@ -8,6 +8,7 @@ class GitHub {
 		});
 	}
 
+	// TODO: research what's the best interface for this method.
 	async getContents({ repo: { owner, repo }, path }) {
 		core.debug(`fetching ${owner}/${repo}:${path}`);
 
@@ -31,36 +32,6 @@ class GitHub {
 				// However, any non-404 error is a real problem.
 				core.setFailed(
 					`failed to fetch ${owner}/${repo}:${path}: ${JSON.stringify(e)}`,
-				);
-			});
-	}
-
-	async createPRForLink(link) {
-		let baseBranch = "";
-		let headBranch = this.normalizeBranch(
-			`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
-		);
-		const newContent = this.createTree(link.to.path, link.from.content);
-
-		return this.getBaseBranch(link.to.repo)
-			.then((b) => (baseBranch = b))
-			.then((b) => this.getBranch(link.to.repo, b))
-			.then((b) => this.createBranch(link.to.repo, headBranch, b.object.sha))
-			.then((b) => this.getCommit(link.to.repo, b.object.sha))
-			.then((c) => this.createCommit(link.to.repo, newContent, c))
-			.then((c) => this.updateBranch(link.to.repo, headBranch, c.sha))
-			.then(() =>
-				this.createPullRequest(
-					link.to.repo,
-					headBranch,
-					baseBranch,
-					"TODO",
-					"TODO",
-				),
-			)
-			.catch((e) => {
-				core.setFailed(
-					`failed to create PR for ${link.toString(true)}: ${e} ${JSON.stringify(e)}`,
 				);
 			});
 	}

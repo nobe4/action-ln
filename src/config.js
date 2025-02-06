@@ -1,7 +1,6 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
+const currentRepo = require("@actions/github").context.repo;
 const yaml = require("js-yaml");
-const fs = require("fs/promises");
 const { indent } = require("./utils");
 
 class ValidationError extends Error {
@@ -12,9 +11,9 @@ class ValidationError extends Error {
 }
 
 class Config {
-	constructor(path, github) {
+	constructor(path, gh) {
 		this.path = path;
-		this.github = github;
+		this.gh = gh;
 		this.data = {};
 	}
 
@@ -27,10 +26,12 @@ class Config {
 	}
 
 	async load() {
-		core.notice(`Using config file: ${this.path}`);
+		core.notice(
+			`Using config file: ${currentRepo.owner}/${currentRepo.repo}:${this.path}`,
+		);
 
-		return fs
-			.readFile(this.path, "utf8")
+		return this.gh
+			.getContents({ repo: currentRepo, path: this.path })
 			.then(yaml.load)
 			.then((data) => (this.data = data))
 			.then(() => this.parse())
@@ -42,12 +43,12 @@ class Config {
 
 		for (let i in this.data.links) {
 			promises.push(
-				this.github.getContents(this.data.links[i].from).then((c) => {
+				this.gh.getContents(this.data.links[i].from).then((c) => {
 					this.data.links[i].from.content = c;
 				}),
 			);
 			promises.push(
-				this.github.getContents(this.data.links[i].to).then((c) => {
+				this.gh.getContents(this.data.links[i].to).then((c) => {
 					this.data.links[i].to.content = c;
 				}),
 			);
@@ -174,7 +175,7 @@ class File {
 
 	parseRepo(raw) {
 		if (!("repo" in raw) || !raw.repo) {
-			return (this.repo = github.context.repo);
+			return (this.repo = currentRepo);
 		}
 
 		if (typeof raw.repo === "object") {

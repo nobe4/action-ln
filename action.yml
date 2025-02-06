@@ -9,7 +9,7 @@ inputs:
   config-path:
     description: Relative path to the config file.
     required: true
-    default: ./ln-config.yaml
+    default: ln-config.yaml
 
 runs:
   using: node20

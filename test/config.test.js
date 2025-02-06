@@ -1,8 +1,5 @@
-const github = require("@actions/github");
-jest.mock("@actions/github");
-
-const fs = require("fs/promises");
-jest.mock("fs/promises");
+const currentRepo = { owner: "owner", repo: "repo" };
+jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
 const yaml = require("js-yaml");
 jest.mock("js-yaml");
@@ -71,20 +68,26 @@ describe("Config", () => {
 	});
 
 	describe("load", () => {
+		const mockGH = { getContents: jest.fn() };
+
 		describe("fails", () => {
+			beforeEach(() => {
+				c.gh = mockGH;
+			});
+
 			it("cannot read", () => {
-				fs.readFile.mockRejectedValue(new Error("ENOENT"));
+				c.gh.getContents.mockRejectedValue(new Error("ENOENT"));
 				return expect(c.load()).rejects.toThrow(/ENOENT/);
 			});
 
 			it("cannot load YAML", () => {
-				fs.readFile.mockResolvedValue("content");
+				c.gh.getContents.mockResolvedValue("content");
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
 				return expect(c.load()).rejects.toThrow(/Invalid YAML/);
 			});
 
 			it("cannot parse", () => {
-				fs.readFile.mockResolvedValue("content");
+				c.gh.getContents.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
@@ -93,7 +96,7 @@ describe("Config", () => {
 			});
 
 			it("cannot getContents", () => {
-				fs.readFile.mockResolvedValue("content");
+				c.gh.getContents.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
@@ -105,7 +108,7 @@ describe("Config", () => {
 
 		describe("succeeds", () => {
 			it("read, load, parse, and getContents", async () => {
-				fs.readFile.mockResolvedValue("content");
+				c.gh.getContents.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				const mockParse = jest
 					.spyOn(Config.prototype, "parse")
@@ -131,7 +134,7 @@ describe("Config", () => {
 				new File({ content: 2 }),
 				new File({ content: 3 }),
 			];
-			c.github = mockGithub;
+			c.gh = mockGithub;
 			c.data = {
 				links: [
 					new Link({ from: files[0], to: files[1] }),
@@ -370,23 +373,14 @@ describe("File", () => {
 		});
 
 		describe("succeeds", () => {
-			const defaultRepo = {
-				owner: "owner",
-				repo: "repo",
-			};
-
-			beforeEach(() => {
-				github.context = { repo: defaultRepo };
-			});
-
 			it.each([
 				{
 					raw: undefined,
-					want: defaultRepo,
+					want: currentRepo,
 				},
 				{
 					raw: "",
-					want: defaultRepo,
+					want: currentRepo,
 				},
 				{
 					raw: "owner/repo",
