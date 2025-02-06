@@ -8,6 +8,7 @@ class GitHub {
 		});
 	}
 
+	// TODO: research what's the best interface for this method.
 	async getContents({ repo: { owner, repo }, path }) {
 		core.debug(`fetching ${owner}/${repo}:${path}`);
 
