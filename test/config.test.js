@@ -1,6 +1,13 @@
-const { Config, Link, File, ValidationError } = require("../src/config");
-const yaml = require("js-yaml");
 const github = require("@actions/github");
+jest.mock("@actions/github");
+
+const fs = require("fs/promises");
+jest.mock("fs/promises");
+
+const yaml = require("js-yaml");
+jest.mock("js-yaml");
+
+const { Config, Link, File, ValidationError } = require("../src/config");
 const { dedent } = require("../src/utils");
 
 describe("Config", () => {
@@ -64,37 +71,108 @@ describe("Config", () => {
 	});
 
 	describe("load", () => {
-		test("calls read and parse", async () => {
-			const mockRead = jest
-				.spyOn(Config.prototype, "read")
-				.mockResolvedValue("read");
+		describe("fails", () => {
+			it("cannot read", () => {
+				fs.readFile.mockRejectedValue(new Error("ENOENT"));
+				return expect(c.load()).rejects.toThrow(/ENOENT/);
+			});
 
-			const mockParse = jest
-				.spyOn(Config.prototype, "parse")
-				.mockResolvedValue("parsed");
+			it("cannot load YAML", () => {
+				fs.readFile.mockResolvedValue("content");
+				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
+				return expect(c.load()).rejects.toThrow(/Invalid YAML/);
+			});
 
-			await expect(c.load()).resolves.toStrictEqual("parsed");
-			expect(mockRead).toHaveBeenCalled();
-			expect(mockParse).toHaveBeenCalled();
+			it("cannot parse", () => {
+				fs.readFile.mockResolvedValue("content");
+				yaml.load.mockResolvedValue("yaml");
+				jest
+					.spyOn(Config.prototype, "parse")
+					.mockRejectedValue(new Error("Invalid config"));
+				return expect(c.load()).rejects.toThrow(/Invalid config/);
+			});
+
+			it("cannot getContents", () => {
+				fs.readFile.mockResolvedValue("content");
+				yaml.load.mockResolvedValue("yaml");
+				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
+				jest
+					.spyOn(Config.prototype, "getContents")
+					.mockRejectedValue(new Error("Error getting contents"));
+				return expect(c.load()).rejects.toThrow(/Error getting contents/);
+			});
+		});
+
+		describe("succeeds", () => {
+			it("read, load, parse, and getContents", async () => {
+				fs.readFile.mockResolvedValue("content");
+				yaml.load.mockResolvedValue("yaml");
+				const mockParse = jest
+					.spyOn(Config.prototype, "parse")
+					.mockResolvedValue("data");
+				const mockGetContents = jest
+					.spyOn(Config.prototype, "getContents")
+					.mockResolvedValue("data");
+				await expect(c.load()).resolves.toEqual("data");
+				expect(mockParse).toHaveBeenCalled();
+				expect(mockGetContents).toHaveBeenCalled();
+			});
 		});
 	});
 
-	describe("read", () => {
-		test("missing file", () => {
-			c.path = "./test/fixtures/config/not_a_file";
-			return expect(c.read()).rejects.toThrow(
-				/ENOENT: no such file or directory, open /,
-			);
+	describe("getContents", () => {
+		const mockGithub = { getContents: jest.fn() };
+		let files = [];
+
+		beforeEach(() => {
+			files = [
+				new File({ content: 0 }),
+				new File({ content: 1 }),
+				new File({ content: 2 }),
+				new File({ content: 3 }),
+			];
+			c.github = mockGithub;
+			c.data = {
+				links: [
+					new Link({ from: files[0], to: files[1] }),
+					new Link({ from: files[0], to: files[2] }),
+					new Link({ from: files[1], to: files[3] }),
+				],
+			};
 		});
 
-		test("not a YAML file", () => {
-			c.path = "./test/fixtures/config/not_yaml.txt";
-			return expect(c.read()).rejects.toThrow(yaml.YAMLException);
+		describe("fails", () => {
+			it("getContents fails for one file", async () => {
+				mockGithub.getContents.mockImplementation((file) => {
+					return new Promise((resolve) => {
+						if (file == files[1]) {
+							throw new Error("Error getting contents");
+						}
+						resolve("content");
+					});
+				});
+
+				await expect(() => c.getContents()).rejects.toThrow(
+					/Error getting contents/,
+				);
+				files.forEach((f) =>
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
+				);
+			});
 		});
 
-		test("invalid YAML config", () => {
-			c.path = "./test/fixtures/config/invalid_config.yaml";
-			return expect(c.read()).resolves.not.toBeNull();
+		describe("succeeds", () => {
+			it("fills all the links correctly", async () => {
+				mockGithub.getContents.mockImplementation((file) =>
+					Promise.resolve(file.content),
+				);
+
+				await expect(c.getContents()).resolves.toEqual(c);
+				files.forEach((f, i) => expect(f.content).toEqual(i));
+				files.forEach((f) =>
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
+				);
+			});
 		});
 	});
 
@@ -297,7 +375,6 @@ describe("File", () => {
 				repo: "repo",
 			};
 
-			jest.mock("@actions/github");
 			beforeEach(() => {
 				github.context = { repo: defaultRepo };
 			});

@@ -1,7 +1,7 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const yaml = require("js-yaml");
-const fs = require("fs");
+const fs = require("fs/promises");
 const { indent } = require("./utils");
 
 class ValidationError extends Error {
@@ -12,8 +12,9 @@ class ValidationError extends Error {
 }
 
 class Config {
-	constructor(path) {
+	constructor(path, github) {
 		this.path = path;
+		this.github = github;
 		this.data = {};
 	}
 
@@ -28,14 +29,31 @@ class Config {
 	async load() {
 		core.notice(`Using config file: ${this.path}`);
 
-		return this.read().then(() => this.parse());
-	}
-
-	async read() {
-		return fs.promises
+		return fs
 			.readFile(this.path, "utf8")
 			.then(yaml.load)
-			.then((data) => (this.data = data));
+			.then((data) => (this.data = data))
+			.then(() => this.parse())
+			.then(() => this.getContents());
+	}
+
+	async getContents() {
+		const promises = [];
+
+		for (let i in this.data.links) {
+			promises.push(
+				this.github.getContents(this.data.links[i].from).then((c) => {
+					this.data.links[i].from.content = c;
+				}),
+			);
+			promises.push(
+				this.github.getContents(this.data.links[i].to).then((c) => {
+					this.data.links[i].to.content = c;
+				}),
+			);
+		}
+
+		return Promise.all(promises).then(() => this);
 	}
 
 	parse() {
@@ -65,7 +83,11 @@ class Link {
 		this.to = to;
 	}
 
-	toString() {
+	toString(short = false) {
+		if (short) {
+			return `${this.from.repo.owner}/${this.from.repo.repo}:${this.from.path} -> ${this.to.repo.owner}/${this.to.repo.repo}:${this.to.path}`;
+		}
+
 		return [
 			"from:",
 			indent(this.from.toString()),
@@ -88,8 +110,8 @@ class Link {
 			throw new ValidationError("`to` must be present");
 		}
 
-		this.from = new File(raw.from).parse();
-		this.to = new File(raw.to).parse();
+		this.from = new File().parse(raw.from);
+		this.to = new File().parse(raw.to);
 
 		return this;
 	}
