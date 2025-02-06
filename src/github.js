@@ -35,36 +35,6 @@ class GitHub {
 			});
 	}
 
-	async createPRForLink(link) {
-		let baseBranch = "";
-		let headBranch = this.normalizeBranch(
-			`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
-		);
-		const newContent = this.createTree(link.to.path, link.from.content);
-
-		return this.getBaseBranch(link.to.repo)
-			.then((b) => (baseBranch = b))
-			.then((b) => this.getBranch(link.to.repo, b))
-			.then((b) => this.createBranch(link.to.repo, headBranch, b.object.sha))
-			.then((b) => this.getCommit(link.to.repo, b.object.sha))
-			.then((c) => this.createCommit(link.to.repo, newContent, c))
-			.then((c) => this.updateBranch(link.to.repo, headBranch, c.sha))
-			.then(() =>
-				this.createPullRequest(
-					link.to.repo,
-					headBranch,
-					baseBranch,
-					"TODO",
-					"TODO",
-				),
-			)
-			.catch((e) => {
-				core.setFailed(
-					`failed to create PR for ${link.toString(true)}: ${e} ${JSON.stringify(e)}`,
-				);
-			});
-	}
-
 	normalizeBranch(branch) {
 		return branch.replace(/[^a-zA-Z0-9]/g, "-");
 	}
