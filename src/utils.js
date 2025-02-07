@@ -20,4 +20,8 @@ function dedent(str) {
 		.join("\n");
 }
 
-module.exports = { indent, dedent };
+function jsonError(e) {
+	return JSON.stringify(e, Object.getOwnPropertyNames(e));
+}
+
+module.exports = { indent, dedent, jsonError };
