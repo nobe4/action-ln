@@ -1,11 +1,27 @@
 const core = require("@actions/core");
 const { getOctokit } = require("@actions/github");
+const { jsonError } = require("./utils");
 
 class GitHub {
 	constructor(token) {
 		this.octokit = getOctokit(token, {
 			log: console,
 		});
+	}
+
+	normalizeBranch(branch) {
+		return branch.replace(/[^a-zA-Z0-9]/g, "-");
+	}
+
+	createTree(path, content) {
+		return [
+			{
+				path: path,
+				content: content,
+				mode: "100644", // TODO: this needs to be set by the `from`
+				type: "blob",
+			},
+		];
 	}
 
 	async getContent({ owner, repo }, path) {
@@ -30,13 +46,11 @@ class GitHub {
 
 				// However, any non-404 error is a real problem.
 				core.setFailed(
-					`failed to fetch ${owner}/${repo}:${path}: ${JSON.stringify(e)}`,
+					`failed to fetch ${owner}/${repo}:${path}: ${jsonError(e)}`,
 				);
-			});
-	}
 
-	normalizeBranch(branch) {
-		return branch.replace(/[^a-zA-Z0-9]/g, "-");
+				throw e;
+			});
 	}
 
 	async getBaseBranch({ owner, repo }) {
@@ -76,17 +90,6 @@ class GitHub {
 			.then(({ data }) => data);
 	}
 
-	createTree(path, content) {
-		return [
-			{
-				path: path,
-				content: content,
-				mode: "100644", // TODO: this needs to be set by the `from`
-				type: "blob",
-			},
-		];
-	}
-
 	async createCommit({ owner, repo }, tree, parent) {
 		return this.octokit.rest.git
 			.createTree({
@@ -112,7 +115,7 @@ class GitHub {
 			.updateRef({
 				owner: owner,
 				repo: repo,
-				ref: `heads/${branch}`, // TODO: make  this consistent
+				ref: `heads/${branch}`,
 				sha: sha,
 			})
 			.then(({ data }) => data);
