@@ -129,10 +129,10 @@ describe("Config", () => {
 
 		beforeEach(() => {
 			files = [
-				new File({ content: 0 }),
-				new File({ content: 1 }),
-				new File({ content: 2 }),
-				new File({ content: 3 }),
+				new File({ path: "0", repo: "0" }),
+				new File({ path: "1", repo: "1" }),
+				new File({ path: "2", repo: "2" }),
+				new File({ path: "3", repo: "3" }),
 			];
 			c.gh = mockGithub;
 			c.data = {
@@ -146,12 +146,12 @@ describe("Config", () => {
 
 		describe("fails", () => {
 			it("getContents fails for one file", async () => {
-				mockGithub.getContents.mockImplementation((file) => {
+				mockGithub.getContents.mockImplementation((repo, path) => {
 					return new Promise((resolve) => {
-						if (file == files[1]) {
+						if (path == "1") {
 							throw new Error("Error getting contents");
 						}
-						resolve("content");
+						resolve(repo + path);
 					});
 				});
 
@@ -159,22 +159,22 @@ describe("Config", () => {
 					/Error getting contents/,
 				);
 				files.forEach((f) =>
-					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f.repo, f.path),
 				);
 			});
 		});
 
 		describe("succeeds", () => {
 			it("fills all the links correctly", async () => {
-				mockGithub.getContents.mockImplementation((file) =>
-					Promise.resolve(file.content),
+				mockGithub.getContents.mockImplementation((repo, path) =>
+					Promise.resolve(repo + path),
 				);
 
 				await expect(c.getContents()).resolves.toEqual(c);
-				files.forEach((f, i) => expect(f.content).toEqual(i));
-				files.forEach((f) =>
-					expect(mockGithub.getContents).toHaveBeenCalledWith(f),
-				);
+				files.forEach((f) => {
+					expect(f.content).toEqual(f.repo + f.path);
+					expect(mockGithub.getContents).toHaveBeenCalledWith(f.repo, f.path);
+				});
 			});
 		});
 	});

@@ -1,15 +1,14 @@
 const core = require("@actions/core");
-const github = require("@actions/github");
+const { getOctokit } = require("@actions/github");
 
 class GitHub {
 	constructor(token) {
-		this.octokit = github.getOctokit(token, {
+		this.octokit = getOctokit(token, {
 			log: console,
 		});
 	}
 
-	// TODO: research what's the best interface for this method.
-	async getContents({ repo: { owner, repo }, path }) {
+	async getContents({ owner, repo }, path) {
 		core.debug(`fetching ${owner}/${repo}:${path}`);
 
 		return this.octokit.rest.repos

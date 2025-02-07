@@ -31,7 +31,7 @@ class Config {
 		);
 
 		return this.gh
-			.getContents({ repo: currentRepo, path: this.path })
+			.getContents(currentRepo, this.path)
 			.then(yaml.load)
 			.then((data) => (this.data = data))
 			.then(() => this.parse())
@@ -42,13 +42,15 @@ class Config {
 		const promises = [];
 
 		for (let i in this.data.links) {
+			let link = this.data.links[i];
+
 			promises.push(
-				this.gh.getContents(this.data.links[i].from).then((c) => {
+				this.gh.getContents(link.from.repo, link.from.path).then((c) => {
 					this.data.links[i].from.content = c;
 				}),
 			);
 			promises.push(
-				this.gh.getContents(this.data.links[i].to).then((c) => {
+				this.gh.getContents(link.to.repo, link.to.path).then((c) => {
 					this.data.links[i].to.content = c;
 				}),
 			);
