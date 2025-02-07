@@ -10,6 +10,10 @@ const { dedent } = require("../src/utils");
 describe("Config", () => {
 	let c = new Config();
 
+	beforeEach(() => {
+		c.gh = { getContent: jest.fn() };
+	});
+
 	describe("toString", () => {
 		it("formats correctly", () => {
 			const l1 = new Link({
@@ -68,26 +72,20 @@ describe("Config", () => {
 	});
 
 	describe("load", () => {
-		const mockGH = { getContents: jest.fn() };
-
 		describe("fails", () => {
-			beforeEach(() => {
-				c.gh = mockGH;
-			});
-
 			it("cannot read", () => {
-				c.gh.getContents.mockRejectedValue(new Error("ENOENT"));
+				c.gh.getContent.mockRejectedValue(new Error("ENOENT"));
 				return expect(c.load()).rejects.toThrow(/ENOENT/);
 			});
 
 			it("cannot load YAML", () => {
-				c.gh.getContents.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
 				return expect(c.load()).rejects.toThrow(/Invalid YAML/);
 			});
 
 			it("cannot parse", () => {
-				c.gh.getContents.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
@@ -96,7 +94,7 @@ describe("Config", () => {
 			});
 
 			it("cannot getContents", () => {
-				c.gh.getContents.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
@@ -108,7 +106,7 @@ describe("Config", () => {
 
 		describe("succeeds", () => {
 			it("read, load, parse, and getContents", async () => {
-				c.gh.getContents.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				const mockParse = jest
 					.spyOn(Config.prototype, "parse")
@@ -124,7 +122,6 @@ describe("Config", () => {
 	});
 
 	describe("getContents", () => {
-		const mockGithub = { getContents: jest.fn() };
 		let files = [];
 
 		beforeEach(() => {
@@ -134,7 +131,6 @@ describe("Config", () => {
 				new File({ path: "2", repo: "2" }),
 				new File({ path: "3", repo: "3" }),
 			];
-			c.gh = mockGithub;
 			c.data = {
 				links: [
 					new Link({ from: files[0], to: files[1] }),
@@ -146,7 +142,7 @@ describe("Config", () => {
 
 		describe("fails", () => {
 			it("getContents fails for one file", async () => {
-				mockGithub.getContents.mockImplementation((repo, path) => {
+				c.gh.getContent.mockImplementation((repo, path) => {
 					return new Promise((resolve) => {
 						if (path == "1") {
 							throw new Error("Error getting contents");
@@ -159,21 +155,21 @@ describe("Config", () => {
 					/Error getting contents/,
 				);
 				files.forEach((f) =>
-					expect(mockGithub.getContents).toHaveBeenCalledWith(f.repo, f.path),
+					expect(c.gh.getContent).toHaveBeenCalledWith(f.repo, f.path),
 				);
 			});
 		});
 
 		describe("succeeds", () => {
 			it("fills all the links correctly", async () => {
-				mockGithub.getContents.mockImplementation((repo, path) =>
+				c.gh.getContent.mockImplementation((repo, path) =>
 					Promise.resolve(repo + path),
 				);
 
 				await expect(c.getContents()).resolves.toEqual(c);
 				files.forEach((f) => {
 					expect(f.content).toEqual(f.repo + f.path);
-					expect(mockGithub.getContents).toHaveBeenCalledWith(f.repo, f.path);
+					expect(c.gh.getContent).toHaveBeenCalledWith(f.repo, f.path);
 				});
 			});
 		});

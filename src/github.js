@@ -8,7 +8,7 @@ class GitHub {
 		});
 	}
 
-	async getContents({ owner, repo }, path) {
+	async getContent({ owner, repo }, path) {
 		core.debug(`fetching ${owner}/${repo}:${path}`);
 
 		return this.octokit.rest.repos
