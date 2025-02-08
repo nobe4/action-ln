@@ -4,8 +4,12 @@ jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 const yaml = require("js-yaml");
 jest.mock("js-yaml");
 
-const { Config, Link, File, ValidationError } = require("../src/config");
 const { dedent } = require("../src/utils");
+
+const { Config, ParseError } = require("../src/config");
+
+const { Link } = require("../src/link");
+const { File } = require("../src/file");
 
 describe("Config", () => {
 	let c = new Config();
@@ -185,7 +189,7 @@ describe("Config", () => {
 				{ links: 1 },
 			])("%# %j", (data) => {
 				c.data = data;
-				expect(() => c.parse()).toThrow(ValidationError);
+				expect(() => c.parse()).toThrow(ParseError);
 			});
 		});
 
@@ -204,199 +208,6 @@ describe("Config", () => {
 				c.data = data;
 				expect(c.parse().data).toStrictEqual(want);
 				expect(mockLink).toHaveBeenCalled();
-			});
-		});
-	});
-});
-
-describe("Link", () => {
-	let l = new Link();
-
-	describe("toString", () => {
-		it("formats correctly", () => {
-			l.from = new File();
-			l.from.repo = { repo: "repo", owner: "owner" };
-			l.from.path = "path";
-			l.from.content = "content";
-			l.to = new File();
-			l.to.repo = { repo: "repo", owner: "owner" };
-			l.to.path = "path";
-			l.to.content = "content";
-			expect(l.toString()).toStrictEqual(
-				dedent(`
-				from:
-				    owner/repo:path
-				    content
-				to:
-				    owner/repo:path
-				    content
-				needs update: false
-				`).trim(),
-			);
-		});
-	});
-
-	describe("parse", () => {
-		describe("fails", () => {
-			it.each([undefined, "a", 1, {}, { from: {} }, { to: {} }])(
-				"%# %p",
-				(raw) => {
-					return expect(() => l.parse(raw)).toThrow(ValidationError);
-				},
-			);
-		});
-
-		describe("succeeds", () => {
-			it.each([{ from: {}, to: {} }])("%# %p", (raw) => {
-				const mockFileParse = jest
-					.spyOn(File.prototype, "parse")
-					.mockImplementation(() => "parsed");
-
-				l.parse(raw);
-				expect(l.from).toStrictEqual("parsed");
-				expect(l.to).toStrictEqual("parsed");
-				expect(mockFileParse).toHaveBeenCalled();
-			});
-		});
-	});
-
-	describe("needsUpdate", () => {
-		describe("fails", () => {
-			it.each([
-				{ from: {} },
-				{ to: {} },
-				{ from: {}, to: {} },
-				{ from: {}, to: { content: "a" } },
-				{ from: { content: "" }, to: {} },
-			])("%# %p", ({ from, to }) => {
-				l.from = from;
-				l.to = to;
-				return expect(() => l.needsUpdate).toThrow(ValidationError);
-			});
-		});
-
-		describe("succeeds", () => {
-			it.each([
-				{ from: { content: "a" }, to: {}, want: true },
-				{ from: { content: "a" }, to: { content: "a" }, want: false },
-				{ from: { content: "a" }, to: { content: "b" }, want: true },
-			])("%# %p", ({ from, to, want }) => {
-				l.from = from;
-				l.to = to;
-				return expect(l.needsUpdate).toBe(want);
-			});
-		});
-	});
-});
-
-describe("File", () => {
-	let l = new File();
-
-	describe("toString", () => {
-		it("formats correctly", () => {
-			l.repo = { repo: "repo", owner: "owner" };
-			l.path = "path";
-			expect(l.toString()).toStrictEqual("owner/repo:path");
-		});
-		it("formats correctly with a content", () => {
-			l.repo = { repo: "repo", owner: "owner" };
-			l.path = "path";
-			l.content = "some\ncontent";
-			expect(l.toString()).toStrictEqual("owner/repo:path\nsome\ncontent");
-		});
-	});
-
-	describe("parse", () => {
-		describe("fails", () => {
-			it.each([null, undefined, ""])("%# %p", (raw) => {
-				return expect(() => l.parse(raw)).toThrow(ValidationError);
-			});
-		});
-
-		describe("succeeds", () => {
-			it.each(["non-nil"])("%# %p", (raw) => {
-				const mockParsePath = jest
-					.spyOn(File.prototype, "parsePath")
-					.mockImplementation(() => {});
-
-				const mockParseRepo = jest
-					.spyOn(File.prototype, "parseRepo")
-					.mockImplementation(() => {});
-
-				expect(l.parse(raw)).toStrictEqual(l);
-				expect(mockParsePath).toHaveBeenCalled();
-				expect(mockParseRepo).toHaveBeenCalled();
-			});
-		});
-	});
-
-	describe("parsePath", () => {
-		describe("fails", () => {
-			it.each([null, undefined, "", "\n", "    ", " \t"])("%# %p", (raw) => {
-				return expect(() => l.parsePath({ path: raw })).toThrow(
-					ValidationError,
-				);
-			});
-		});
-
-		describe("succeeds", () => {
-			it.each([
-				{
-					raw: "a",
-					want: "a",
-				},
-			])("%# %p", ({ raw, want }) => {
-				return expect(l.parsePath({ path: raw })).toStrictEqual(want);
-			});
-		});
-	});
-
-	describe("parseRepo", () => {
-		describe("fails", () => {
-			it.each([
-				{ repo: "a" },
-				{ repo: "a/" },
-				{ repo: "/a" },
-				{ repo: "/" },
-				{ repo: {} },
-				{ repo: { owner: "" } },
-				{ repo: { repo: "" } },
-				{ repo: { repo: "", owner: undefined } },
-				{ repo: { repo: undefined, owner: "" } },
-			])("%# %p", (raw) => {
-				return expect(() => l.parseRepo(raw)).toThrow(ValidationError);
-			});
-		});
-
-		describe("succeeds", () => {
-			it.each([
-				{
-					raw: undefined,
-					want: currentRepo,
-				},
-				{
-					raw: "",
-					want: currentRepo,
-				},
-				{
-					raw: "owner/repo",
-					want: {
-						repo: "repo",
-						owner: "owner",
-					},
-				},
-				{
-					raw: {
-						repo: "repo",
-						owner: "owner",
-					},
-					want: {
-						repo: "repo",
-						owner: "owner",
-					},
-				},
-			])("%# %p", ({ raw, want }) => {
-				return expect(l.parseRepo({ repo: raw })).toStrictEqual(want);
 			});
 		});
 	});
