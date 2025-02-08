@@ -58,18 +58,29 @@ class GitHub {
 			});
 	}
 
-	async getBaseBranch({ owner, repo }) {
+	async getDefaultBranch(repo) {
+		let name = "";
+
+		return this.getDefaultBranchName(repo)
+			.then((n) => this.getBranch(repo, (name = n)))
+			.then(({ object: { sha } } = {}) => ({
+				name: name,
+				sha: sha,
+			}));
+	}
+
+	async getDefaultBranchName({ owner, repo }) {
 		return this.octokit.rest.repos
 			.get({ owner: owner, repo: repo })
 			.then(({ data }) => data.default_branch);
 	}
 
-	async getBranch({ owner, repo }, branch) {
+	async getBranch({ owner, repo }, name) {
 		return this.octokit.rest.git
 			.getRef({
 				owner: owner,
 				repo: repo,
-				ref: `heads/${branch}`,
+				ref: `heads/${name}`,
 			})
 			.then(({ data }) => data);
 	}

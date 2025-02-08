@@ -11,21 +11,25 @@ const path = "path";
 const prettyRepo = `${repo.owner}/${repo.repo}:${path}`;
 
 describe("GitHub", () => {
-	const g = new GitHub();
-	g.octokit = {
-		rest: {
-			git: {
-				createCommit: jest.fn(),
-				createRef: jest.fn(),
-				createTree: jest.fn(),
-				getCommit: jest.fn(),
-				getRef: jest.fn(),
-				updateRef: jest.fn(),
+	let g = undefined;
+
+	beforeEach(() => {
+		g = new GitHub();
+		g.octokit = {
+			rest: {
+				git: {
+					createCommit: jest.fn(),
+					createRef: jest.fn(),
+					createTree: jest.fn(),
+					getCommit: jest.fn(),
+					getRef: jest.fn(),
+					updateRef: jest.fn(),
+				},
+				pulls: { create: jest.fn() },
+				repos: { getContent: jest.fn(), get: jest.fn() },
 			},
-			pulls: { create: jest.fn() },
-			repos: { getContent: jest.fn(), get: jest.fn() },
-		},
-	};
+		};
+	});
 
 	describe("constructor", () => {
 		it("sets up the octokit client", () => {
@@ -107,14 +111,29 @@ describe("GitHub", () => {
 		});
 	});
 
+	describe("getDefaultBranch", () => {
+		it("fetches the default branch", async () => {
+			g.getDefaultBranchName = jest.fn().mockResolvedValue("main");
+			g.getBranch = jest.fn().mockResolvedValue({ object: { sha: 123 } });
+
+			await expect(g.getDefaultBranch(repo)).resolves.toEqual({
+				name: "main",
+				sha: 123,
+			});
+
+			expect(g.getDefaultBranchName).toHaveBeenCalledWith(repo);
+			expect(g.getBranch).toHaveBeenCalledWith(repo, "main");
+		});
+	});
+
 	// All tests after this one are just checking for proper calling. Since they
 	// do very little more than calling octokit and returning the data.
-	describe("getBaseBranch", () => {
+	describe("getDefaultBranchName", () => {
 		it("fetches the default branch", async () => {
 			g.octokit.rest.repos.get.mockResolvedValue({
 				data: { default_branch: "main" },
 			});
-			await expect(g.getBaseBranch(repo)).resolves.toEqual("main");
+			await expect(g.getDefaultBranchName(repo)).resolves.toEqual("main");
 			expect(g.octokit.rest.repos.get).toHaveBeenCalledWith(repo);
 		});
 	});
