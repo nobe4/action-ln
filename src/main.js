@@ -2,8 +2,6 @@ const core = require("@actions/core");
 const { Config } = require("./config");
 const { GitHub } = require("./github");
 
-console.log("not in dist");
-
 function main() {
 	try {
 		const configPath = core.getInput("config-path", { required: true });
