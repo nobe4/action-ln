@@ -6,12 +6,13 @@ const { Link, ParseError } = require("../src/link");
 const { File } = require("../src/file");
 const { dedent } = require("../src/utils");
 
-describe("Link", () => {
-	let l = new Link();
+describe("Link", () => 
 
-	it("fails on purpose", () => {
-		expect(1).toBe(2);
-	});
+
+
+
+{
+	let l = new Link();
 
 	describe("toString", () => {
 		it("formats correctly", () => {
