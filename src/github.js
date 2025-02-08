@@ -14,9 +14,9 @@ class GitHub {
 	}
 
 	async getContent({ owner, repo }, path, ref = undefined) {
-		const prettyRepo = `${owner}/${repo}:${path}@${ref}`;
+		const prettyFile = `${owner}/${repo}:${path}@${ref}`;
 
-		core.debug(`fetching ${prettyRepo}`);
+		core.debug(`fetching ${prettyFile}`);
 
 		return this.octokit.rest.repos
 			.getContent({
@@ -30,19 +30,19 @@ class GitHub {
 				sha: sha,
 			}))
 			.then((c) => {
-				core.debug(`fetched ${prettyRepo}: ${JSON.stringify(c)}`);
+				core.debug(`fetched ${prettyFile}: ${JSON.stringify(c)}`);
 				return c;
 			})
 			.catch((e) => {
 				// This can fail if the file is missing, or if the repo is not
 				// accessible. There's no way to differentiate that here.
 				if (e.status === 404) {
-					core.warning(`${prettyRepo} not found`);
+					core.warning(`${prettyFile} not found`);
 					return;
 				}
 
 				// However, any non-404 error is a real problem.
-				core.setFailed(`failed to fetch ${prettyRepo}: ${_(e)}`);
+				core.setFailed(`failed to fetch ${prettyFile}: ${_(e)}`);
 
 				throw e;
 			});
