@@ -42,7 +42,7 @@ function main() {
 }
 
 async function createPRForLink(gh, link) {
-	let baseBranch = "";
+	let baseBranch = {};
 	let headBranch = gh.normalizeBranch(
 		`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
 	);
@@ -52,7 +52,7 @@ async function createPRForLink(gh, link) {
 		.getDefaultBranch(link.to.repo)
 		.then((b) => {
 			baseBranch = b;
-			return gh.createBranch(link.to.repo, headBranch, baseBranch.object.sha);
+			return gh.createBranch(link.to.repo, headBranch, baseBranch.sha);
 		})
 		.then((b) => gh.getCommit(link.to.repo, b.object.sha))
 		.then((c) => gh.createCommit(link.to.repo, newContent, c))

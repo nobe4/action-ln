@@ -114,11 +114,11 @@ describe("GitHub", () => {
 	describe("getDefaultBranch", () => {
 		it("fetches the default branch", async () => {
 			g.getDefaultBranchName = jest.fn().mockResolvedValue("main");
-			g.getBranch = jest.fn().mockResolvedValue("branch");
+			g.getBranch = jest.fn().mockResolvedValue({ object: { sha: 123 } });
 
 			await expect(g.getDefaultBranch(repo)).resolves.toEqual({
 				name: "main",
-				branch: "branch",
+				sha: 123,
 			});
 
 			expect(g.getDefaultBranchName).toHaveBeenCalledWith(repo);

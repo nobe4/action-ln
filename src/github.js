@@ -63,9 +63,9 @@ class GitHub {
 
 		return this.getDefaultBranchName(repo)
 			.then((n) => this.getBranch(repo, (name = n)))
-			.then((branch) => ({
+			.then(({ object: { sha } } = {}) => ({
 				name: name,
-				branch: branch,
+				sha: sha,
 			}));
 	}
 
@@ -75,12 +75,12 @@ class GitHub {
 			.then(({ data }) => data.default_branch);
 	}
 
-	async getBranch({ owner, repo }, branch) {
+	async getBranch({ owner, repo }, name) {
 		return this.octokit.rest.git
 			.getRef({
 				owner: owner,
 				repo: repo,
-				ref: `heads/${branch}`,
+				ref: `heads/${name}`,
 			})
 			.then(({ data }) => data);
 	}
