@@ -70,7 +70,7 @@ describe("Config", () => {
 					        other content
 					    needs update: true
 					`,
-				).trim(),
+				),
 			);
 		});
 	});
@@ -151,7 +151,7 @@ describe("Config", () => {
 						if (path == "1") {
 							throw new Error("Error getting contents");
 						}
-						resolve(repo + path);
+						resolve({ content: repo + path, sha: 123 });
 					});
 				});
 
@@ -167,12 +167,15 @@ describe("Config", () => {
 		describe("succeeds", () => {
 			it("fills all the links correctly", async () => {
 				c.gh.getContent.mockImplementation((repo, path) =>
-					Promise.resolve(repo + path),
+					Promise.resolve({ content: repo + path, sha: 123 }),
 				);
 
 				await expect(c.getContents()).resolves.toEqual(c);
+				expect(c.data.links[0].from).toEqual(files[0]);
+
 				files.forEach((f) => {
 					expect(f.content).toEqual(f.repo + f.path);
+					expect(f.sha).toEqual(123);
 					expect(c.gh.getContent).toHaveBeenCalledWith(f.repo, f.path);
 				});
 			});
