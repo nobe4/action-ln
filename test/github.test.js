@@ -53,6 +53,8 @@ describe("GitHub", () => {
 
 	describe("getContent", () => {
 		const expectedcalls = () => {
+			expect(core.debug).toHaveBeenCalledWith("fetching owner/repo:path");
+
 			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
@@ -98,6 +100,9 @@ describe("GitHub", () => {
 				sha: 123,
 			});
 			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
+			expect(core.debug).toHaveBeenCalledWith(
+				expect.stringContaining("fetched owner/repo:path"),
+			);
 			expectedcalls();
 		});
 	});

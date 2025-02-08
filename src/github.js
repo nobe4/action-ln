@@ -37,6 +37,10 @@ class GitHub {
 				content: Buffer.from(content, "base64").toString("utf-8"),
 				sha: sha,
 			}))
+			.then((c) => {
+				core.debug(`fetched ${owner}/${repo}:${path}: ${JSON.stringify(c)}`);
+				return c;
+			})
 			.catch((e) => {
 				// This can fail if the file is missing, or if the repo is not
 				// accessible. There's no way to differentiate that here.
