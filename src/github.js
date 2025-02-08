@@ -109,7 +109,7 @@ class GitHub {
 			.then(({ data }) => data);
 	}
 
-	async createOrUpdateFile(
+	async createOrUpdateFileContents(
 		{ owner, repo },
 		path,
 		sha,

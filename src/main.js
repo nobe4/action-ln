@@ -92,7 +92,7 @@ async function createPRForLink(gh, link) {
 					return;
 				}
 
-				return gh.createOrUpdateFile(
+				return gh.createOrUpdateFileContents(
 					link.to.repo,
 					link.to.path,
 					link.to.sha,
