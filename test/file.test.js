@@ -3,6 +3,8 @@ jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
 const { File, ParseError } = require("../src/file");
 
+const { dedent } = require("../src/utils");
+
 describe("File", () => {
 	let l = new File();
 
@@ -12,11 +14,18 @@ describe("File", () => {
 			l.path = "path";
 			expect(l.toString()).toStrictEqual("owner/repo:path");
 		});
-		it("formats correctly with a content", () => {
+		it("formats correctly with a content and sha", () => {
 			l.repo = { repo: "repo", owner: "owner" };
 			l.path = "path";
 			l.content = "some\ncontent";
-			expect(l.toString()).toStrictEqual("owner/repo:path\nsome\ncontent");
+			l.sha = "123";
+			expect(l.toString()).toStrictEqual(
+				dedent(`
+				owner/repo:path@123
+				some
+				content
+			`),
+			);
 		});
 	});
 

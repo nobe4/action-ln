@@ -11,24 +11,29 @@ describe("Link", () => {
 
 	describe("toString", () => {
 		it("formats correctly", () => {
-			l.from = new File();
-			l.from.repo = { repo: "repo", owner: "owner" };
-			l.from.path = "path";
-			l.from.content = "content";
-			l.to = new File();
-			l.to.repo = { repo: "repo", owner: "owner" };
-			l.to.path = "path";
-			l.to.content = "content";
+			l.from = new File({
+				repo: { repo: "repo", owner: "owner" },
+				path: "path",
+				content: "content",
+				sha: 123,
+			});
+			l.to = new File({
+				repo: { repo: "repo", owner: "owner" },
+				path: "path",
+				content: "content",
+				sha: 123,
+			});
+
 			expect(l.toString()).toStrictEqual(
 				dedent(`
 				from:
-				    owner/repo:path
+				    owner/repo:path@123
 				    content
 				to:
-				    owner/repo:path
+				    owner/repo:path@123
 				    content
 				needs update: false
-				`).trim(),
+				`),
 			);
 		});
 	});

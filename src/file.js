@@ -8,14 +8,18 @@ class ParseError extends Error {
 }
 
 class File {
-	constructor({ repo, path, content } = {}) {
+	constructor({ repo, path, content, sha } = {}) {
 		this.repo = repo;
 		this.path = path;
+		this.sha = sha;
 		this.content = content;
 	}
 
 	toString() {
 		let out = `${this.repo.owner}/${this.repo.repo}:${this.path}`;
+		if (this.sha) {
+			out += `@${this.sha}`;
+		}
 		if (this.content) {
 			out += `\n${this.content}`;
 		}

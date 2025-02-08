@@ -46,14 +46,20 @@ class Config {
 			let link = this.data.links[i];
 
 			promises.push(
-				this.gh.getContent(link.from.repo, link.from.path).then((c) => {
-					this.data.links[i].from.content = c;
-				}),
+				this.gh
+					.getContent(link.from.repo, link.from.path)
+					.then(({ content, sha }) => {
+						this.data.links[i].from.content = content;
+						this.data.links[i].from.sha = sha;
+					}),
 			);
 			promises.push(
-				this.gh.getContent(link.to.repo, link.to.path).then((c) => {
-					this.data.links[i].to.content = c;
-				}),
+				this.gh
+					.getContent(link.to.repo, link.to.path)
+					.then(({ content, sha }) => {
+						this.data.links[i].to.content = content;
+						this.data.links[i].to.sha = sha;
+					}),
 			);
 		}
 
