@@ -21,10 +21,7 @@ describe("GitHub", () => {
 				git: {
 					createCommit: jest.fn(),
 					createRef: jest.fn(),
-					createTree: jest.fn(),
-					getCommit: jest.fn(),
 					getRef: jest.fn(),
-					updateRef: jest.fn(),
 				},
 				pulls: { create: jest.fn() },
 				repos: { getContent: jest.fn(), get: jest.fn() },
@@ -227,18 +224,6 @@ describe("GitHub", () => {
 		});
 	});
 
-	describe("getCommit", () => {
-		it("fetches the commit", async () => {
-			g.octokit.rest.git.getCommit.mockResolvedValue({ data: "commit" });
-			await expect(g.getCommit(repo, "sha")).resolves.toEqual("commit");
-			expect(g.octokit.rest.git.getCommit).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				commit_sha: "sha",
-			});
-		});
-	});
-
 	describe("createBranch", () => {
 		it("creates the branch", async () => {
 			g.octokit.rest.git.createRef.mockResolvedValue({ data: "branch" });
@@ -249,60 +234,6 @@ describe("GitHub", () => {
 				owner: repo.owner,
 				repo: repo.repo,
 				ref: "refs/heads/branch",
-				sha: "sha",
-			});
-		});
-	});
-
-	describe("createCommit", () => {
-		it("creates the commit", async () => {
-			const parent = {
-				sha: "sha_123",
-				tree: {
-					sha: "tree_123",
-				},
-			};
-			const newTree = {
-				sha: "tree_456",
-			};
-
-			g.octokit.rest.git.createTree.mockResolvedValue({
-				data: newTree,
-			});
-
-			g.octokit.rest.git.createCommit.mockResolvedValue({ data: "commit" });
-
-			await expect(g.createCommit(repo, "tree", parent)).resolves.toEqual(
-				"commit",
-			);
-
-			expect(g.octokit.rest.git.createTree).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				tree: "tree",
-				base_tree: parent.tree.sha,
-			});
-
-			expect(g.octokit.rest.git.createCommit).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				message: expect.any(String),
-				tree: newTree.sha,
-				parents: [parent.sha],
-			});
-		});
-	});
-
-	describe("updateBranch", () => {
-		it("updates the branch", async () => {
-			g.octokit.rest.git.updateRef.mockResolvedValue({ data: "branch" });
-			await expect(g.updateBranch(repo, "branch", "sha")).resolves.toEqual(
-				"branch",
-			);
-			expect(g.octokit.rest.git.updateRef).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				ref: "heads/branch",
 				sha: "sha",
 			});
 		});

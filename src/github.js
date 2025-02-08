@@ -13,17 +13,6 @@ class GitHub {
 		return branch.replace(/[^a-zA-Z0-9]/g, "-");
 	}
 
-	createTree(path, content) {
-		return [
-			{
-				path: path,
-				content: content,
-				mode: "100644", // TODO: this needs to be set by the `from`
-				type: "blob",
-			},
-		];
-	}
-
 	async getContent({ owner, repo }, path, ref = undefined) {
 		const prettyRepo = `${owner}/${repo}:${path}@${ref}`;
 
@@ -109,53 +98,12 @@ class GitHub {
 			.then(({ data }) => data);
 	}
 
-	async getCommit({ owner, repo }, sha) {
-		return this.octokit.rest.git
-			.getCommit({
-				owner: owner,
-				repo: repo,
-				commit_sha: sha,
-			})
-			.then(({ data }) => data);
-	}
-
 	async createBranch({ owner, repo }, name, sha) {
 		return this.octokit.rest.git
 			.createRef({
 				owner: owner,
 				repo: repo,
 				ref: `refs/heads/${name}`,
-				sha: sha,
-			})
-			.then(({ data }) => data);
-	}
-
-	async createCommit({ owner, repo }, tree, parent) {
-		return this.octokit.rest.git
-			.createTree({
-				owner: owner,
-				repo: repo,
-				tree: tree,
-				base_tree: parent.tree.sha,
-			})
-			.then(({ data }) =>
-				this.octokit.rest.git.createCommit({
-					owner: owner,
-					repo: repo,
-					message: "[test] Update links",
-					tree: data.sha,
-					parents: [parent.sha],
-				}),
-			)
-			.then(({ data }) => data);
-	}
-
-	async updateBranch({ owner, repo }, branch, sha) {
-		return this.octokit.rest.git
-			.updateRef({
-				owner: owner,
-				repo: repo,
-				ref: `heads/${branch}`,
 				sha: sha,
 			})
 			.then(({ data }) => data);
