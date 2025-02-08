@@ -1,3 +1,6 @@
+const core = require("@actions/core");
+jest.mock("@actions/core");
+
 const currentRepo = { owner: "owner", repo: "repo" };
 jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
@@ -76,35 +79,45 @@ describe("Config", () => {
 	});
 
 	describe("load", () => {
+		const expectedcalls = () => {
+			expect(core.notice).toHaveBeenCalledWith(
+				"Using config file: owner/repo:path",
+			);
+		};
+
 		describe("fails", () => {
-			it("cannot read", () => {
+			it("cannot read", async () => {
 				c.gh.getContent.mockRejectedValue(new Error("ENOENT"));
-				return expect(c.load()).rejects.toThrow(/ENOENT/);
+				await expect(c.load()).rejects.toThrow(/ENOENT/);
+				expectedcalls();
 			});
 
-			it("cannot load YAML", () => {
+			it("cannot load YAML", async () => {
 				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
-				return expect(c.load()).rejects.toThrow(/Invalid YAML/);
+				await expect(c.load()).rejects.toThrow(/Invalid YAML/);
+				expectedcalls();
 			});
 
-			it("cannot parse", () => {
+			it("cannot parse", async () => {
 				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
 					.mockRejectedValue(new Error("Invalid config"));
-				return expect(c.load()).rejects.toThrow(/Invalid config/);
+				await expect(c.load()).rejects.toThrow(/Invalid config/);
+				expectedcalls();
 			});
 
-			it("cannot getContents", () => {
+			it("cannot getContents", async () => {
 				c.gh.getContent.mockResolvedValue("content");
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
 					.spyOn(Config.prototype, "getContents")
 					.mockRejectedValue(new Error("Error getting contents"));
-				return expect(c.load()).rejects.toThrow(/Error getting contents/);
+				await expect(c.load()).rejects.toThrow(/Error getting contents/);
+				expectedcalls();
 			});
 		});
 
@@ -121,6 +134,7 @@ describe("Config", () => {
 				await expect(c.load()).resolves.toEqual("data");
 				expect(mockParse).toHaveBeenCalled();
 				expect(mockGetContents).toHaveBeenCalled();
+				expectedcalls();
 			});
 		});
 	});
