@@ -49,10 +49,11 @@ async function createPRForLink(gh, link) {
 	const newContent = gh.createTree(link.to.path, link.from.content);
 
 	return gh
-		.getBaseBranch(link.to.repo)
-		.then((b) => (baseBranch = b))
-		.then((b) => gh.getBranch(link.to.repo, b))
-		.then((b) => gh.createBranch(link.to.repo, headBranch, b.object.sha))
+		.getDefaultBranch(link.to.repo)
+		.then((b) => {
+			baseBranch = b;
+			return gh.createBranch(link.to.repo, headBranch, baseBranch.object.sha);
+		})
 		.then((b) => gh.getCommit(link.to.repo, b.object.sha))
 		.then((c) => gh.createCommit(link.to.repo, newContent, c))
 		.then((c) => gh.updateBranch(link.to.repo, headBranch, c.sha))
@@ -60,7 +61,7 @@ async function createPRForLink(gh, link) {
 			gh.createPullRequest(
 				link.to.repo,
 				headBranch,
-				baseBranch,
+				baseBranch.name,
 				"TODO",
 				"TODO",
 			),
