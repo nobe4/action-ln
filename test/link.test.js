@@ -6,12 +6,7 @@ const { Link, ParseError } = require("../src/link");
 const { File } = require("../src/file");
 const { dedent } = require("../src/utils");
 
-describe("Link", () => 
-
-
-
-
-{
+describe("Link", () => {
 	let l = new Link();
 
 	describe("toString", () => {
