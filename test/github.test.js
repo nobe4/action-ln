@@ -69,7 +69,7 @@ describe("GitHub", () => {
 
 		it("fails to decode a base64 string", async () => {
 			g.octokit.rest.repos.getContent.mockResolvedValue({
-				data: { content: 123 },
+				data: { content: "content" },
 			});
 			global.Buffer = {
 				from: jest.fn().mockImplementation(() => {
@@ -77,7 +77,7 @@ describe("GitHub", () => {
 				}),
 			};
 			await expect(g.getContent(repo, path)).rejects.toThrow(/Error/);
-			expect(global.Buffer.from).toHaveBeenCalledWith(123, "base64");
+			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
 			expect(core.setFailed).toHaveBeenCalledWith(
 				expect.stringContaining(`failed to fetch ${prettyRepo}`),
 			);
@@ -86,12 +86,18 @@ describe("GitHub", () => {
 
 		it("succeeds", async () => {
 			g.octokit.rest.repos.getContent.mockResolvedValue({
-				data: { content: 123 },
+				data: { content: "content", sha: 123 },
 			});
 			global.Buffer = {
-				from: jest.fn().mockReturnValue("content"),
+				from: jest.fn().mockImplementation(() => {
+					return { toString: () => "content" };
+				}),
 			};
-			await expect(g.getContent(repo, path)).resolves.toEqual("content");
+			await expect(g.getContent(repo, path)).resolves.toEqual({
+				content: "content",
+				sha: 123,
+			});
+			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
 			expectedcalls();
 		});
 	});

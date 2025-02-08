@@ -33,9 +33,10 @@ class GitHub {
 				repo: repo,
 				path: path,
 			})
-			.then(({ data: { content } }) =>
-				Buffer.from(content, "base64").toString("utf-8"),
-			)
+			.then(({ data: { content, sha } }) => ({
+				content: Buffer.from(content, "base64").toString("utf-8"),
+				sha: sha,
+			}))
 			.catch((e) => {
 				// This can fail if the file is missing, or if the repo is not
 				// accessible. There's no way to differentiate that here.
