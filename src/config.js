@@ -33,7 +33,7 @@ class Config {
 
 		return this.gh
 			.getContent(currentRepo, this.path)
-			.then(yaml.load)
+			.then(({ content }) => yaml.load(content))
 			.then((data) => (this.data = data))
 			.then(() => this.parse())
 			.then(() => this.getContents());

@@ -93,14 +93,14 @@ describe("Config", () => {
 			});
 
 			it("cannot load YAML", async () => {
-				c.gh.getContent.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue({ content: "content" });
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
 				await expect(c.load()).rejects.toThrow(/Invalid YAML/);
 				expectedcalls();
 			});
 
 			it("cannot parse", async () => {
-				c.gh.getContent.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue({ content: "content" });
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
@@ -110,7 +110,7 @@ describe("Config", () => {
 			});
 
 			it("cannot getContents", async () => {
-				c.gh.getContent.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue({ content: "content" });
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
@@ -123,7 +123,7 @@ describe("Config", () => {
 
 		describe("succeeds", () => {
 			it("read, load, parse, and getContents", async () => {
-				c.gh.getContent.mockResolvedValue("content");
+				c.gh.getContent.mockResolvedValue({ content: "content" });
 				yaml.load.mockResolvedValue("yaml");
 				const mockParse = jest
 					.spyOn(Config.prototype, "parse")
