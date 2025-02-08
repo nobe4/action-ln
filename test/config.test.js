@@ -179,6 +179,27 @@ describe("Config", () => {
 		});
 
 		describe("succeeds", () => {
+			it("fills all but one the links correctly", async () => {
+				c.gh.getContent.mockImplementation((repo, path) => {
+					return new Promise((resolve) => {
+						if (path == "1") {
+							resolve();
+						}
+						resolve({ content: repo + path, sha: 123 });
+					});
+				});
+
+				await expect(c.getContents()).resolves.toEqual(c);
+				expect(c.data.links[0].from).toEqual(files[0]);
+
+				expect(files[1].content).not.toBeDefined();
+				expect(files[1].sha).not.toBeDefined();
+
+				files.forEach((f) => {
+					expect(c.gh.getContent).toHaveBeenCalledWith(f.repo, f.path);
+				});
+			});
+
 			it("fills all the links correctly", async () => {
 				c.gh.getContent.mockImplementation((repo, path) =>
 					Promise.resolve({ content: repo + path, sha: 123 }),
