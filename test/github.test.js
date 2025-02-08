@@ -126,6 +126,40 @@ describe("GitHub", () => {
 		});
 	});
 
+	describe("getOrCreateBranch", () => {
+		it("gets an existing branch", async () => {
+			g.getBranch = jest.fn().mockResolvedValue("branch");
+			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
+				{
+					branch: "branch",
+					new: false,
+				},
+			);
+			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
+		});
+
+		it("creates a new branch", async () => {
+			g.getBranch = jest.fn().mockRejectedValue({ status: 404 });
+			g.createBranch = jest.fn().mockResolvedValue("branch");
+			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
+				{
+					branch: "branch",
+					new: true,
+				},
+			);
+			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
+			expect(g.createBranch).toHaveBeenCalledWith(repo, "branch", "sha");
+		});
+
+		it("fails on non-404", async () => {
+			g.getBranch = jest.fn().mockRejectedValue(new Error("Error"));
+			await expect(() =>
+				g.getOrCreateBranch(repo, "branch", "sha"),
+			).rejects.toThrow(/Error/);
+			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
+		});
+	});
+
 	// All tests after this one are just checking for proper calling. Since they
 	// do very little more than calling octokit and returning the data.
 	describe("getDefaultBranchName", () => {

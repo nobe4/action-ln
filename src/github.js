@@ -69,6 +69,21 @@ class GitHub {
 			}));
 	}
 
+	async getOrCreateBranch({ owner, repo }, name, sha) {
+		return this.getBranch({ owner, repo }, name)
+			.then((b) => ({ branch: b, new: false }))
+			.catch(async (e) => {
+				if (e.status === 404) {
+					return this.createBranch({ owner, repo }, name, sha).then((b) => ({
+						branch: b,
+						new: true,
+					}));
+				}
+
+				throw e;
+			});
+	}
+
 	async getDefaultBranchName({ owner, repo }) {
 		return this.octokit.rest.repos
 			.get({ owner: owner, repo: repo })

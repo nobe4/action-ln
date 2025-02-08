@@ -52,7 +52,7 @@ async function createPRForLink(gh, link) {
 		.getDefaultBranch(link.to.repo)
 		.then((b) => {
 			baseBranch = b;
-			return gh.createBranch(link.to.repo, headBranch, baseBranch.sha);
+			return gh.getOrCreateBranch(link.to.repo, headBranch, baseBranch.sha);
 		})
 		.then((b) => gh.getCommit(link.to.repo, b.object.sha))
 		.then((c) => gh.createCommit(link.to.repo, newContent, c))
