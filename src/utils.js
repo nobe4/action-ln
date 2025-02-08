@@ -30,8 +30,8 @@ function dedent(str, trim = true) {
 	return out;
 }
 
-function jsonError(e) {
-	return JSON.stringify(e, Object.getOwnPropertyNames(e));
+function prettify(o) {
+	return JSON.stringify(o, Object.getOwnPropertyNames(o));
 }
 
-module.exports = { indent, dedent, jsonError };
+module.exports = { indent, dedent, prettify };

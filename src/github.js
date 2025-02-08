@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const { getOctokit } = require("@actions/github");
-const { jsonError } = require("./utils");
+const { prettify: _ } = require("./utils");
 
 class GitHub {
 	constructor(token) {
@@ -24,35 +24,36 @@ class GitHub {
 		];
 	}
 
-	async getContent({ owner, repo }, path) {
-		core.debug(`fetching ${owner}/${repo}:${path}`);
+	async getContent({ owner, repo }, path, ref = undefined) {
+		const prettyRepo = `${owner}/${repo}:${path}@${ref}`;
+
+		core.debug(`fetching ${prettyRepo}`);
 
 		return this.octokit.rest.repos
 			.getContent({
 				owner: owner,
 				repo: repo,
 				path: path,
+				ref: ref,
 			})
 			.then(({ data: { content, sha } }) => ({
 				content: Buffer.from(content, "base64").toString("utf-8"),
 				sha: sha,
 			}))
 			.then((c) => {
-				core.debug(`fetched ${owner}/${repo}:${path}: ${JSON.stringify(c)}`);
+				core.debug(`fetched ${prettyRepo}: ${JSON.stringify(c)}`);
 				return c;
 			})
 			.catch((e) => {
 				// This can fail if the file is missing, or if the repo is not
 				// accessible. There's no way to differentiate that here.
 				if (e.status === 404) {
-					core.warning(`${owner}/${repo}:${path} not found`);
+					core.warning(`${prettyRepo} not found`);
 					return;
 				}
 
 				// However, any non-404 error is a real problem.
-				core.setFailed(
-					`failed to fetch ${owner}/${repo}:${path}: ${jsonError(e)}`,
-				);
+				core.setFailed(`failed to fetch ${prettyRepo}: ${_(e)}`);
 
 				throw e;
 			});
@@ -70,12 +71,20 @@ class GitHub {
 	}
 
 	async getOrCreateBranch({ owner, repo }, name, sha) {
+		// Note: I wanted to change this code multiple times to just do
+		// createBranch and catch the 422. It won't work since we need the new
+		// SHA for the branch if it exists and was updated.
 		return this.getBranch({ owner, repo }, name)
-			.then((b) => ({ branch: b, new: false }))
+			.then((b) => {
+				core.debug(`${owner}/${repo}@${name} found`);
+				return { name: name, sha: b.object.sha, new: false };
+			})
 			.catch(async (e) => {
 				if (e.status === 404) {
+					core.debug(`${owner}/${repo}@${name} not found, creating branch`);
 					return this.createBranch({ owner, repo }, name, sha).then((b) => ({
-						branch: b,
+						name: name,
+						sha: b.object.sha,
 						new: true,
 					}));
 				}
@@ -148,6 +157,29 @@ class GitHub {
 				repo: repo,
 				ref: `heads/${branch}`,
 				sha: sha,
+			})
+			.then(({ data }) => data);
+	}
+
+	async createOrUpdateFile(
+		{ owner, repo },
+		path,
+		sha,
+		branch,
+		content,
+		message,
+	) {
+		const base64Content = Buffer.from(content).toString("base64");
+
+		return this.octokit.rest.repos
+			.createOrUpdateFileContents({
+				owner: owner,
+				repo: repo,
+				path: path,
+				sha: sha,
+				branch: branch,
+				content: base64Content,
+				message: message,
 			})
 			.then(({ data }) => data);
 	}

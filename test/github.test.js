@@ -8,7 +8,8 @@ const { GitHub } = require("../src/github");
 
 const repo = { owner: "owner", repo: "repo" };
 const path = "path";
-const prettyRepo = `${repo.owner}/${repo.repo}:${path}`;
+const ref = "ref";
+const prettyRepo = `${repo.owner}/${repo.repo}:${path}@${ref}`;
 
 describe("GitHub", () => {
 	let g = undefined;
@@ -57,18 +58,21 @@ describe("GitHub", () => {
 
 	describe("getContent", () => {
 		const expectedcalls = () => {
-			expect(core.debug).toHaveBeenCalledWith("fetching owner/repo:path");
+			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
 
 			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
+				ref: ref,
 			});
 		};
 
 		it("catches a 404", async () => {
 			g.octokit.rest.repos.getContent.mockRejectedValue({ status: 404 });
-			await expect(g.getContent(repo, path)).resolves.not.toBeDefined();
+
+			await expect(g.getContent(repo, path, ref)).resolves.not.toBeDefined();
+
 			expect(core.warning).toHaveBeenCalledWith(`${prettyRepo} not found`);
 			expectedcalls();
 		});
@@ -82,7 +86,9 @@ describe("GitHub", () => {
 					throw new Error("Error");
 				}),
 			};
-			await expect(g.getContent(repo, path)).rejects.toThrow(/Error/);
+
+			await expect(g.getContent(repo, path, ref)).rejects.toThrow(/Error/);
+
 			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
 			expect(core.setFailed).toHaveBeenCalledWith(
 				expect.stringContaining(`failed to fetch ${prettyRepo}`),
@@ -99,15 +105,46 @@ describe("GitHub", () => {
 					return { toString: () => "content" };
 				}),
 			};
+
+			await expect(g.getContent(repo, path, ref)).resolves.toEqual({
+				content: "content",
+				sha: 123,
+			});
+
+			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
+			expect(core.debug).toHaveBeenCalledWith(
+				expect.stringContaining(`fetched ${prettyRepo}`),
+			);
+			expectedcalls();
+		});
+
+		it("succeeds without a ref", async () => {
+			const prettyRepo = `${repo.owner}/${repo.repo}:${path}@undefined`;
+			g.octokit.rest.repos.getContent.mockResolvedValue({
+				data: { content: "content", sha: 123 },
+			});
+			global.Buffer = {
+				from: jest.fn().mockImplementation(() => {
+					return { toString: () => "content" };
+				}),
+			};
+
 			await expect(g.getContent(repo, path)).resolves.toEqual({
 				content: "content",
 				sha: 123,
 			});
+
 			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
 			expect(core.debug).toHaveBeenCalledWith(
-				expect.stringContaining("fetched owner/repo:path"),
+				expect.stringContaining(`fetched ${prettyRepo}`),
 			);
-			expectedcalls();
+			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
+
+			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				path: path,
+			});
 		});
 	});
 
@@ -128,10 +165,13 @@ describe("GitHub", () => {
 
 	describe("getOrCreateBranch", () => {
 		it("gets an existing branch", async () => {
-			g.getBranch = jest.fn().mockResolvedValue("branch");
+			g.getBranch = jest
+				.fn()
+				.mockResolvedValue({ object: { sha: "sha_new_branch" } });
 			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
 				{
-					branch: "branch",
+					name: "branch",
+					sha: "sha_new_branch",
 					new: false,
 				},
 			);
@@ -140,10 +180,13 @@ describe("GitHub", () => {
 
 		it("creates a new branch", async () => {
 			g.getBranch = jest.fn().mockRejectedValue({ status: 404 });
-			g.createBranch = jest.fn().mockResolvedValue("branch");
+			g.createBranch = jest
+				.fn()
+				.mockResolvedValue({ object: { sha: "sha_new_branch" } });
 			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
 				{
-					branch: "branch",
+					name: "branch",
+					sha: "sha_new_branch",
 					new: true,
 				},
 			);

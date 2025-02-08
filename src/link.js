@@ -16,7 +16,7 @@ class Link {
 
 	toString(short = false) {
 		if (short) {
-			return `${this.from.repo.owner}/${this.from.repo.repo}:${this.from.path} -> ${this.to.repo.owner}/${this.to.repo.repo}:${this.to.path}`;
+			return `${this.from.toString(true)} -> ${this.to.toString(true)}`;
 		}
 
 		return [

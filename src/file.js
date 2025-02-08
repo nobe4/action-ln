@@ -15,14 +15,16 @@ class File {
 		this.content = content;
 	}
 
-	toString() {
+	toString(short = false) {
 		let out = `${this.repo.owner}/${this.repo.repo}:${this.path}`;
 		if (this.sha) {
 			out += `@${this.sha}`;
 		}
-		if (this.content) {
+
+		if (!short && this.content) {
 			out += `\n${this.content}`;
 		}
+
 		return out;
 	}
 
