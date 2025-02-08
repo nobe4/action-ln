@@ -8,7 +8,11 @@ const { GitHub } = require("../src/github");
 
 const repo = { owner: "owner", repo: "repo" };
 const path = "path";
-const prettyRepo = `${repo.owner}/${repo.repo}:${path}`;
+const ref = "ref";
+const branch = "branch";
+const sha = "sha";
+const content = "content";
+const prettyRepo = `${repo.owner}/${repo.repo}:${path}@${ref}`;
 
 describe("GitHub", () => {
 	let g = undefined;
@@ -20,13 +24,14 @@ describe("GitHub", () => {
 				git: {
 					createCommit: jest.fn(),
 					createRef: jest.fn(),
-					createTree: jest.fn(),
-					getCommit: jest.fn(),
 					getRef: jest.fn(),
-					updateRef: jest.fn(),
 				},
 				pulls: { create: jest.fn() },
-				repos: { getContent: jest.fn(), get: jest.fn() },
+				repos: {
+					getContent: jest.fn(),
+					get: jest.fn(),
+					createOrUpdateFileContents: jest.fn(),
+				},
 			},
 		};
 	});
@@ -57,33 +62,38 @@ describe("GitHub", () => {
 
 	describe("getContent", () => {
 		const expectedcalls = () => {
-			expect(core.debug).toHaveBeenCalledWith("fetching owner/repo:path");
+			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
 
 			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
+				ref: ref,
 			});
 		};
 
 		it("catches a 404", async () => {
 			g.octokit.rest.repos.getContent.mockRejectedValue({ status: 404 });
-			await expect(g.getContent(repo, path)).resolves.not.toBeDefined();
+
+			await expect(g.getContent(repo, path, ref)).resolves.not.toBeDefined();
+
 			expect(core.warning).toHaveBeenCalledWith(`${prettyRepo} not found`);
 			expectedcalls();
 		});
 
 		it("fails to decode a base64 string", async () => {
 			g.octokit.rest.repos.getContent.mockResolvedValue({
-				data: { content: "content" },
+				data: { content: content },
 			});
 			global.Buffer = {
 				from: jest.fn().mockImplementation(() => {
 					throw new Error("Error");
 				}),
 			};
-			await expect(g.getContent(repo, path)).rejects.toThrow(/Error/);
-			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
+
+			await expect(g.getContent(repo, path, ref)).rejects.toThrow(/Error/);
+
+			expect(global.Buffer.from).toHaveBeenCalledWith(content, "base64");
 			expect(core.setFailed).toHaveBeenCalledWith(
 				expect.stringContaining(`failed to fetch ${prettyRepo}`),
 			);
@@ -92,22 +102,53 @@ describe("GitHub", () => {
 
 		it("succeeds", async () => {
 			g.octokit.rest.repos.getContent.mockResolvedValue({
-				data: { content: "content", sha: 123 },
+				data: { content: content, sha: 123 },
 			});
 			global.Buffer = {
 				from: jest.fn().mockImplementation(() => {
-					return { toString: () => "content" };
+					return { toString: () => content };
 				}),
 			};
-			await expect(g.getContent(repo, path)).resolves.toEqual({
-				content: "content",
+
+			await expect(g.getContent(repo, path, ref)).resolves.toEqual({
+				content: content,
 				sha: 123,
 			});
-			expect(global.Buffer.from).toHaveBeenCalledWith("content", "base64");
+
+			expect(global.Buffer.from).toHaveBeenCalledWith(content, "base64");
 			expect(core.debug).toHaveBeenCalledWith(
-				expect.stringContaining("fetched owner/repo:path"),
+				expect.stringContaining(`fetched ${prettyRepo}`),
 			);
 			expectedcalls();
+		});
+
+		it("succeeds without a ref", async () => {
+			const prettyRepo = `${repo.owner}/${repo.repo}:${path}@undefined`;
+			g.octokit.rest.repos.getContent.mockResolvedValue({
+				data: { content: content, sha: 123 },
+			});
+			global.Buffer = {
+				from: jest.fn().mockImplementation(() => {
+					return { toString: () => content };
+				}),
+			};
+
+			await expect(g.getContent(repo, path)).resolves.toEqual({
+				content: content,
+				sha: 123,
+			});
+
+			expect(global.Buffer.from).toHaveBeenCalledWith(content, "base64");
+			expect(core.debug).toHaveBeenCalledWith(
+				expect.stringContaining(`fetched ${prettyRepo}`),
+			);
+			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
+
+			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				path: path,
+			});
 		});
 	});
 
@@ -128,35 +169,37 @@ describe("GitHub", () => {
 
 	describe("getOrCreateBranch", () => {
 		it("gets an existing branch", async () => {
-			g.getBranch = jest.fn().mockResolvedValue("branch");
-			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
-				{
-					branch: "branch",
-					new: false,
-				},
-			);
-			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
+			g.getBranch = jest
+				.fn()
+				.mockResolvedValue({ object: { sha: "sha_new_branch" } });
+			await expect(g.getOrCreateBranch(repo, branch, sha)).resolves.toEqual({
+				name: branch,
+				sha: "sha_new_branch",
+				new: false,
+			});
+			expect(g.getBranch).toHaveBeenCalledWith(repo, branch);
 		});
 
 		it("creates a new branch", async () => {
 			g.getBranch = jest.fn().mockRejectedValue({ status: 404 });
-			g.createBranch = jest.fn().mockResolvedValue("branch");
-			await expect(g.getOrCreateBranch(repo, "branch", "sha")).resolves.toEqual(
-				{
-					branch: "branch",
-					new: true,
-				},
-			);
-			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
-			expect(g.createBranch).toHaveBeenCalledWith(repo, "branch", "sha");
+			g.createBranch = jest
+				.fn()
+				.mockResolvedValue({ object: { sha: "sha_new_branch" } });
+			await expect(g.getOrCreateBranch(repo, branch, sha)).resolves.toEqual({
+				name: branch,
+				sha: "sha_new_branch",
+				new: true,
+			});
+			expect(g.getBranch).toHaveBeenCalledWith(repo, branch);
+			expect(g.createBranch).toHaveBeenCalledWith(repo, branch, sha);
 		});
 
 		it("fails on non-404", async () => {
 			g.getBranch = jest.fn().mockRejectedValue(new Error("Error"));
 			await expect(() =>
-				g.getOrCreateBranch(repo, "branch", "sha"),
+				g.getOrCreateBranch(repo, branch, sha),
 			).rejects.toThrow(/Error/);
-			expect(g.getBranch).toHaveBeenCalledWith(repo, "branch");
+			expect(g.getBranch).toHaveBeenCalledWith(repo, branch);
 		});
 	});
 
@@ -174,8 +217,8 @@ describe("GitHub", () => {
 
 	describe("getBranch", () => {
 		it("fetches the branch", async () => {
-			g.octokit.rest.git.getRef.mockResolvedValue({ data: "branch" });
-			await expect(g.getBranch(repo, "branch")).resolves.toEqual("branch");
+			g.octokit.rest.git.getRef.mockResolvedValue({ data: branch });
+			await expect(g.getBranch(repo, branch)).resolves.toEqual(branch);
 			expect(g.octokit.rest.git.getRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
@@ -184,83 +227,52 @@ describe("GitHub", () => {
 		});
 	});
 
-	describe("getCommit", () => {
-		it("fetches the commit", async () => {
-			g.octokit.rest.git.getCommit.mockResolvedValue({ data: "commit" });
-			await expect(g.getCommit(repo, "sha")).resolves.toEqual("commit");
-			expect(g.octokit.rest.git.getCommit).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				commit_sha: "sha",
-			});
-		});
-	});
-
 	describe("createBranch", () => {
 		it("creates the branch", async () => {
-			g.octokit.rest.git.createRef.mockResolvedValue({ data: "branch" });
-			await expect(g.createBranch(repo, "branch", "sha")).resolves.toEqual(
-				"branch",
-			);
+			g.octokit.rest.git.createRef.mockResolvedValue({ data: branch });
+			await expect(g.createBranch(repo, branch, sha)).resolves.toEqual(branch);
 			expect(g.octokit.rest.git.createRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				ref: "refs/heads/branch",
-				sha: "sha",
+				sha: sha,
 			});
 		});
 	});
 
-	describe("createCommit", () => {
-		it("creates the commit", async () => {
-			const parent = {
-				sha: "sha_123",
-				tree: {
-					sha: "tree_123",
-				},
+	describe("createOrUpdateFileContents", () => {
+		it("create or update a file from plaintext content", async () => {
+			global.Buffer = {
+				from: jest.fn().mockImplementation(() => {
+					return { toString: () => "base64'ed content" };
+				}),
 			};
-			const newTree = {
-				sha: "tree_456",
-			};
-
-			g.octokit.rest.git.createTree.mockResolvedValue({
-				data: newTree,
+			g.octokit.rest.repos.createOrUpdateFileContents.mockResolvedValue({
+				data: "ok",
 			});
 
-			g.octokit.rest.git.createCommit.mockResolvedValue({ data: "commit" });
+			await expect(
+				g.createOrUpdateFileContents(
+					repo,
+					path,
+					sha,
+					branch,
+					content,
+					"message",
+				),
+			).resolves.toEqual("ok");
 
-			await expect(g.createCommit(repo, "tree", parent)).resolves.toEqual(
-				"commit",
-			);
-
-			expect(g.octokit.rest.git.createTree).toHaveBeenCalledWith({
+			expect(global.Buffer.from).toHaveBeenCalledWith(content);
+			expect(
+				g.octokit.rest.repos.createOrUpdateFileContents,
+			).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				tree: "tree",
-				base_tree: parent.tree.sha,
-			});
-
-			expect(g.octokit.rest.git.createCommit).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				message: expect.any(String),
-				tree: newTree.sha,
-				parents: [parent.sha],
-			});
-		});
-	});
-
-	describe("updateBranch", () => {
-		it("updates the branch", async () => {
-			g.octokit.rest.git.updateRef.mockResolvedValue({ data: "branch" });
-			await expect(g.updateBranch(repo, "branch", "sha")).resolves.toEqual(
-				"branch",
-			);
-			expect(g.octokit.rest.git.updateRef).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				ref: "heads/branch",
-				sha: "sha",
+				path: path,
+				sha: sha,
+				branch: branch,
+				content: "base64'ed content",
+				message: "message",
 			});
 		});
 	});

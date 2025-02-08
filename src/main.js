@@ -1,6 +1,7 @@
 const core = require("@actions/core");
 const { Config } = require("./config");
 const { GitHub } = require("./github");
+const { prettify: p } = require("./utils");
 
 function main() {
 	try {
@@ -43,34 +44,81 @@ function main() {
 
 async function createPRForLink(gh, link) {
 	let baseBranch = {};
-	let headBranch = gh.normalizeBranch(
+	let headBranchName = gh.normalizeBranch(
 		`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
 	);
-	const newContent = gh.createTree(link.to.path, link.from.content);
+	let headBranch = {
+		needsUpdate: false,
+	};
 
-	return gh
-		.getDefaultBranch(link.to.repo)
-		.then((b) => {
-			baseBranch = b;
-			return gh.getOrCreateBranch(link.to.repo, headBranch, baseBranch.sha);
-		})
-		.then((b) => gh.getCommit(link.to.repo, b.object.sha))
-		.then((c) => gh.createCommit(link.to.repo, newContent, c))
-		.then((c) => gh.updateBranch(link.to.repo, headBranch, c.sha))
-		.then(() =>
-			gh.createPullRequest(
-				link.to.repo,
-				headBranch,
-				baseBranch.name,
-				"TODO",
-				"TODO",
-			),
-		)
-		.catch((e) => {
-			core.setFailed(
-				`failed to create PR for ${link.toString(true)}: ${e} ${JSON.stringify(e)}`,
-			);
-		});
+	return (
+		gh
+			.getDefaultBranch(link.to.repo)
+
+			.then((b) => {
+				core.debug(`default branch: ${p(b)}`);
+				baseBranch = b;
+			})
+			.then(() =>
+				gh.getOrCreateBranch(link.to.repo, headBranchName, baseBranch.sha),
+			)
+
+			.then((b) => {
+				core.debug(`head branch: ${p(b)}`);
+				headBranch = b;
+			})
+			.then(() => {
+				if (headBranch.new) {
+					return (headBranch.needsUpdate = true);
+				}
+
+				return gh
+					.getContent(link.to.repo, link.to.path, headBranch.name)
+					.then(
+						(c) => (headBranch.needsUpdate = link.from.content !== c.content),
+					)
+					.catch((e) => {
+						if (e.status === 404) {
+							return (headBranch.needsUpdate = true);
+						}
+
+						throw e;
+					});
+			})
+
+			.then(() => {
+				if (!headBranch.needsUpdate) {
+					console.log("update not needed");
+					return;
+				}
+
+				return gh.createOrUpdateFileContents(
+					link.to.repo,
+					link.to.path,
+					link.to.sha,
+					headBranch.name,
+					link.from.content,
+					"update link",
+				);
+			})
+
+			//.then(() =>
+			//	gh.createPullRequest(
+			//		link.to.repo,
+			//		headBranch,
+			//		baseBranch.name,
+			//		"TODO",
+			//		"TODO",
+			//	),
+
+			.catch((e) => {
+				core.setFailed(
+					`failed to create PR for ${link.toString(true)}: ${p(e)}`,
+				);
+			})
+	);
 }
 
 main();
+
+module.exports = { createPRForLink };
