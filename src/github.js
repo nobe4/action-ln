@@ -132,17 +132,34 @@ class GitHub {
 			.then(({ data }) => data);
 	}
 
-	async createPullRequest({ owner, repo }, head, base, title, body) {
+	async getOrCreatePullRequest({ owner, repo }, head, base, title, body) {
+		// Notes: Similar to the createBranch function, we wanted to just do a
+		// pulls.create, because it fails with 422 when it exists. But since it
+		// doesn't return the PR info, we need to still to search for it.
 		return this.octokit.rest.pulls
-			.create({
+			.list({
 				owner: owner,
 				repo: repo,
 				head: head,
-				base: base,
-				title: title,
-				body: body,
 			})
-			.then(({ data }) => data);
+			.then(({ data }) => {
+				// There really should not be more than one Pull matching this
+				// head, because creating more fails with 422.
+				if (data.length > 0) {
+					return data[0];
+				}
+
+				return this.octokit.rest.pulls
+					.create({
+						owner: owner,
+						repo: repo,
+						head: head,
+						base: base,
+						title: title,
+						body: body,
+					})
+					.then(({ data }) => data);
+			});
 	}
 }
 

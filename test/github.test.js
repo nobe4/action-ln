@@ -26,7 +26,7 @@ describe("GitHub", () => {
 					createRef: jest.fn(),
 					getRef: jest.fn(),
 				},
-				pulls: { create: jest.fn() },
+				pulls: { create: jest.fn(), list: jest.fn() },
 				repos: {
 					getContent: jest.fn(),
 					get: jest.fn(),
@@ -277,12 +277,34 @@ describe("GitHub", () => {
 		});
 	});
 
-	describe("createPullRequest", () => {
-		it("creates a pull request", async () => {
-			g.octokit.rest.pulls.create.mockResolvedValue({ data: "pull" });
+	describe("getOrCreatePullRequest", () => {
+		it("gets an existing pull request", async () => {
+			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull"] });
+
 			await expect(
-				g.createPullRequest(repo, "head", "base", "title", "body"),
+				g.getOrCreatePullRequest(repo, "head", "base", "title", "body"),
 			).resolves.toEqual("pull");
+
+			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				head: "head",
+			});
+		});
+
+		it("creates a new pull request", async () => {
+			g.octokit.rest.pulls.list.mockResolvedValue({ data: [] });
+			g.octokit.rest.pulls.create.mockResolvedValue({ data: "pull" });
+
+			await expect(
+				g.getOrCreatePullRequest(repo, "head", "base", "title", "body"),
+			).resolves.toEqual("pull");
+
+			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				head: "head",
+			});
 			expect(g.octokit.rest.pulls.create).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
