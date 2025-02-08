@@ -9,6 +9,10 @@ const { dedent } = require("../src/utils");
 describe("Link", () => {
 	let l = new Link();
 
+	it("fails on purpose", () => {
+		expect(1).toBe(2);
+	});
+
 	describe("toString", () => {
 		it("formats correctly", () => {
 			l.from = new File({
