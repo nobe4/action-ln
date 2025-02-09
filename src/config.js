@@ -36,13 +36,15 @@ class Config {
 			`Using config file: ${this.repo.owner}/${this.repo.repo}:${this.path}@${this.sha}`,
 		);
 
-		return this.gh
-			.getContent(this.repo, this.path)
-			.then(({ content, sha }) => {
-				this.sha = sha;
-				return yaml.load(content);
-			})
-			.then((data) => (this.data = data))
+		return Promise.all([
+			this.gh
+				.getContent(this.repo, this.path)
+
+				.then(({ content }) => yaml.load(content))
+				.then((data) => (this.data = data)),
+
+			this.gh.getDefaultBranch(this.repo).then(({ sha }) => (this.sha = sha)),
+		])
 			.then(() => this.parse())
 			.then(() => this.getContents());
 	}
