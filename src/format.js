@@ -35,7 +35,7 @@ function prettify(o) {
 }
 
 function branchName(link) {
-	return `link-${link.SHA256}`;
+	return `link-${link.SHA256.substring(0, 8)}`;
 }
 
 function commitMessage(link) {

@@ -3,8 +3,13 @@ const currentRepo = require("@actions/github").context.repo;
 
 const { Config } = require("./config");
 const { GitHub } = require("./github");
-const { branchName } = require("./format");
-const { prettify: p } = require("./format");
+const {
+	branchName,
+	commitMessage,
+	pullBody,
+	pullTitle,
+	prettify: p,
+} = require("./format");
 
 function main() {
 	try {
@@ -28,7 +33,7 @@ function main() {
 					}
 
 					core.info(`updating: ${link.toString(true)}`);
-					promises.push(createPRForLink(gh, link));
+					promises.push(createPRForLink(gh, link, config));
 				}
 
 				return Promise.all(promises);
@@ -45,7 +50,7 @@ function main() {
 	}
 }
 
-async function createPRForLink(gh, link) {
+async function createPRForLink(gh, link, config) {
 	let baseBranch = {};
 	let headBranch = {
 		needsUpdate: false,
@@ -95,7 +100,7 @@ async function createPRForLink(gh, link) {
 				link.to.sha,
 				headBranch.name,
 				link.from.content,
-				"TODO commit message",
+				commitMessage(link),
 			);
 		})
 
@@ -104,8 +109,8 @@ async function createPRForLink(gh, link) {
 				link.to.repo,
 				headBranch.name,
 				baseBranch.name,
-				"TODO title",
-				"TODO body",
+				pullTitle(link),
+				pullBody(link, config),
 			),
 		)
 
