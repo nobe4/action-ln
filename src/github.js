@@ -1,16 +1,12 @@
 const core = require("@actions/core");
 const { getOctokit } = require("@actions/github");
-const { prettify: _ } = require("./utils");
+const { prettify: _ } = require("./format");
 
 class GitHub {
 	constructor(token) {
 		this.octokit = getOctokit(token, {
 			log: console,
 		});
-	}
-
-	normalizeBranch(branch) {
-		return branch.replace(/[^a-zA-Z0-9]/g, "-");
 	}
 
 	async getContent({ owner, repo }, path, ref = undefined) {

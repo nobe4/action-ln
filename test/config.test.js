@@ -1,55 +1,39 @@
+// required by File, which is required by Link
+jest.mock("@actions/github", () => ({ context: { repo: "repo" } }));
+
 const core = require("@actions/core");
 jest.mock("@actions/core");
-
-const currentRepo = { owner: "owner", repo: "repo" };
-jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
 const yaml = require("js-yaml");
 jest.mock("js-yaml");
 
-const { dedent } = require("../src/utils");
-
+const { dedent } = require("../src/format");
 const { Config, ParseError } = require("../src/config");
 
 const { Link } = require("../src/link");
-const { File } = require("../src/file");
+jest.mock("../src/link");
+
+const repo = { owner: "owner", repo: "repo" };
 
 describe("Config", () => {
 	let c = new Config();
 
 	beforeEach(() => {
-		c.gh = { getContent: jest.fn() };
+		c.repo = repo;
+		c.path = "path";
+		c.sha = "sha";
+		c.gh = {
+			getDefaultBranch: jest.fn(),
+			getContent: jest.fn(),
+		};
 	});
 
 	describe("toString", () => {
 		it("formats correctly", () => {
-			const l1 = new Link({
-				from: new File({
-					repo: { repo: "repo", owner: "owner" },
-					path: "path",
-					content: "content",
-				}),
-				to: new File({
-					repo: { repo: "repo", owner: "owner" },
-					path: "path",
-					content: "content",
-				}),
-			});
-			const l2 = new Link({
-				from: new File({
-					repo: { repo: "repo", owner: "owner" },
-					path: "path",
-					content: "content",
-				}),
-				to: new File({
-					repo: { repo: "repo", owner: "owner" },
-					path: "path",
-					content: "other content",
-				}),
-			});
+			const l1 = { toString: () => "l1" };
+			const l2 = { toString: () => "l2" };
 
 			c.data.links = [l1, l2];
-			c.path = "path";
 
 			expect(c.toString()).toStrictEqual(
 				dedent(
@@ -57,66 +41,75 @@ describe("Config", () => {
 					path: path
 					links:
 					  -
-					    from:
-					        owner/repo:path
-					        content
-					    to:
-					        owner/repo:path
-					        content
-					    needs update: false
+					    l1
 					  -
-					    from:
-					        owner/repo:path
-					        content
-					    to:
-					        owner/repo:path
-					        other content
-					    needs update: true
+					    l2
 					`,
 				),
 			);
 		});
 	});
 
+	describe("URL", () => {
+		it("formats correctly", () => {
+			c.path = "path";
+			expect(c.URL).toEqual("https://github.com/owner/repo/blob/sha/path");
+		});
+	});
+
 	describe("load", () => {
 		const expectedcalls = () => {
 			expect(core.notice).toHaveBeenCalledWith(
-				"Using config file: owner/repo:path",
+				"Using config file: owner/repo:path@sha",
 			);
+			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
+			expect(c.gh.getContent).toHaveBeenCalledWith(c.repo, c.path);
 		};
 
 		describe("fails", () => {
 			it("cannot read", async () => {
 				c.gh.getContent.mockRejectedValue(new Error("ENOENT"));
+				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
+
 				await expect(c.load()).rejects.toThrow(/ENOENT/);
+
 				expectedcalls();
 			});
 
 			it("cannot load YAML", async () => {
 				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
+
 				await expect(c.load()).rejects.toThrow(/Invalid YAML/);
+
 				expectedcalls();
 			});
 
 			it("cannot parse", async () => {
 				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
 					.mockRejectedValue(new Error("Invalid config"));
+
 				await expect(c.load()).rejects.toThrow(/Invalid config/);
+
 				expectedcalls();
 			});
 
 			it("cannot getContents", async () => {
 				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
 					.spyOn(Config.prototype, "getContents")
 					.mockRejectedValue(new Error("Error getting contents"));
+
 				await expect(c.load()).rejects.toThrow(/Error getting contents/);
+
 				expectedcalls();
 			});
 		});
@@ -124,6 +117,7 @@ describe("Config", () => {
 		describe("succeeds", () => {
 			it("read, load, parse, and getContents", async () => {
 				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				const mockParse = jest
 					.spyOn(Config.prototype, "parse")
@@ -131,7 +125,10 @@ describe("Config", () => {
 				const mockGetContents = jest
 					.spyOn(Config.prototype, "getContents")
 					.mockResolvedValue("data");
+
 				await expect(c.load()).resolves.toEqual("data");
+				expect(c.sha).toEqual("sha");
+
 				expect(mockParse).toHaveBeenCalled();
 				expect(mockGetContents).toHaveBeenCalled();
 				expectedcalls();
@@ -144,16 +141,16 @@ describe("Config", () => {
 
 		beforeEach(() => {
 			files = [
-				new File({ path: "0", repo: "0" }),
-				new File({ path: "1", repo: "1" }),
-				new File({ path: "2", repo: "2" }),
-				new File({ path: "3", repo: "3" }),
+				{ path: "0", repo: "0" },
+				{ path: "1", repo: "1" },
+				{ path: "2", repo: "2" },
+				{ path: "3", repo: "3" },
 			];
 			c.data = {
 				links: [
-					new Link({ from: files[0], to: files[1] }),
-					new Link({ from: files[0], to: files[2] }),
-					new Link({ from: files[1], to: files[3] }),
+					{ from: files[0], to: files[1] },
+					{ from: files[0], to: files[2] },
+					{ from: files[1], to: files[3] },
 				],
 			};
 		});
@@ -234,18 +231,26 @@ describe("Config", () => {
 		describe("succeeds", () => {
 			it.each([
 				{
+					data: { links: [] },
+					want: {
+						links: [],
+					},
+				},
+				{
 					data: { links: [0, 1, 2] },
 					want: {
 						links: ["parsed", "parsed", "parsed"],
 					},
 				},
 			])("%# %j", ({ data, want }) => {
-				const mockLink = jest
+				const mockParse = jest
 					.spyOn(Link.prototype, "parse")
 					.mockImplementation(() => "parsed");
+
 				c.data = data;
+
 				expect(c.parse().data).toStrictEqual(want);
-				expect(mockLink).toHaveBeenCalled();
+				expect(mockParse).toHaveBeenCalledTimes(data.links.length);
 			});
 		});
 	});

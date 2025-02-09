@@ -3,7 +3,7 @@ jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
 const { File, ParseError } = require("../src/file");
 
-const { dedent } = require("../src/utils");
+const { dedent } = require("../src/format");
 
 describe("File", () => {
 	let l = new File();

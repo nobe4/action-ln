@@ -1,7 +1,6 @@
 const core = require("@actions/core");
-const currentRepo = require("@actions/github").context.repo;
 const yaml = require("js-yaml");
-const { indent } = require("./utils");
+const { indent } = require("./format");
 const { Link } = require("./link");
 
 class ParseError extends Error {
@@ -12,10 +11,12 @@ class ParseError extends Error {
 }
 
 class Config {
-	constructor(path, gh) {
+	constructor(repo, path, gh) {
 		this.path = path;
 		this.gh = gh;
 		this.data = {};
+		this.repo = repo;
+		this.sha = undefined;
 	}
 
 	toString() {
@@ -26,15 +27,24 @@ class Config {
 		].join("\n");
 	}
 
+	get URL() {
+		return `https://github.com/${this.repo.owner}/${this.repo.repo}/blob/${this.sha}/${this.path}`;
+	}
+
 	async load() {
 		core.notice(
-			`Using config file: ${currentRepo.owner}/${currentRepo.repo}:${this.path}`,
+			`Using config file: ${this.repo.owner}/${this.repo.repo}:${this.path}@${this.sha}`,
 		);
 
-		return this.gh
-			.getContent(currentRepo, this.path)
-			.then(({ content }) => yaml.load(content))
-			.then((data) => (this.data = data))
+		return Promise.all([
+			this.gh
+				.getContent(this.repo, this.path)
+
+				.then(({ content }) => yaml.load(content))
+				.then((data) => (this.data = data)),
+
+			this.gh.getDefaultBranch(this.repo).then(({ sha }) => (this.sha = sha)),
+		])
 			.then(() => this.parse())
 			.then(() => this.getContents());
 	}
