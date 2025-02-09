@@ -118,22 +118,6 @@ describe("commitMessage", () => {
 		);
 	});
 });
-describe("commitMessage", () => {
-	it("formats the commit message", () => {
-		const link = {
-			from: { toString: () => "from" },
-			to: { toString: () => "to" },
-		};
-		expect(commitMessage(link)).toEqual(
-			dedent(`
-			auto(link): update links
-
-			From: from
-			To:   to
-		`),
-		);
-	});
-});
 
 describe("pullBody", () => {
 	it("formats the pull request body", () => {
