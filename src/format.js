@@ -72,4 +72,5 @@ module.exports = {
 	branchName,
 	commitMessage,
 	pullBody,
+	pullTitle,
 };
