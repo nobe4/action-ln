@@ -4,7 +4,6 @@ const { GitHub } = require("./github");
 const { prettify: p } = require("./utils");
 
 function main() {
-	console.log("TEST");
 	try {
 		const configPath = core.getInput("config-path", { required: true });
 		let token = core.getInput("token", { required: true });
