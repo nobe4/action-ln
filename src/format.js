@@ -61,7 +61,7 @@ function pullBody(link, config) {
 		
 		---
 		
-		Configuration: [\`${config.path}\`](${config.URL}).
+		Configured by [\`${config.path}\`](${config.URL}).
 		Powered by [\`action-ln\`](https://github.com/nobe4/action-ln).
 	`);
 }
