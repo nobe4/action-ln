@@ -51,72 +51,67 @@ async function createPRForLink(gh, link) {
 		needsUpdate: false,
 	};
 
-	return (
-		gh
-			.getDefaultBranch(link.to.repo)
+	return gh
+		.getDefaultBranch(link.to.repo)
 
-			.then((b) => {
-				core.debug(`default branch: ${p(b)}`);
-				baseBranch = b;
-			})
-			.then(() =>
-				gh.getOrCreateBranch(link.to.repo, headBranchName, baseBranch.sha),
-			)
+		.then((b) => {
+			core.debug(`default branch: ${p(b)}`);
+			baseBranch = b;
+		})
+		.then(() =>
+			gh.getOrCreateBranch(link.to.repo, headBranchName, baseBranch.sha),
+		)
 
-			.then((b) => {
-				core.debug(`head branch: ${p(b)}`);
-				headBranch = b;
-			})
-			.then(() => {
-				if (headBranch.new) {
-					return (headBranch.needsUpdate = true);
-				}
+		.then((b) => {
+			core.debug(`head branch: ${p(b)}`);
+			headBranch = b;
+		})
+		.then(() => {
+			if (headBranch.new) {
+				return (headBranch.needsUpdate = true);
+			}
 
-				return gh
-					.getContent(link.to.repo, link.to.path, headBranch.name)
-					.then(
-						(c) => (headBranch.needsUpdate = link.from.content !== c.content),
-					)
-					.catch((e) => {
-						if (e.status === 404) {
-							return (headBranch.needsUpdate = true);
-						}
+			return gh
+				.getContent(link.to.repo, link.to.path, headBranch.name)
+				.then((c) => (headBranch.needsUpdate = link.from.content !== c.content))
+				.catch((e) => {
+					if (e.status === 404) {
+						return (headBranch.needsUpdate = true);
+					}
 
-						throw e;
-					});
-			})
+					throw e;
+				});
+		})
 
-			.then(() => {
-				if (!headBranch.needsUpdate) {
-					console.log("update not needed");
-					return;
-				}
+		.then(() => {
+			if (!headBranch.needsUpdate) {
+				console.log("update not needed");
+				return;
+			}
 
-				return gh.createOrUpdateFileContents(
-					link.to.repo,
-					link.to.path,
-					link.to.sha,
-					headBranch.name,
-					link.from.content,
-					"update link",
-				);
-			})
+			return gh.createOrUpdateFileContents(
+				link.to.repo,
+				link.to.path,
+				link.to.sha,
+				headBranch.name,
+				link.from.content,
+				"TODO commit message",
+			);
+		})
 
-			//.then(() =>
-			//	gh.createPullRequest(
-			//		link.to.repo,
-			//		headBranch,
-			//		baseBranch.name,
-			//		"TODO",
-			//		"TODO",
-			//	),
+		.then(() =>
+			gh.getOrCreatePullRequest(
+				link.to.repo,
+				headBranch,
+				baseBranch.name,
+				"TODO title",
+				"TODO body",
+			),
+		)
 
-			.catch((e) => {
-				core.setFailed(
-					`failed to create PR for ${link.toString(true)}: ${p(e)}`,
-				);
-			})
-	);
+		.catch((e) => {
+			core.setFailed(`failed to create PR for ${link.toString(true)}: ${p(e)}`);
+		});
 }
 
 main();
