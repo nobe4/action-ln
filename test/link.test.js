@@ -2,9 +2,12 @@
 const currentRepo = { owner: "owner", repo: "repo" };
 jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
 
+const { hash } = require("crypto");
+jest.mock("crypto");
+
 const { Link, ParseError } = require("../src/link");
 const { File } = require("../src/file");
-const { dedent } = require("../src/utils");
+const { dedent } = require("../src/format");
 
 describe("Link", () => {
 	let l = new Link();
@@ -34,6 +37,27 @@ describe("Link", () => {
 				    content
 				needs update: false
 				`),
+			);
+		});
+	});
+
+	describe("SHA256", () => {
+		it("calculates the hash", () => {
+			l.from = new File({
+				repo: { repo: "repo", owner: "owner" },
+				path: "path",
+			});
+			l.wto = new File({
+				repo: { repo: "repo", owner: "owner" },
+				path: "path",
+			});
+			hash.mockReturnValue("hash");
+
+			expect(l.SHA256).toStrictEqual("hash");
+			expect(hash).toHaveBeenCalledWith(
+				"sha256",
+				"owner repo path owner repo path",
+				"hex",
 			);
 		});
 	});

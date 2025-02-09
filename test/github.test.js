@@ -44,22 +44,6 @@ describe("GitHub", () => {
 		});
 	});
 
-	describe("normalizeBranch", () => {
-		it.each([
-			{ input: "", output: "" },
-			{ input: "abc123", output: "abc123" },
-			{ input: " x y z ", output: "-x-y-z-" },
-			{ input: "()|]\\ xxx {}", output: "------xxx---" },
-		])("%# %s", ({ input, output }) => {
-			expect(g.normalizeBranch(input)).toEqual(output);
-		});
-	});
-
-	describe("createTree", () => {
-		// Waiting for the `mode` to be testable.
-		it.todo;
-	});
-
 	describe("getContent", () => {
 		const expectedcalls = () => {
 			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);

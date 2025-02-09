@@ -1,7 +1,10 @@
 const core = require("@actions/core");
+const currentRepo = require("@actions/github").context.repo;
+
 const { Config } = require("./config");
 const { GitHub } = require("./github");
-const { prettify: p } = require("./utils");
+const { branchName } = require("./format");
+const { prettify: p } = require("./format");
 
 function main() {
 	try {
@@ -9,7 +12,7 @@ function main() {
 		let token = core.getInput("token", { required: true });
 
 		const gh = new GitHub(token);
-		const config = new Config(configPath, gh);
+		const config = new Config(currentRepo, configPath, gh);
 
 		config
 			.load()
@@ -44,9 +47,6 @@ function main() {
 
 async function createPRForLink(gh, link) {
 	let baseBranch = {};
-	let headBranchName = gh.normalizeBranch(
-		`link-${link.from.repo.owner}-${link.from.repo.repo}-${link.from.path}`,
-	);
 	let headBranch = {
 		needsUpdate: false,
 	};
@@ -59,7 +59,7 @@ async function createPRForLink(gh, link) {
 			baseBranch = b;
 		})
 		.then(() =>
-			gh.getOrCreateBranch(link.to.repo, headBranchName, baseBranch.sha),
+			gh.getOrCreateBranch(link.to.repo, branchName(link), baseBranch.sha),
 		)
 
 		.then((b) => {
@@ -115,5 +115,3 @@ async function createPRForLink(gh, link) {
 }
 
 main();
-
-module.exports = { createPRForLink };

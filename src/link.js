@@ -1,4 +1,6 @@
-const { indent } = require("./utils");
+const { hash } = require("crypto");
+
+const { indent } = require("./format");
 const { File } = require("./file");
 
 class ParseError extends Error {
@@ -26,6 +28,21 @@ class Link {
 			indent(this.to.toString()),
 			`needs update: ${this.needsUpdate}`,
 		].join("\n");
+	}
+
+	get SHA256() {
+		return hash(
+			"sha256",
+			[
+				this.from.repo.owner,
+				this.from.repo.repo,
+				this.from.path,
+				this.to.repo.owner,
+				this.to.repo.repo,
+				this.to.path,
+			].join(" "),
+			"hex",
+		);
 	}
 
 	parse(raw) {
