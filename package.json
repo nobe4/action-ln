@@ -5,14 +5,15 @@
 	"main": "src/main.js",
 	"scripts": {
 		"start": "npm run watch:all",
+		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
+		"watch:test": "find ./src/ ./test/ -type f | entr npm test",
+		"all": "npm run format && npm run lint && npm run test && npm run build && npm run build:add",
 		"test": "jest",
-		"all": "npm run format && npm run lint && npm run test && npm run build",
 		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
+		"build:add": "git add ./dist/* --force",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
-		"lint": "eslint .",
-		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
-		"watch:test": "find ./src/ ./test/ -type f | entr npm test"
+		"lint": "eslint ."
 	},
 	"repository": {
 		"type": "git",
