@@ -102,7 +102,7 @@ async function createPRForLink(gh, link) {
 		.then(() =>
 			gh.getOrCreatePullRequest(
 				link.to.repo,
-				headBranch,
+				headBranch.name,
 				baseBranch.name,
 				"TODO title",
 				"TODO body",
