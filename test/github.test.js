@@ -8,11 +8,11 @@ const { GitHub } = require("../src/github");
 
 const repo = { owner: "owner", repo: "repo" };
 const path = "path";
-const ref = "ref";
 const branch = "branch";
 const sha = "sha";
 const content = "content";
-const prettyRepo = `${repo.owner}/${repo.repo}:${path}@${ref}`;
+const prettyRepo = `${repo.owner}/${repo.repo}:${path}@${branch}`;
+const prettyBranch = `${repo.owner}/${repo.repo}@${branch}`;
 
 describe("GitHub", () => {
 	let g = undefined;
@@ -68,14 +68,14 @@ describe("GitHub", () => {
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
-				ref: ref,
+				ref: branch,
 			});
 		};
 
 		it("catches a 404", async () => {
 			g.octokit.rest.repos.getContent.mockRejectedValue({ status: 404 });
 
-			await expect(g.getContent(repo, path, ref)).resolves.not.toBeDefined();
+			await expect(g.getContent(repo, path, branch)).resolves.not.toBeDefined();
 
 			expect(core.warning).toHaveBeenCalledWith(`${prettyRepo} not found`);
 			expectedcalls();
@@ -91,7 +91,7 @@ describe("GitHub", () => {
 				}),
 			};
 
-			await expect(g.getContent(repo, path, ref)).rejects.toThrow(/Error/);
+			await expect(g.getContent(repo, path, branch)).rejects.toThrow(/Error/);
 
 			expect(global.Buffer.from).toHaveBeenCalledWith(content, "base64");
 			expect(core.setFailed).toHaveBeenCalledWith(
@@ -110,7 +110,7 @@ describe("GitHub", () => {
 				}),
 			};
 
-			await expect(g.getContent(repo, path, ref)).resolves.toEqual({
+			await expect(g.getContent(repo, path, branch)).resolves.toEqual({
 				content: content,
 				sha: 123,
 			});
@@ -222,7 +222,7 @@ describe("GitHub", () => {
 			expect(g.octokit.rest.git.getRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				ref: "heads/branch",
+				ref: `heads/${branch}`,
 			});
 		});
 	});
@@ -234,7 +234,7 @@ describe("GitHub", () => {
 			expect(g.octokit.rest.git.createRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				ref: "refs/heads/branch",
+				ref: `refs/heads/${branch}`,
 				sha: sha,
 			});
 		});
@@ -282,13 +282,30 @@ describe("GitHub", () => {
 			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull"] });
 
 			await expect(
-				g.getOrCreatePullRequest(repo, "head", "base", "title", "body"),
+				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
 			).resolves.toEqual("pull");
 
 			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				head: "head",
+				head: branch,
+			});
+		});
+
+		it("gets an existing pull request and warns for duplicates", async () => {
+			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull1", "pull2"] });
+
+			await expect(
+				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
+			).resolves.toEqual("pull1");
+
+			expect(core.warning).toHaveBeenCalledWith(
+				`found 2 PRs for ${prettyBranch}`,
+			);
+			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				head: branch,
 			});
 		});
 
@@ -297,18 +314,18 @@ describe("GitHub", () => {
 			g.octokit.rest.pulls.create.mockResolvedValue({ data: "pull" });
 
 			await expect(
-				g.getOrCreatePullRequest(repo, "head", "base", "title", "body"),
+				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
 			).resolves.toEqual("pull");
 
 			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				head: "head",
+				head: branch,
 			});
 			expect(g.octokit.rest.pulls.create).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
-				head: "head",
+				head: branch,
 				base: "base",
 				title: "title",
 				body: "body",

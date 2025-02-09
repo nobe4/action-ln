@@ -145,6 +145,10 @@ class GitHub {
 			.then(({ data }) => {
 				// There really should not be more than one Pull matching this
 				// head, because creating more fails with 422.
+				if (data.length > 1) {
+					core.warning(`found ${data.length} PRs for ${owner}/${repo}@${head}`);
+				}
+
 				if (data.length > 0) {
 					return data[0];
 				}
