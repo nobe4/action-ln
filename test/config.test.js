@@ -69,14 +69,14 @@ describe("Config", () => {
 			});
 
 			it("cannot load YAML", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getContent.mockResolvedValue({ content: "content", sha: "sha" });
 				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
 				await expect(c.load()).rejects.toThrow(/Invalid YAML/);
 				expectedcalls();
 			});
 
 			it("cannot parse", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getContent.mockResolvedValue({ content: "content", sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				jest
 					.spyOn(Config.prototype, "parse")
@@ -86,7 +86,7 @@ describe("Config", () => {
 			});
 
 			it("cannot getContents", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getContent.mockResolvedValue({ content: "content", sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
 				jest
@@ -99,7 +99,7 @@ describe("Config", () => {
 
 		describe("succeeds", () => {
 			it("read, load, parse, and getContents", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
+				c.gh.getContent.mockResolvedValue({ content: "content", sha: "sha" });
 				yaml.load.mockResolvedValue("yaml");
 				const mockParse = jest
 					.spyOn(Config.prototype, "parse")
@@ -108,6 +108,7 @@ describe("Config", () => {
 					.spyOn(Config.prototype, "getContents")
 					.mockResolvedValue("data");
 				await expect(c.load()).resolves.toEqual("data");
+				expect(c.sha).toEqual("sha");
 				expect(mockParse).toHaveBeenCalled();
 				expect(mockGetContents).toHaveBeenCalled();
 				expectedcalls();
