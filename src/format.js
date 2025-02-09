@@ -35,7 +35,7 @@ function prettify(o) {
 }
 
 function branchName(link) {
-	return `link-${link.SHA256.substring(0, 8)}`;
+	return `ln-${link.SHA256.substring(0, 8)}`;
 }
 
 function commitMessage(link) {
@@ -48,20 +48,21 @@ function commitMessage(link) {
 }
 
 function pullTitle() {
-	return `auto(link): update links`;
+	return `auto(ln): update links`;
 }
 
 function pullBody(link, config) {
 	return dedent(`
-		This automated PR updates the following link as defined in [the configuration](${config.URL}).
+		This automated PR updates the following file.
 		
-		## Link
-		From: ${link.from.toString(true)}
-		To:   ${link.to.toString(true)}
+		From | To
+		--- | ---
+		\`${link.from.toString(true)}\` | \`${link.to.toString(true)}\`
 		
 		---
 		
-		See [\`action-ln\`](https://github.com/nobe4/action-ln).
+		Configuration: [\`${config.path}\`](${config.URL}).
+		Powered by [\`action-ln\`](https://github.com/nobe4/action-ln).
 	`);
 }
 

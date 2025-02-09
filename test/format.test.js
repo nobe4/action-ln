@@ -98,7 +98,7 @@ b
 describe("branchName", () => {
 	it("formats the branch name", () => {
 		const link = { SHA256: "sha256" };
-		expect(branchName(link)).toEqual("link-sha256");
+		expect(branchName(link)).toEqual("ln-sha256");
 	});
 });
 
@@ -110,7 +110,7 @@ describe("commitMessage", () => {
 		};
 		expect(commitMessage(link)).toEqual(
 			dedent(`
-			auto(link): update links
+			auto(ln): update links
 
 			From: from
 			To:   to
@@ -122,6 +122,7 @@ describe("commitMessage", () => {
 describe("pullBody", () => {
 	it("formats the pull request body", () => {
 		const config = {
+			path: "path",
 			URL: "URL",
 		};
 		const link = {
@@ -131,11 +132,8 @@ describe("pullBody", () => {
 
 		const body = pullBody(link, config);
 		expect(body).toEqual(
-			expect.stringContaining(
-				"This automated PR updates the following link as defined in [the configuration](URL).",
-			),
+			expect.stringContaining("Configuration: [`path`](URL)"),
 		);
-		expect(body).toEqual(expect.stringContaining("From: from"));
-		expect(body).toEqual(expect.stringContaining("To:   to"));
+		expect(body).toEqual(expect.stringContaining("`from` | `to`"));
 	});
 });
