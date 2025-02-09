@@ -7,7 +7,7 @@
 		"start": "npm run watch:all",
 		"test": "jest",
 		"all": "npm run format && npm run lint && npm run test && npm run build",
-		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
+		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE && git add ./dist/* --force",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint .",
