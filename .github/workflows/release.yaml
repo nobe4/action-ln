@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
       id-token: write
       packages: write
 
@@ -27,7 +27,8 @@ jobs:
 
       - run: npm run all
 
-      # TODO: make a github release
       # TODO: delete all but the dist folder
+
+      - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
 
       - uses: actions/publish-immutable-action@0.0.3
