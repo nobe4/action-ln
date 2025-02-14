@@ -1,5 +1,5 @@
 const core = require("@actions/core");
-const currentRepo = require("@actions/github").context.repo;
+const context = require("@actions/github").context;
 
 const { Config } = require("./config");
 const { GitHub } = require("./github");
@@ -17,7 +17,7 @@ function main() {
 		let token = core.getInput("token", { required: true });
 
 		const gh = new GitHub(token);
-		const config = new Config(currentRepo, configPath, gh);
+		const config = new Config(context.repo, configPath, gh);
 
 		config
 			.load()
@@ -110,7 +110,7 @@ async function createPRForLink(gh, link, config) {
 				headBranch.name,
 				baseBranch.name,
 				pullTitle(link),
-				pullBody(link, config),
+				pullBody(link, config, context),
 			),
 		)
 
