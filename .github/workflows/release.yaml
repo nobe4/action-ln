@@ -30,5 +30,7 @@ jobs:
       # TODO: delete all but the dist folder
 
       - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - uses: actions/publish-immutable-action@0.0.3
