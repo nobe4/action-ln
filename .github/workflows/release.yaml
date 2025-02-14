@@ -1,0 +1,33 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - run: npm clean-install
+
+      - run: npm run all
+
+      # TODO: make a github release
+      # TODO: delete all but the dist folder
+
+      - uses: actions/publish-immutable-action@0.0.3
