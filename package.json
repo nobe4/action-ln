@@ -10,8 +10,8 @@
 		"all": "npm run format && npm run lint && npm run test && npm run build",
 		"test": "jest",
 		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
-		"build:add": "git add ./dist/* --force",
-		"build:clean": "rm -rf ./dist",
+		"build:add": "git add --force './dist/*' && git commit -m 'chore(dist): generate'",
+		"build:clean": "rm -rf ./dist && git commit -m 'chore(dist): cleanup' -- 'dist/*'",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint ."
