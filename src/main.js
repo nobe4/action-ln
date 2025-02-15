@@ -96,13 +96,12 @@ async function createPRForGroup(gh, group, config) {
 				}
 
 				promises.push(
-					(() => {
+					((resolve, reject) => {
 						core.info(
 							`checking for diff for ${link.toString(true)} by getting content`,
 						);
 
-						return gh
-							.getContent(toRepo, link.to.path, headBranch.name)
+						gh.getContent(toRepo, link.to.path, headBranch.name)
 							.then((c) => {
 								const needsUpdate = link.from.content !== c.content;
 
@@ -110,15 +109,15 @@ async function createPRForGroup(gh, group, config) {
 									`diff found for ${link.toString(true)}: ${needsUpdate}`,
 								);
 
-								return needsUpdate;
+								resolve(needsUpdate);
 							})
 							.catch((e) => {
 								if (e.status === 404) {
 									core.info(`file not found ${link.toString(true)}`);
-									return true;
+									resolve(true);
 								}
 
-								throw e;
+								reject(e);
 							});
 					})(),
 				);
