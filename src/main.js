@@ -26,19 +26,23 @@ function main() {
 				core.info(`config:\n${c}`);
 
 				const promises = [];
-				for (let link of c.data.links) {
-					core.debug(`link: ${link}`);
+				for (let groupName in c.data.groups) {
+					core.debug(`group: ${groupName}`);
 
-					if (!link.needsUpdate) {
-						continue;
-					}
+					for (let link of c.data.groups[groupName]) {
+						core.debug(`link: ${link}`);
 
-					core.info(`updating: ${link.toString(true)}`);
+						if (!link.needsUpdate) {
+							continue;
+						}
 
-					// This is only the first usage of noop, it should go deeper
-					// into the creation of the branch and PRs.
-					if (!noop) {
-						promises.push(createPRForLink(gh, link, config));
+						core.info(`updating: ${link.toString(true)}`);
+
+						// This is only the first usage of noop, it should go deeper
+						// into the creation of the branch and PRs.
+						if (!noop) {
+							promises.push(createPRForLink(gh, link, config));
+						}
 					}
 				}
 
