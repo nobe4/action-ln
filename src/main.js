@@ -95,27 +95,33 @@ async function createPRForGroup(gh, group, config) {
 					return;
 				}
 
-				promises.push(() => {
-					return gh
-						.getContent(toRepo, link.to.path, headBranch.name)
-						.then((c) => {
-							const needsUpdate = link.from.content !== c.content;
+				promises.push(
+					(() => {
+						core.info(
+							`checking for diff for ${link.toString(true)} by getting content`,
+						);
 
-							core.info(
-								`diff found for ${link.toString(true)}: ${needsUpdate}`,
-							);
+						return gh
+							.getContent(toRepo, link.to.path, headBranch.name)
+							.then((c) => {
+								const needsUpdate = link.from.content !== c.content;
 
-							return needsUpdate;
-						})
-						.catch((e) => {
-							if (e.status === 404) {
-								core.info(`file not found ${link.toString(true)}`);
-								return true;
-							}
+								core.info(
+									`diff found for ${link.toString(true)}: ${needsUpdate}`,
+								);
 
-							throw e;
-						});
-				});
+								return needsUpdate;
+							})
+							.catch((e) => {
+								if (e.status === 404) {
+									core.info(`file not found ${link.toString(true)}`);
+									return true;
+								}
+
+								throw e;
+							});
+					})(),
+				);
 			});
 
 			return Promise.all(promises);
@@ -136,16 +142,18 @@ async function createPRForGroup(gh, group, config) {
 
 				core.info(`updating: ${link.toString(true)}`);
 
-				promises.push(() => {
-					return gh.createOrUpdateFileContents(
-						toRepo,
-						link.to.path,
-						link.to.sha,
-						headBranch.name,
-						link.from.content,
-						commitMessage(link),
-					);
-				});
+				promises.push(
+					(() => {
+						return gh.createOrUpdateFileContents(
+							toRepo,
+							link.to.path,
+							link.to.sha,
+							headBranch.name,
+							link.from.content,
+							commitMessage(link),
+						);
+					})(),
+				);
 			});
 
 			return Promise.all(promises);
