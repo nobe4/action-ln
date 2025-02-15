@@ -5,9 +5,9 @@ const { Config } = require("./config");
 const { GitHub } = require("./github");
 const {
 	branchName,
-	commitMessage,
-	pullBody,
-	pullTitle,
+	//commitMessage,
+	//pullBody,
+	//pullTitle,
 	prettify: p,
 } = require("./format");
 
@@ -55,6 +55,7 @@ function main() {
 async function createPRForGroup(gh, group, config) {
 	let baseBranch = {};
 	let headBranch = {};
+	core.debug(config); // TODO: remove after debug
 
 	let toRepo = group[0].to.repo;
 
