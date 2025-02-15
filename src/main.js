@@ -109,14 +109,14 @@ async function createPRForGroup(gh, group, config) {
 
 		.then(() => {
 			if (!headBranch.needsUpdate) {
-				core.info("update not needed");
+				core.info(`update not needed for ${toRepo}:${headBranch.name}`);
 				return;
 			}
 
 			const promises = [];
 			for (let link of group) {
 				if (!link.needsUpdate) {
-					core.info("update not needed for ${link.toString(true)}");
+					core.info(`update not needed for ${link.toString(true)}`);
 					continue;
 				}
 
