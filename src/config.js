@@ -101,10 +101,12 @@ class Config {
 		this.data.groups = {};
 
 		for (let link of this.data.links) {
-			if (link.to.repo in this.data.groups) {
-				this.data.groups[link.to.repo].push(link);
+			const repo = `${link.to.repo.owner}/${link.to.repo.repo}`;
+
+			if (repo in this.data.groups) {
+				this.data.groups[repo].push(link);
 			} else {
-				this.data.groups[link.to.repo] = [link];
+				this.data.groups[repo] = [link];
 			}
 		}
 

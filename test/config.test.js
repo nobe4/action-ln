@@ -261,9 +261,9 @@ describe("Config", () => {
 
 	describe("groupLinks", () => {
 		const links = [
-			{ to: { repo: "to" } },
-			{ to: { repo: "to1" } },
-			{ to: { repo: "to2" } },
+			{ to: { repo: { owner: "o0", repo: "r0" } } },
+			{ to: { repo: { owner: "o1", repo: "r1" } } },
+			{ to: { repo: { owner: "o2", repo: "r2" } } },
 		];
 		it.each([
 			{
@@ -273,28 +273,28 @@ describe("Config", () => {
 			{
 				links: [links[0]],
 				want: {
-					to: [links[0]],
+					"o0/r0": [links[0]],
 				},
 			},
 			{
 				links: [links[0], links[0], links[0]],
 				want: {
-					to: [links[0], links[0], links[0]],
+					"o0/r0": [links[0], links[0], links[0]],
 				},
 			},
 			{
 				links: [links[0], links[1], links[0]],
 				want: {
-					to: [links[0], links[0]],
-					to1: [links[1]],
+					"o0/r0": [links[0], links[0]],
+					"o1/r1": [links[1]],
 				},
 			},
 			{
 				links: [links[0], links[1], links[0], links[1], links[2], links[1]],
 				want: {
-					to: [links[0], links[0]],
-					to1: [links[1], links[1], links[1]],
-					to2: [links[2]],
+					"o0/r0": [links[0], links[0]],
+					"o1/r1": [links[1], links[1], links[1]],
+					"o2/r2": [links[2]],
 				},
 			},
 		])("%# %j", ({ links, want }) => {
