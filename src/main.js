@@ -74,53 +74,49 @@ async function createPRForGroup(gh, group, config) {
 		})
 
 		.then(() => {
-			const promises = [];
+			const promises = group.map((link) => {
+				return new Promise((resolve, reject) => {
+					core.info(`checking for diff for ${link.toString(true)}`);
 
-			group.forEach((link) => {
-				core.info(`checking for diff for ${link.toString(true)}`);
-
-				if (headBranch.new) {
-					core.info(
-						`diff checking not needed for ${link.toString(true)}: head branch is new`,
-					);
-					promises.push(() => false);
-					return;
-				}
-
-				if (!link.needsUpdate) {
-					core.info(
-						`diff checking not needed for ${link.toString(true)}: links is up to date`,
-					);
-					promises.push(() => false);
-					return;
-				}
-
-				promises.push(
-					((resolve, reject) => {
+					if (headBranch.new) {
 						core.info(
-							`checking for diff for ${link.toString(true)} by getting content`,
+							`diff checking not needed for ${link.toString(true)}: head branch is new`,
 						);
+						resolve(false);
+						return;
+					}
 
-						gh.getContent(toRepo, link.to.path, headBranch.name)
-							.then((c) => {
-								const needsUpdate = link.from.content !== c.content;
+					if (!link.needsUpdate) {
+						core.info(
+							`diff checking not needed for ${link.toString(true)}: links is up to date`,
+						);
+						resolve(false);
+						return;
+					}
 
-								core.info(
-									`diff found for ${link.toString(true)}: ${needsUpdate}`,
-								);
+					core.info(
+						`checking for diff for ${link.toString(true)} by getting content`,
+					);
 
-								resolve(needsUpdate);
-							})
-							.catch((e) => {
-								if (e.status === 404) {
-									core.info(`file not found ${link.toString(true)}`);
-									resolve(true);
-								}
+					gh.getContent(toRepo, link.to.path, headBranch.name)
+						.then((c) => {
+							const needsUpdate = link.from.content !== c.content;
 
-								reject(e);
-							});
-					})(),
-				);
+							core.info(
+								`diff found for ${link.toString(true)}: ${needsUpdate}`,
+							);
+
+							resolve(needsUpdate);
+						})
+						.catch((e) => {
+							if (e.status === 404) {
+								core.info(`file not found ${link.toString(true)}`);
+								resolve(true);
+							}
+
+							reject(e);
+						});
+				});
 			});
 
 			return Promise.all(promises);
