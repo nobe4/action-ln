@@ -75,7 +75,10 @@ async function createPRForGroup(gh, group, config) {
 
 		.then(() => {
 			const promises = [];
+
 			group.forEach((link) => {
+				core.info(`checking for diff for ${link.toString(true)}`);
+
 				if (headBranch.new) {
 					core.info(
 						`diff checking not needed for ${link.toString(true)}: head branch is new`,
@@ -91,8 +94,6 @@ async function createPRForGroup(gh, group, config) {
 					promises.push(() => false);
 					return;
 				}
-
-				core.info(`checking for diff on branch for ${link.toString(true)}`);
 
 				promises.push(() => {
 					return gh
@@ -120,12 +121,13 @@ async function createPRForGroup(gh, group, config) {
 			return Promise.all(promises);
 		})
 
-		.then((updateNeeds) => {
-			core.info(`update needs: ${updateNeeds}`);
+		.then((updateNeeded) => {
+			core.info(`update needs: ${updateNeeded}`);
 
 			const promises = [];
+
 			group.forEach((link, i) => {
-				if (!updateNeeds[i]) {
+				if (!updateNeeded[i]) {
 					core.info(
 						`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}: branch is up to date`,
 					);
@@ -147,6 +149,10 @@ async function createPRForGroup(gh, group, config) {
 			});
 
 			return Promise.all(promises);
+		})
+
+		.then((values) => {
+			core.info(`result from updating branches: ${values}`);
 		})
 
 		.then(() =>
