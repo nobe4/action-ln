@@ -49,7 +49,7 @@ class GitHub {
 
 		return this.getDefaultBranchName(repo)
 			.then((n) => this.getBranch(repo, (name = n)))
-			.then(({ object: { sha } } = {}) => ({
+			.then(({ object: { sha } } = { object: { sha: undefined } }) => ({
 				name: name,
 				sha: sha,
 			}));
@@ -108,23 +108,22 @@ class GitHub {
 	async createOrUpdateFileContents(
 		{ owner, repo },
 		path,
-		sha,
 		branch,
 		content,
 		message,
 	) {
-		const base64Content = Buffer.from(content).toString("base64");
-
-		return this.octokit.rest.repos
-			.createOrUpdateFileContents({
-				owner: owner,
-				repo: repo,
-				path: path,
-				sha: sha,
-				branch: branch,
-				content: base64Content,
-				message: message,
-			})
+		return this.getContent(repo, path, branch)
+			.then((c) =>
+				this.octokit.rest.repos.createOrUpdateFileContents({
+					owner: owner,
+					repo: repo,
+					path: path,
+					sha: (c || {}).sha,
+					branch: branch,
+					content: Buffer.from(content).toString("base64"),
+					message: message,
+				}),
+			)
 			.then(({ data }) => data);
 	}
 

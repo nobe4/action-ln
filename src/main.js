@@ -11,122 +11,124 @@ const {
 	prettify: p,
 } = require("./format");
 
-function main() {
-	try {
-		const configPath = core.getInput("config-path", { required: true });
-		let token = core.getInput("token", { required: true });
-		let noop = core.getInput("noop", { required: true }) == "true";
+async function main() {
+	const configPath = core.getInput("config-path", { required: true });
+	let token = core.getInput("token", { required: true });
+	let noop = core.getInput("noop", { required: true }) == "true";
 
-		const gh = new GitHub(token);
-		const config = new Config(context.repo, configPath, gh);
+	const gh = new GitHub(token);
+	const config = new Config(context.repo, configPath, gh);
+	await config.load();
 
-		config
-			.load()
-			.then((c) => {
-				core.info(`config:\n${c}`);
+	for (let i in config.data.groups) {
+		core.info(`group ${i}`);
+		const group = config.data.groups[i];
 
-				const promises = [];
-				for (let groupName in c.data.groups) {
-					core.info(`group: ${groupName}`);
+		let toRepo = group[0].to.repo;
 
-					for (let link of c.data.groups[groupName]) {
-						core.info(`link: ${link}`);
+		let baseBranch = await gh.getDefaultBranch(toRepo);
+		core.info(`${toRepo.owner}/${toRepo.repo} base branch: ${p(baseBranch)}`);
 
-						if (!link.needsUpdate) {
-							continue;
+		let headBranch = await gh.getOrCreateBranch(
+			toRepo,
+			branchName,
+			baseBranch.sha,
+		);
+		core.info(`${toRepo.owner}/${toRepo.repo} head branch: ${p(headBranch)}`);
+
+		// Need to run those updates in sequence.
+		for (let j in group) {
+			const link = group[j];
+			core.startGroup(link.toString(true));
+
+			await checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch).then(
+				(needsUpdate) => {
+					if (needsUpdate) {
+						if (noop) {
+							core.info("noop: would have created or updated file");
+							return;
 						}
 
-						core.info(`updating: ${link.toString(true)}`);
-
-						// This is only the first usage of noop, it should go deeper
-						// into the creation of the branch and PRs.
-						if (!noop) {
-							promises.push(createPRForLink(gh, link, config));
-						}
+						return gh.createOrUpdateFileContents(
+							toRepo,
+							link.to.path,
+							headBranch.name,
+							link.from.content,
+							commitMessage(link),
+						);
 					}
-				}
+				},
+			);
 
-				return Promise.all(promises);
-			})
-			.catch((e) => {
-				core.error(e);
-				core.error(e.stack);
-				core.setFailed(e.message);
-			});
-	} catch (e) {
-		core.error(e);
-		core.error(e.stack);
-		core.setFailed(e.message);
+			core.endGroup();
+		}
+
+		core.info(
+			`creating PR for ${toRepo.owner}/${toRepo.repo}:${headBranch.name} -> ${baseBranch.name}`,
+		);
+
+		if (noop) {
+			core.info("noop: would have created PR");
+			return;
+		}
+
+		const pr = await gh.getOrCreatePullRequest(
+			toRepo,
+			headBranch.name,
+			baseBranch.name,
+			pullTitle,
+			pullBody(group, config, context),
+		);
+		core.info(`PR created: ${p(pr)}`);
 	}
 }
 
-async function createPRForLink(gh, link, config) {
-	let baseBranch = {};
-	let headBranch = {
-		needsUpdate: false,
-	};
+async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
+	return new Promise((resolve, reject) => {
+		if (headBranch.new) {
+			core.info("branch is new");
+			resolve(true);
+			return;
+		}
 
-	return gh
-		.getDefaultBranch(link.to.repo)
+		if (!link.needsUpdate) {
+			core.info("link doesn't need update");
+			resolve(false);
+			return;
+		}
 
-		.then((b) => {
-			core.debug(`default branch: ${p(b)}`);
-			baseBranch = b;
-		})
-		.then(() =>
-			gh.getOrCreateBranch(link.to.repo, branchName(link), baseBranch.sha),
-		)
+		core.info("checking for diff for by getting content");
 
-		.then((b) => {
-			core.debug(`head branch: ${p(b)}`);
-			headBranch = b;
-		})
-		.then(() => {
-			if (headBranch.new) {
-				return (headBranch.needsUpdate = true);
-			}
+		gh.getContent(toRepo, link.to.path, headBranch.name)
+			.then((c) => {
+				if (!c) {
+					core.info("file not found");
+					resolve(true);
+					return;
+				}
 
-			return gh
-				.getContent(link.to.repo, link.to.path, headBranch.name)
-				.then((c) => (headBranch.needsUpdate = link.from.content !== c.content))
-				.catch((e) => {
-					if (e.status === 404) {
-						return (headBranch.needsUpdate = true);
-					}
+				if (link.from.content !== c.content) {
+					core.info("content is different");
+					resolve(true);
+					return;
+				}
+			})
+			.catch((e) => {
+				if (e.status !== 404) {
+					reject(e);
+					return;
+				}
 
-					throw e;
-				});
-		})
+				core.info("file not found");
+				resolve(true);
+			});
 
-		.then(() => {
-			if (!headBranch.needsUpdate) {
-				console.log("update not needed");
-				return;
-			}
-
-			return gh.createOrUpdateFileContents(
-				link.to.repo,
-				link.to.path,
-				link.to.sha,
-				headBranch.name,
-				link.from.content,
-				commitMessage(link),
-			);
-		})
-
-		.then(() =>
-			gh.getOrCreatePullRequest(
-				link.to.repo,
-				headBranch.name,
-				baseBranch.name,
-				pullTitle(link),
-				pullBody(link, config, context),
-			),
-		)
-
-		.catch((e) => {
-			core.setFailed(`failed to create PR for ${link.toString(true)}: ${p(e)}`);
-		});
+		resolve(false);
+	});
 }
 
-main();
+main().catch((e) => {
+	core.error(e);
+	core.error(e.stack);
+	core.setFailed(e.message);
+});

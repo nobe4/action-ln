@@ -34,6 +34,9 @@ branch name/commit sha as a version to run the action on.
 
 Once testing is done, run `npm run build:clean` before you merge to the main branch.
 
+> [!NOTE]
+> There's no need to push the code, just pushing the dist is enough for testing.
+
 ## Random notes
 
 - If within a repo, at least the following permissions are needed:

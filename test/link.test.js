@@ -13,20 +13,20 @@ describe("Link", () => {
 	let l = new Link();
 
 	describe("toString", () => {
-		it("formats correctly", () => {
-			l.from = new File({
-				repo: { repo: "repo", owner: "owner" },
-				path: "path",
-				content: "content",
-				sha: 123,
-			});
-			l.to = new File({
-				repo: { repo: "repo", owner: "owner" },
-				path: "path",
-				content: "content",
-				sha: 123,
-			});
+		l.from = new File({
+			repo: { repo: "repo", owner: "owner" },
+			path: "path",
+			content: "content",
+			sha: 123,
+		});
+		l.to = new File({
+			repo: { repo: "repo", owner: "owner" },
+			path: "path",
+			content: "content",
+			sha: 123,
+		});
 
+		it("formats correctly", () => {
 			expect(l.toString()).toStrictEqual(
 				dedent(`
 				from:
@@ -37,6 +37,12 @@ describe("Link", () => {
 				    content
 				needs update: false
 				`),
+			);
+		});
+
+		it("formats correctly in short format", () => {
+			expect(l.toString(true)).toStrictEqual(
+				"owner/repo:path@123 -> owner/repo:path@123",
 			);
 		});
 	});

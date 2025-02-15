@@ -1,7 +1,6 @@
 const {
 	indent: indentFn,
 	dedent,
-	branchName,
 	commitMessage,
 	pullBody,
 } = require("../src/format");
@@ -95,13 +94,6 @@ b
 	});
 });
 
-describe("branchName", () => {
-	it("formats the branch name", () => {
-		const link = { SHA256: "sha256" };
-		expect(branchName(link)).toEqual("ln-sha256");
-	});
-});
-
 describe("commitMessage", () => {
 	it("formats the commit message", () => {
 		const link = {
@@ -125,10 +117,16 @@ describe("pullBody", () => {
 			path: "path",
 			URL: "URL",
 		};
-		const link = {
-			from: { toString: () => "from" },
-			to: { toString: () => "to" },
-		};
+		const group = [
+			{
+				from: { toString: () => "from0" },
+				to: { toString: () => "to0" },
+			},
+			{
+				from: { toString: () => "from1" },
+				to: { toString: () => "to1" },
+			},
+		];
 		const context = {
 			workflow: "workflow",
 			repo: {
@@ -139,8 +137,9 @@ describe("pullBody", () => {
 			runId: "runId",
 		};
 
-		const body = pullBody(link, config, context);
+		const body = pullBody(group, config, context);
 		expect(body).toEqual(expect.stringContaining("[configuration](URL)"));
-		expect(body).toEqual(expect.stringContaining("`from` | `to`"));
+		expect(body).toEqual(expect.stringContaining("`from0` | `to0`"));
+		expect(body).toEqual(expect.stringContaining("`from1` | `to1`"));
 	});
 });

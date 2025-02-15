@@ -7,7 +7,7 @@
 		"start": "npm run watch:all",
 		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
 		"watch:test": "find ./src/ ./test/ -type f | entr npm test",
-		"all": "npm run format && npm run lint && npm run test && npm run build",
+		"all": "npm run format && npm run lint && npm run test",
 		"test": "jest",
 		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
 		"build:add": "git add --force './dist/*' && git commit -m 'chore(dist): generate'",

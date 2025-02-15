@@ -1,3 +1,6 @@
+const branchName = "auto-action-ln";
+const pullTitle = "auto(ln): update links";
+
 function indent(str, indent = "    ") {
 	return str
 		.split("\n")
@@ -31,35 +34,39 @@ function dedent(str, trim = true) {
 }
 
 function prettify(o) {
-	return JSON.stringify(o, Object.getOwnPropertyNames(o));
-}
-
-function branchName(link) {
-	return `ln-${link.SHA256.substring(0, 8)}`;
+	try {
+		return JSON.stringify(o, Object.getOwnPropertyNames(o));
+	} catch {
+		return `${o}`;
+	}
 }
 
 function commitMessage(link) {
 	return dedent(`
-		${pullTitle()}
+		${pullTitle}
 		
 		From: ${link.from.toString(true)}
 		To:   ${link.to.toString(true)}
 	`);
 }
 
-function pullTitle() {
-	return `auto(ln): update links`;
-}
-
-function pullBody(link, config, context) {
+function pullBody(group, config, context) {
 	const execution = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
+	let table = [];
+	for (let link of group) {
+		table.push(
+			`\`${link.from.toString(true)}\` | \`${link.to.toString(true)}\``,
+		);
+	}
+
+	// TODO: make this not bad
 	return dedent(`
 		This automated PR updates the following file.
 		
 		From | To
 		--- | ---
-		\`${link.from.toString(true)}\` | \`${link.to.toString(true)}\`
+		${table.join("\n		")}
 		
 		---
 		
