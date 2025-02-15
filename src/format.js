@@ -31,7 +31,11 @@ function dedent(str, trim = true) {
 }
 
 function prettify(o) {
-	return JSON.stringify(o, Object.getOwnPropertyNames(o));
+	try {
+		return JSON.stringify(o, Object.getOwnPropertyNames(o));
+	} catch {
+		return `${o}`;
+	}
 }
 
 function commitMessage(link) {
@@ -61,12 +65,13 @@ function pullBody(group, config, context) {
 		);
 	}
 
+	// TODO: make this not bad
 	return dedent(`
 		This automated PR updates the following file.
 		
 		From | To
 		--- | ---
-		${table.join("\n")}
+		${table.join("\n		")}
 		
 		---
 		
