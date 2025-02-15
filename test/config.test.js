@@ -125,12 +125,16 @@ describe("Config", () => {
 				const mockGetContents = jest
 					.spyOn(Config.prototype, "getContents")
 					.mockResolvedValue("data");
+				const mockGroupLinks = jest
+					.spyOn(Config.prototype, "groupLinks")
+					.mockResolvedValue("data");
 
 				await expect(c.load()).resolves.toEqual("data");
 				expect(c.sha).toEqual("sha");
 
 				expect(mockParse).toHaveBeenCalled();
 				expect(mockGetContents).toHaveBeenCalled();
+				expect(mockGroupLinks).toHaveBeenCalled();
 				expectedcalls();
 			});
 		});
@@ -252,6 +256,51 @@ describe("Config", () => {
 				expect(c.parse().data).toStrictEqual(want);
 				expect(mockParse).toHaveBeenCalledTimes(data.links.length);
 			});
+		});
+	});
+
+	describe("groupLinks", () => {
+		const links = [
+			{ to: { repo: { owner: "o0", repo: "r0" } } },
+			{ to: { repo: { owner: "o1", repo: "r1" } } },
+			{ to: { repo: { owner: "o2", repo: "r2" } } },
+		];
+		it.each([
+			{
+				links: [],
+				want: {},
+			},
+			{
+				links: [links[0]],
+				want: {
+					"o0/r0": [links[0]],
+				},
+			},
+			{
+				links: [links[0], links[0], links[0]],
+				want: {
+					"o0/r0": [links[0], links[0], links[0]],
+				},
+			},
+			{
+				links: [links[0], links[1], links[0]],
+				want: {
+					"o0/r0": [links[0], links[0]],
+					"o1/r1": [links[1]],
+				},
+			},
+			{
+				links: [links[0], links[1], links[0], links[1], links[2], links[1]],
+				want: {
+					"o0/r0": [links[0], links[0]],
+					"o1/r1": [links[1], links[1], links[1]],
+					"o2/r2": [links[2]],
+				},
+			},
+		])("%# %j", ({ links, want }) => {
+			c.data = { links: links };
+
+			expect(c.groupLinks().data.groups).toStrictEqual(want);
 		});
 	});
 });
