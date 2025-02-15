@@ -112,7 +112,7 @@ class GitHub {
 		content,
 		message,
 	) {
-		return this.getContent(repo, path, branch)
+		return this.getContent({ owner: owner, repo: repo }, path, branch)
 			.then((c) =>
 				this.octokit.rest.repos.createOrUpdateFileContents({
 					owner: owner,

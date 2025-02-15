@@ -262,6 +262,7 @@ describe("GitHub", () => {
 			).resolves.toEqual("ok");
 
 			expect(global.Buffer.from).toHaveBeenCalledWith(content);
+			expect(g.getContent).toHaveBeenCalledWith(repo, path, branch);
 			expect(
 				g.octokit.rest.repos.createOrUpdateFileContents,
 			).toHaveBeenCalledWith({
@@ -282,6 +283,7 @@ describe("GitHub", () => {
 				g.createOrUpdateFileContents(repo, path, branch, content, "message"),
 			).resolves.toEqual("ok");
 
+			expect(g.getContent).toHaveBeenCalledWith(repo, path, branch);
 			expect(global.Buffer.from).toHaveBeenCalledWith(content);
 			expect(
 				g.octokit.rest.repos.createOrUpdateFileContents,

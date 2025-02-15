@@ -43,11 +43,15 @@ async function main() {
 
 			await checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch).then(
 				(needsUpdate) => {
+					core.info(`needs update: ${needsUpdate}`);
+
 					if (needsUpdate) {
 						if (noop) {
 							core.info("noop: would have created or updated file");
 							return;
 						}
+
+						core.info("creating or updating file");
 
 						return gh.createOrUpdateFileContents(
 							toRepo,
@@ -85,6 +89,8 @@ async function main() {
 
 async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
 	return new Promise((resolve) => {
+		core.info("checking if the link needs an update");
+
 		if (headBranch.new) {
 			core.info("branch is new");
 			resolve(true);
@@ -99,14 +105,12 @@ async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
 
 		core.info("checking for diff for by getting content");
 
-		return gh
-			.compareFileContent(
-				toRepo,
-				link.to.path,
-				headBranch.name,
-				link.from.content,
-			)
-			.then(({ found, equal }) => !found || !equal);
+		gh.compareFileContent(
+			toRepo,
+			link.to.path,
+			headBranch.name,
+			link.from.content,
+		).then(({ found, equal }) => resolve(!found || !equal));
 	});
 }
 
