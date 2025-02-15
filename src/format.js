@@ -61,9 +61,8 @@ function pullBody(link, config, context) {
 		
 		---
 		
-		Executed from [\`${context.repo.owner}/${context.repo.repo}/${context.workflow}\`](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})"
-		Configured by [\`${config.path}\`](${config.URL}).
-		Powered by [\`action-ln\`](https://github.com/nobe4/action-ln).
+		| [execution](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) | [configuration](${config.URL}) | [\`action-ln\`](https://github.com/nobe4/action-ln) |
+		| --- | --- | --- |
 	`);
 }
 
