@@ -140,9 +140,7 @@ describe("pullBody", () => {
 		};
 
 		const body = pullBody(link, config, context);
-		expect(body).toEqual(
-			expect.stringContaining("Configured by [`path`](URL)"),
-		);
+		expect(body).toEqual(expect.stringContaining("[configuration](URL)"));
 		expect(body).toEqual(expect.stringContaining("`from` | `to`"));
 	});
 });
