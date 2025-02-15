@@ -125,12 +125,16 @@ describe("Config", () => {
 				const mockGetContents = jest
 					.spyOn(Config.prototype, "getContents")
 					.mockResolvedValue("data");
+				const mockGroupLinks = jest
+					.spyOn(Config.prototype, "groupLinks")
+					.mockResolvedValue("data");
 
 				await expect(c.load()).resolves.toEqual("data");
 				expect(c.sha).toEqual("sha");
 
 				expect(mockParse).toHaveBeenCalled();
 				expect(mockGetContents).toHaveBeenCalled();
+				expect(mockGroupLinks).toHaveBeenCalled();
 				expectedcalls();
 			});
 		});
@@ -252,6 +256,51 @@ describe("Config", () => {
 				expect(c.parse().data).toStrictEqual(want);
 				expect(mockParse).toHaveBeenCalledTimes(data.links.length);
 			});
+		});
+	});
+
+	describe("groupLinks", () => {
+		const links = [
+			{ to: { repo: "to" } },
+			{ to: { repo: "to1" } },
+			{ to: { repo: "to2" } },
+		];
+		it.each([
+			{
+				links: [],
+				want: {},
+			},
+			{
+				links: [links[0]],
+				want: {
+					to: [links[0]],
+				},
+			},
+			{
+				links: [links[0], links[0], links[0]],
+				want: {
+					to: [links[0], links[0], links[0]],
+				},
+			},
+			{
+				links: [links[0], links[1], links[0]],
+				want: {
+					to: [links[0], links[0]],
+					to1: [links[1]],
+				},
+			},
+			{
+				links: [links[0], links[1], links[0], links[1], links[2], links[1]],
+				want: {
+					to: [links[0], links[0]],
+					to1: [links[1], links[1], links[1]],
+					to2: [links[2]],
+				},
+			},
+		])("%# %j", ({ links, want }) => {
+			c.data = { links: links };
+
+			expect(c.groupLinks().data.groups).toStrictEqual(want);
 		});
 	});
 });

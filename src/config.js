@@ -46,7 +46,8 @@ class Config {
 			this.gh.getDefaultBranch(this.repo).then(({ sha }) => (this.sha = sha)),
 		])
 			.then(() => this.parse())
-			.then(() => this.getContents());
+			.then(() => this.getContents())
+			.then(() => this.groupLinks());
 	}
 
 	async getContents() {
@@ -92,6 +93,20 @@ class Config {
 		this.data.links.forEach((raw, i) => {
 			this.data.links[i] = new Link().parse(raw);
 		});
+
+		return this;
+	}
+
+	groupLinks() {
+		this.data.groups = {};
+
+		for (let link of this.data.links) {
+			if (link.to.repo in this.data.groups) {
+				this.data.groups[link.to.repo].push(link);
+			} else {
+				this.data.groups[link.to.repo] = [link];
+			}
+		}
 
 		return this;
 	}
