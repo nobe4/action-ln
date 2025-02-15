@@ -1,5 +1,5 @@
 name: ln
-description: Link files between repositorie
+description: Link files between repositories
 
 inputs:
   token:
