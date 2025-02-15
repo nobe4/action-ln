@@ -11,6 +11,7 @@
 		"test": "jest",
 		"build": "ncc build src/main.js --source-map --minify --out dist/ --license LICENSE",
 		"build:add": "git add ./dist/* --force",
+		"build:clean": "rm -rf ./dist",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint ."

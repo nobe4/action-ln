@@ -29,10 +29,10 @@ links:
 ## Development
 
 To test the action from a branch, run `npm run build` and `npm run build:add`.
-Then, commit the `dist` folder, it will make CI pass but allow you to use the
+Then, commit the `dist` folder, it make CI fails but allows you to use the
 branch name/commit sha as a version to run the action on.
 
-Once testing is done, remove `dist` to merge to the main branch.
+Once testing is done, run `npm run build:clean` before you merge to the main branch.
 
 ## Random notes
 

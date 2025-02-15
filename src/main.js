@@ -15,6 +15,7 @@ function main() {
 	try {
 		const configPath = core.getInput("config-path", { required: true });
 		let token = core.getInput("token", { required: true });
+		let noop = core.getInput("noop", { required: true }) == "true";
 
 		const gh = new GitHub(token);
 		const config = new Config(context.repo, configPath, gh);
@@ -33,7 +34,12 @@ function main() {
 					}
 
 					core.info(`updating: ${link.toString(true)}`);
-					promises.push(createPRForLink(gh, link, config));
+
+					// This is only the first usage of noop, it should go deeper
+					// into the creation of the branch and PRs.
+					if (!noop) {
+						promises.push(createPRForLink(gh, link, config));
+					}
 				}
 
 				return Promise.all(promises);
