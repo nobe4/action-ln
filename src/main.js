@@ -84,7 +84,7 @@ async function main() {
 }
 
 async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
-	return new Promise((resolve) => {
+	return new Promise((resolve, reject) => {
 		if (headBranch.new) {
 			core.info("branch is new");
 			resolve(true);

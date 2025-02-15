@@ -40,7 +40,7 @@ describe("Link", () => {
 			);
 		});
 
-		it("formats correctly", () => {
+		it("formats correctly in short format", () => {
 			expect(l.toString(true)).toStrictEqual(
 				"owner/repo:path@123 -> owner/repo:path@123",
 			);
