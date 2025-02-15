@@ -31,7 +31,7 @@ async function main() {
 
 		let headBranch = await gh.getOrCreateBranch(
 			toRepo,
-			branchName(),
+			branchName,
 			baseBranch.sha,
 		);
 		core.info(`${toRepo.owner}/${toRepo.repo} head branch: ${p(headBranch)}`);
@@ -76,7 +76,7 @@ async function main() {
 			toRepo,
 			headBranch.name,
 			baseBranch.name,
-			pullTitle(),
+			pullTitle,
 			pullBody(group, config, context),
 		);
 		core.info(`PR created: ${p(pr)}`);

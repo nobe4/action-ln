@@ -1,3 +1,6 @@
+const branchName = "auto-action-ln";
+const pullTitle = "auto(ln): update links";
+
 function indent(str, indent = "    ") {
 	return str
 		.split("\n")
@@ -40,19 +43,11 @@ function prettify(o) {
 
 function commitMessage(link) {
 	return dedent(`
-		${pullTitle()}
+		${pullTitle}
 		
 		From: ${link.from.toString(true)}
 		To:   ${link.to.toString(true)}
 	`);
-}
-
-function branchName() {
-	return "auto-action-ln";
-}
-
-function pullTitle() {
-	return "auto(ln): update links";
 }
 
 function pullBody(group, config, context) {
