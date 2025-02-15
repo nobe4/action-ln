@@ -58,119 +58,123 @@ async function createPRForGroup(gh, group, config) {
 
 	let toRepo = group[0].to.repo;
 
-	return gh
-		.getDefaultBranch(toRepo)
+	return (
+		gh
+			.getDefaultBranch(toRepo)
 
-		.then((b) => {
-			core.debug(`default branch: ${p(b)}`);
-			baseBranch = b;
-		})
+			.then((b) => {
+				core.debug(`default branch: ${p(b)}`);
+				baseBranch = b;
+			})
 
-		.then(() => gh.getOrCreateBranch(toRepo, branchName(), baseBranch.sha))
+			.then(() => gh.getOrCreateBranch(toRepo, branchName(), baseBranch.sha))
 
-		.then((b) => {
-			core.debug(`head branch: ${p(b)}`);
-			headBranch = b;
-		})
+			.then((b) => {
+				core.debug(`head branch: ${p(b)}`);
+				headBranch = b;
+			})
 
-		.then(() => {
-			const promises = group.map((link) => {
-				return new Promise((resolve, reject) => {
-					core.info(`checking for diff for ${link.toString(true)}`);
+			.then(() => {
+				const promises = group.map((link) => {
+					return new Promise((resolve, reject) => {
+						core.info(`checking for diff for ${link.toString(true)}`);
 
-					if (headBranch.new) {
-						core.info(
-							`diff checking not needed for ${link.toString(true)}: head branch is new`,
-						);
-						resolve(false);
-						return;
-					}
-
-					if (!link.needsUpdate) {
-						core.info(
-							`diff checking not needed for ${link.toString(true)}: links is up to date`,
-						);
-						resolve(false);
-						return;
-					}
-
-					core.info(
-						`checking for diff for ${link.toString(true)} by getting content`,
-					);
-
-					gh.getContent(toRepo, link.to.path, headBranch.name)
-						.then((c) => {
-							const needsUpdate = link.from.content !== c.content;
-
+						if (headBranch.new) {
 							core.info(
-								`diff found for ${link.toString(true)}: ${needsUpdate}`,
+								`diff checking not needed for ${link.toString(true)}: head branch is new`,
 							);
+							resolve(false);
+							return;
+						}
 
-							resolve(needsUpdate);
-						})
-						.catch((e) => {
-							if (e.status === 404) {
-								core.info(`file not found ${link.toString(true)}`);
-								resolve(true);
-							}
+						if (!link.needsUpdate) {
+							core.info(
+								`diff checking not needed for ${link.toString(true)}: links is up to date`,
+							);
+							resolve(false);
+							return;
+						}
 
-							reject(e);
-						});
-				});
-			});
-
-			return Promise.all(promises);
-		})
-
-		.then((updateNeeded) => {
-			core.info(`update needs: ${updateNeeded}`);
-
-			const promises = [];
-
-			group.forEach((link, i) => {
-				if (!updateNeeded[i]) {
-					core.info(
-						`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}: branch is up to date`,
-					);
-					return;
-				}
-
-				core.info(`updating: ${link.toString(true)}`);
-
-				promises.push(
-					(() => {
-						return gh.createOrUpdateFileContents(
-							toRepo,
-							link.to.path,
-							link.to.sha,
-							headBranch.name,
-							link.from.content,
-							commitMessage(link),
+						core.info(
+							`checking for diff for ${link.toString(true)} by getting content`,
 						);
-					})(),
-				);
-			});
 
-			return Promise.all(promises);
-		})
+						gh.getContent(toRepo, link.to.path, headBranch.name)
+							.then((c) => {
+								const needsUpdate = link.from.content !== c.content;
 
-		.then((values) => {
-			core.info(`result from updating branches: ${values}`);
-		})
+								core.info(
+									`diff found for ${link.toString(true)}: ${needsUpdate}`,
+								);
 
-		.then(() =>
-			gh.getOrCreatePullRequest(
-				toRepo,
-				headBranch.name,
-				baseBranch.name,
-				pullTitle(),
-				pullBody(group, config, context),
-			),
-		)
+								resolve(needsUpdate);
+							})
+							.catch((e) => {
+								if (e.status === 404) {
+									core.info(`file not found ${link.toString(true)}`);
+									resolve(true);
+								}
 
-		.catch((e) => {
-			core.setFailed(`failed to create PR for ${group}: ${p(e)}`);
-		});
+								reject(e);
+							});
+					});
+				});
+
+				Promise.all(promises).then((x) => core.info(`update needs: ${x}`));
+
+				//return Promise.all(promises);
+			})
+
+			//.then((updateNeeded) => {
+			//	core.info(`update needs: ${updateNeeded}`);
+			//
+			//const promises = [];
+			//
+			//group.forEach((link, i) => {
+			//	if (!updateNeeded[i]) {
+			//		core.info(
+			//			`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}: branch is up to date`,
+			//		);
+			//		return;
+			//	}
+			//
+			//	core.info(`updating: ${link.toString(true)}`);
+			//
+			//	promises.push(
+			//		(() => {
+			//			return gh.createOrUpdateFileContents(
+			//				toRepo,
+			//				link.to.path,
+			//				link.to.sha,
+			//				headBranch.name,
+			//				link.from.content,
+			//				commitMessage(link),
+			//			);
+			//		})(),
+			//	);
+			//});
+			//
+			//return Promise.all(promises);
+			//})
+
+			//.then((values) => {
+			//	core.info(`result from updating branches: ${values}`);
+			//})
+			//
+			//.then(() =>
+			//	gh.getOrCreatePullRequest(
+			//		toRepo,
+			//		headBranch.name,
+			//		baseBranch.name,
+			//		pullTitle(),
+			//		pullBody(group, config, context),
+			//	),
+			//)
+			//
+			.catch((e) => {
+				core.setFailed(`failed to create PR for ${group}: ${p(e)}`);
+			})
+	);
 }
 
 main();
