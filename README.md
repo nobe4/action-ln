@@ -26,6 +26,14 @@ links:
       path: path/to/other/file
 ```
 
+## Development
+
+To test the action from a branch, run `npm run build` and `npm run build:add`.
+Then, commit the `dist` folder, it will make CI pass but allow you to use the
+branch name/commit sha as a version to run the action on.
+
+Once testing is done, remove `dist` to merge to the main branch.
+
 ## Random notes
 
 - If within a repo, at least the following permissions are needed:
