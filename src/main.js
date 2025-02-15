@@ -29,20 +29,12 @@ function main() {
 				for (let groupName in c.data.groups) {
 					core.info(`group: ${groupName}`);
 
-					for (let link of c.data.groups[groupName]) {
-						core.info(`link: ${link}`);
-
-						if (!link.needsUpdate) {
-							continue;
-						}
-
-						core.info(`updating: ${link.toString(true)}`);
-
-						// This is only the first usage of noop, it should go deeper
-						// into the creation of the branch and PRs.
-						if (!noop) {
-							promises.push(createPRForLink(gh, link, config));
-						}
+					// This is only the first usage of noop, it should go deeper
+					// into the creation of the branch and PRs.
+					if (!noop) {
+						promises.push(
+							createPRForGroup(gh, c.data.groups[groupName], config),
+						);
 					}
 				}
 
@@ -60,72 +52,103 @@ function main() {
 	}
 }
 
-async function createPRForLink(gh, link, config) {
+async function createPRForGroup(gh, group, config) {
 	let baseBranch = {};
 	let headBranch = {
 		needsUpdate: false,
 	};
+	let toRepo = group[0].to.repo;
 
 	return gh
-		.getDefaultBranch(link.to.repo)
+		.getDefaultBranch(toRepo)
 
 		.then((b) => {
 			core.debug(`default branch: ${p(b)}`);
 			baseBranch = b;
 		})
-		.then(() =>
-			gh.getOrCreateBranch(link.to.repo, branchName(link), baseBranch.sha),
-		)
+
+		.then(() => gh.getOrCreateBranch(toRepo, branchName(), baseBranch.sha))
 
 		.then((b) => {
 			core.debug(`head branch: ${p(b)}`);
 			headBranch = b;
 		})
+
 		.then(() => {
 			if (headBranch.new) {
 				return (headBranch.needsUpdate = true);
 			}
 
-			return gh
-				.getContent(link.to.repo, link.to.path, headBranch.name)
-				.then((c) => (headBranch.needsUpdate = link.from.content !== c.content))
-				.catch((e) => {
-					if (e.status === 404) {
-						return (headBranch.needsUpdate = true);
-					}
+			const promises = [];
+			for (let link of group) {
+				if (!link.needsUpdate) {
+					core.info("diff checking not needed for ${link.toString(true)}");
+					continue;
+				}
 
-					throw e;
+				core.info(`checking for diff on branch for ${link.toString(true)}`);
+
+				promises.push(() => {
+					return gh
+						.getContent(toRepo, link.to.path, headBranch.name)
+						.then(
+							(c) => (headBranch.needsUpdate = link.from.content !== c.content),
+						)
+						.catch((e) => {
+							if (e.status === 404) {
+								return (headBranch.needsUpdate = true);
+							}
+
+							throw e;
+						});
 				});
+			}
+
+			return Promise.all(promises);
 		})
 
 		.then(() => {
 			if (!headBranch.needsUpdate) {
-				console.log("update not needed");
+				core.info("update not needed");
 				return;
 			}
 
-			return gh.createOrUpdateFileContents(
-				link.to.repo,
-				link.to.path,
-				link.to.sha,
-				headBranch.name,
-				link.from.content,
-				commitMessage(link),
-			);
+			const promises = [];
+			for (let link of group) {
+				if (!link.needsUpdate) {
+					core.info("update not needed for ${link.toString(true)}");
+					continue;
+				}
+
+				core.info(`updating: ${link.toString(true)}`);
+
+				promises.push(() => {
+					return gh.createOrUpdateFileContents(
+						toRepo,
+						link.to.path,
+						link.to.sha,
+						headBranch.name,
+						link.from.content,
+						commitMessage(link),
+					);
+				});
+			}
+
+			return Promise.all(promises);
 		})
 
 		.then(() =>
 			gh.getOrCreatePullRequest(
-				link.to.repo,
+				toRepo,
 				headBranch.name,
 				baseBranch.name,
-				pullTitle(link),
-				pullBody(link, config, context),
+				pullTitle(),
+				pullBody(group, config, context),
 			),
 		)
 
 		.catch((e) => {
-			core.setFailed(`failed to create PR for ${link.toString(true)}: ${p(e)}`);
+			core.setFailed(`failed to create PR for ${group}: ${p(e)}`);
 		});
 }
 

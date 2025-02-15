@@ -34,10 +34,6 @@ function prettify(o) {
 	return JSON.stringify(o, Object.getOwnPropertyNames(o));
 }
 
-function branchName(link) {
-	return `ln-${link.SHA256.substring(0, 8)}`;
-}
-
 function commitMessage(link) {
 	return dedent(`
 		${pullTitle()}
@@ -47,19 +43,30 @@ function commitMessage(link) {
 	`);
 }
 
-function pullTitle() {
-	return `auto(ln): update links`;
+function branchName() {
+	return "auto-action-ln";
 }
 
-function pullBody(link, config, context) {
+function pullTitle() {
+	return "auto(ln): update links";
+}
+
+function pullBody(group, config, context) {
 	const execution = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+	let table = [];
+	for (let link of group) {
+		table.push(
+			`\`${link.from.toString(true)}\` | \`${link.to.toString(true)}\``,
+		);
+	}
 
 	return dedent(`
 		This automated PR updates the following file.
 		
 		From | To
 		--- | ---
-		\`${link.from.toString(true)}\` | \`${link.to.toString(true)}\`
+		${table.join("\n")}
 		
 		---
 		
