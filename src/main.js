@@ -54,9 +54,8 @@ function main() {
 
 async function createPRForGroup(gh, group, config) {
 	let baseBranch = {};
-	let headBranch = {
-		needsUpdate: false,
-	};
+	let headBranch = {};
+
 	let toRepo = group[0].to.repo;
 
 	return gh
@@ -75,15 +74,22 @@ async function createPRForGroup(gh, group, config) {
 		})
 
 		.then(() => {
-			if (headBranch.new) {
-				return (headBranch.needsUpdate = true);
-			}
-
 			const promises = [];
-			for (let link of group) {
+			group.forEach((link) => {
+				if (headBranch.new) {
+					core.info(
+						`diff checking not needed for ${link.toString(true)}: head branch is new`,
+					);
+					promises.push(() => false);
+					return;
+				}
+
 				if (!link.needsUpdate) {
-					core.info("diff checking not needed for ${link.toString(true)}");
-					continue;
+					core.info(
+						`diff checking not needed for ${link.toString(true)}: links is up to date`,
+					);
+					promises.push(() => false);
+					return;
 				}
 
 				core.info(`checking for diff on branch for ${link.toString(true)}`);
@@ -92,40 +98,38 @@ async function createPRForGroup(gh, group, config) {
 					return gh
 						.getContent(toRepo, link.to.path, headBranch.name)
 						.then((c) => {
-							headBranch.needsUpdate = link.from.content !== c.content;
+							const needsUpdate = link.from.content !== c.content;
 
 							core.info(
-								`diff found for ${link.toString(true)}: ${headBranch.needsUpdate}`,
+								`diff found for ${link.toString(true)}: ${needsUpdate}`,
 							);
 
-							return headBranch.needsUpdate;
+							return needsUpdate;
 						})
 						.catch((e) => {
 							if (e.status === 404) {
-								return (headBranch.needsUpdate = true);
+								core.info(`file not found ${link.toString(true)}`);
+								return true;
 							}
 
 							throw e;
 						});
 				});
-			}
+			});
 
 			return Promise.all(promises);
 		})
 
-		.then(() => {
-			if (!headBranch.needsUpdate) {
-				core.info(
-					`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}`,
-				);
-				return;
-			}
+		.then((updateNeeds) => {
+			core.info(`update needs: ${updateNeeds}`);
 
 			const promises = [];
-			for (let link of group) {
-				if (!link.needsUpdate) {
-					core.info(`update not needed for ${link.toString(true)}`);
-					continue;
+			group.forEach((link, i) => {
+				if (!updateNeeds[i]) {
+					core.info(
+						`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}: branch is up to date`,
+					);
+					return;
 				}
 
 				core.info(`updating: ${link.toString(true)}`);
@@ -140,7 +144,7 @@ async function createPRForGroup(gh, group, config) {
 						commitMessage(link),
 					);
 				});
-			}
+			});
 
 			return Promise.all(promises);
 		})
