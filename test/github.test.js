@@ -137,8 +137,16 @@ describe("GitHub", () => {
 	});
 
 	describe("getDefaultBranch", () => {
-		it("fetches the default branch", async () => {
+		beforeEach(() => {
 			g.getDefaultBranchName = jest.fn().mockResolvedValue("main");
+		});
+
+		const expectedcalls = () => {
+			expect(g.getDefaultBranchName).toHaveBeenCalledWith(repo);
+			expect(g.getBranch).toHaveBeenCalledWith(repo, "main");
+		};
+
+		it("fetches the default branch", async () => {
 			g.getBranch = jest.fn().mockResolvedValue({ object: { sha: 123 } });
 
 			await expect(g.getDefaultBranch(repo)).resolves.toEqual({
@@ -146,8 +154,18 @@ describe("GitHub", () => {
 				sha: 123,
 			});
 
-			expect(g.getDefaultBranchName).toHaveBeenCalledWith(repo);
-			expect(g.getBranch).toHaveBeenCalledWith(repo, "main");
+			expectedcalls();
+		});
+
+		it("defaults to nothing", async () => {
+			g.getBranch = jest.fn().mockResolvedValue(undefined);
+
+			await expect(g.getDefaultBranch(repo)).resolves.toEqual({
+				name: "main",
+				sha: undefined,
+			});
+
+			expectedcalls();
 		});
 	});
 
@@ -225,7 +243,7 @@ describe("GitHub", () => {
 	});
 
 	describe("createOrUpdateFileContents", () => {
-		it("create or update a file from plaintext content", async () => {
+		beforeEach(() => {
 			global.Buffer = {
 				from: jest.fn().mockImplementation(() => {
 					return { toString: () => "base64'ed content" };
@@ -234,16 +252,13 @@ describe("GitHub", () => {
 			g.octokit.rest.repos.createOrUpdateFileContents.mockResolvedValue({
 				data: "ok",
 			});
+		});
+
+		it("creates a new file", async () => {
+			g.getContent = jest.fn().mockResolvedValue(undefined);
 
 			await expect(
-				g.createOrUpdateFileContents(
-					repo,
-					path,
-					sha,
-					branch,
-					content,
-					"message",
-				),
+				g.createOrUpdateFileContents(repo, path, branch, content, "message"),
 			).resolves.toEqual("ok");
 
 			expect(global.Buffer.from).toHaveBeenCalledWith(content);
@@ -253,7 +268,28 @@ describe("GitHub", () => {
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
-				sha: sha,
+				sha: undefined,
+				branch: branch,
+				content: "base64'ed content",
+				message: "message",
+			});
+		});
+
+		it("updates an existing file", async () => {
+			g.getContent = jest.fn().mockResolvedValue({ sha: 123 });
+
+			await expect(
+				g.createOrUpdateFileContents(repo, path, branch, content, "message"),
+			).resolves.toEqual("ok");
+
+			expect(global.Buffer.from).toHaveBeenCalledWith(content);
+			expect(
+				g.octokit.rest.repos.createOrUpdateFileContents,
+			).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				path: path,
+				sha: 123,
 				branch: branch,
 				content: "base64'ed content",
 				message: "message",

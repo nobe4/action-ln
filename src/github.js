@@ -49,7 +49,7 @@ class GitHub {
 
 		return this.getDefaultBranchName(repo)
 			.then((n) => this.getBranch(repo, (name = n)))
-			.then(({ object: { sha } } = {}) => ({
+			.then(({ object: { sha } } = { object: { sha: undefined } }) => ({
 				name: name,
 				sha: sha,
 			}));
