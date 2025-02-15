@@ -352,4 +352,71 @@ describe("GitHub", () => {
 			});
 		});
 	});
+
+	describe("compareFileContent", () => {
+		const expectedcalls = () => {
+			expect(GitHub.prototype.getContent).toHaveBeenCalledWith(
+				repo,
+				path,
+				branch,
+			);
+		};
+
+		it("doesn't find the file", async () => {
+			jest.spyOn(GitHub.prototype, "getContent").mockResolvedValue(undefined);
+			await expect(
+				g.compareFileContent(repo, path, branch, content),
+			).resolves.toEqual({
+				found: false,
+			});
+			expectedcalls();
+		});
+
+		it("doesn't find the file with a 404", async () => {
+			jest
+				.spyOn(GitHub.prototype, "getContent")
+				.mockRejectedValue({ status: 404 });
+			await expect(
+				g.compareFileContent(repo, path, branch, content),
+			).resolves.toEqual({
+				found: false,
+			});
+			expectedcalls();
+		});
+
+		it("find a different content", async () => {
+			jest
+				.spyOn(GitHub.prototype, "getContent")
+				.mockResolvedValue({ content: "different" });
+			await expect(
+				g.compareFileContent(repo, path, branch, content),
+			).resolves.toEqual({
+				found: true,
+				equal: false,
+			});
+			expectedcalls();
+		});
+
+		it("find the same content", async () => {
+			jest
+				.spyOn(GitHub.prototype, "getContent")
+				.mockResolvedValue({ content: content });
+			await expect(
+				g.compareFileContent(repo, path, branch, content),
+			).resolves.toEqual({
+				found: true,
+				equal: true,
+			});
+			expectedcalls();
+		});
+
+		it("throw other errors", async () => {
+			const error = { status: 500 };
+			jest.spyOn(GitHub.prototype, "getContent").mockRejectedValue(error);
+			await expect(() =>
+				g.compareFileContent(repo, path, branch, content),
+			).rejects.toEqual(error);
+			expectedcalls();
+		});
+	});
 });

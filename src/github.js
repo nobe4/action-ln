@@ -160,6 +160,31 @@ class GitHub {
 					.then(({ data }) => data);
 			});
 	}
+
+	async compareFileContent(repo, path, branch, content) {
+		return this.getContent(repo, path, branch)
+			.then(({ content: c } = { undefined }) => {
+				if (!c) {
+					core.info("file not found");
+					return { found: false };
+				}
+
+				if (content !== c) {
+					core.info("content is different");
+					return { found: true, equal: false };
+				}
+
+				return { found: true, equal: true };
+			})
+			.catch((e) => {
+				if (e.status !== 404) {
+					throw e;
+				}
+
+				core.info("file not found");
+				return { found: false };
+			});
+	}
 }
 
 module.exports = { GitHub };
