@@ -37,3 +37,11 @@ jobs:
           node-version-file: .node-version
       - run: npm clean-install
       - run: npm run lint
+
+  no-dist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          [ -d "./dist" ] && exit 1
