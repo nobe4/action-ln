@@ -27,10 +27,10 @@ function main() {
 
 				const promises = [];
 				for (let groupName in c.data.groups) {
-					core.debug(`group: ${groupName}`);
+					core.info(`group: ${groupName}`);
 
 					for (let link of c.data.groups[groupName]) {
-						core.debug(`link: ${link}`);
+						core.info(`link: ${link}`);
 
 						if (!link.needsUpdate) {
 							continue;
