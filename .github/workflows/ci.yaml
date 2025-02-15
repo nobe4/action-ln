@@ -43,5 +43,4 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          [ -d "./dist" ] && exit 1
+      - run: '[ ! -d "./dist" ]'
