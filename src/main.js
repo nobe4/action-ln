@@ -91,9 +91,15 @@ async function createPRForGroup(gh, group, config) {
 				promises.push(() => {
 					return gh
 						.getContent(toRepo, link.to.path, headBranch.name)
-						.then(
-							(c) => (headBranch.needsUpdate = link.from.content !== c.content),
-						)
+						.then((c) => {
+							headBranch.needsUpdate = link.from.content !== c.content;
+
+							core.info(
+								`diff found for ${link.toString(true)}: ${headBranch.needsUpdate}`,
+							);
+
+							return headBranch.needsUpdate;
+						})
 						.catch((e) => {
 							if (e.status === 404) {
 								return (headBranch.needsUpdate = true);
@@ -109,7 +115,9 @@ async function createPRForGroup(gh, group, config) {
 
 		.then(() => {
 			if (!headBranch.needsUpdate) {
-				core.info(`update not needed for ${toRepo}:${headBranch.name}`);
+				core.info(
+					`update not needed for ${toRepo.owner}/${toRepo.repo}:${headBranch.name}`,
+				);
 				return;
 			}
 
