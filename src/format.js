@@ -51,7 +51,9 @@ function pullTitle() {
 	return `auto(ln): update links`;
 }
 
-function pullBody(link, config) {
+function pullBody(link, config, context) {
+	const execution = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
 	return dedent(`
 		This automated PR updates the following file.
 		
@@ -61,8 +63,8 @@ function pullBody(link, config) {
 		
 		---
 		
-		Configured by [\`${config.path}\`](${config.URL}).
-		Powered by [\`action-ln\`](https://github.com/nobe4/action-ln).
+		| Quick links | [execution](${execution}) | [configuration](${config.URL}) | [action-ln](https://github.com/nobe4/action-ln) |
+		| --- | --- | --- | --- |
 	`);
 }
 

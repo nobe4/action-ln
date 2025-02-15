@@ -129,11 +129,18 @@ describe("pullBody", () => {
 			from: { toString: () => "from" },
 			to: { toString: () => "to" },
 		};
+		const context = {
+			workflow: "workflow",
+			repo: {
+				owner: "owner",
+				repo: "repo",
+			},
+			serverUrl: "serverUrl",
+			runId: "runId",
+		};
 
-		const body = pullBody(link, config);
-		expect(body).toEqual(
-			expect.stringContaining("Configured by [`path`](URL)"),
-		);
+		const body = pullBody(link, config, context);
+		expect(body).toEqual(expect.stringContaining("[configuration](URL)"));
 		expect(body).toEqual(expect.stringContaining("`from` | `to`"));
 	});
 });
