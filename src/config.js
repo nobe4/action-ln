@@ -12,12 +12,12 @@ class ParseError extends Error {
 }
 
 class Config {
-	constructor({ repo, path, useFS = false }, gh) {
-		this.path = path;
-		this.gh = gh;
-		this.useFS = useFS;
-		this.data = {};
+	constructor({ repo = {}, path = "", useFS = false }, gh) {
 		this.repo = repo;
+		this.path = path;
+		this.useFS = useFS;
+		this.gh = gh;
+		this.data = {};
 		this.sha = undefined;
 	}
 
@@ -38,18 +38,13 @@ class Config {
 	}
 
 	async load() {
-		if (this.useFS) {
-			return this.loadFromFS();
-		}
+		return (() => {
+			if (this.useFS) {
+				return this.loadFromFS();
+			}
 
-		return this.loadFromGitHub();
-	}
-
-	async loadFromFS() {
-		core.notice(`Using config file: ${this.path}`);
-
-		return fs
-			.readFile(this.path, { encoding: "utf-8" })
+			return this.loadFromGitHub();
+		})()
 			.then((content) => yaml.load(content))
 			.then((data) => (this.data = data))
 			.then(() => this.parse())
@@ -57,23 +52,25 @@ class Config {
 			.then(() => this.groupLinks());
 	}
 
+	async loadFromFS() {
+		core.notice(`Using config file: ${this.path}`);
+
+		this.sha = "runninglocally123";
+		return fs.readFile(this.path, { encoding: "utf-8" });
+	}
+
 	async loadFromGitHub() {
 		core.notice(
 			`Using config file: ${this.repo.owner}/${this.repo.repo}:${this.path}@${this.sha}`,
 		);
 
-		return Promise.all([
+		return (
 			this.gh
-				.getContent(this.repo, this.path)
-
-				.then(({ content }) => yaml.load(content))
-				.then((data) => (this.data = data)),
-
-			this.gh.getDefaultBranch(this.repo).then(({ sha }) => (this.sha = sha)),
-		])
-			.then(() => this.parse())
-			.then(() => this.getContents())
-			.then(() => this.groupLinks());
+				.getDefaultBranch(this.repo)
+				// TODO: can this be loaded from the context?
+				.then(({ sha }) => (this.sha = sha))
+				.then(() => this.gh.getContent(this.repo, this.path))
+		);
 	}
 
 	async getContents() {
