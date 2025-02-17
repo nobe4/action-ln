@@ -26,6 +26,12 @@ links:
       path: path/to/other/file
 ```
 
+## Running locally
+
+```shell
+npm start -- [--token="..."] [--config="..."] [--noop]
+```
+
 ## Development
 
 To test the action from a branch, run `npm run build` and `npm run build:add`.

@@ -1,4 +1,5 @@
 const core = require("@actions/core");
+const fs = require("node:fs/promises");
 const yaml = require("js-yaml");
 const { indent } = require("./format");
 const { Link } = require("./link");
@@ -11,9 +12,10 @@ class ParseError extends Error {
 }
 
 class Config {
-	constructor(repo, path, gh) {
+	constructor({ repo, path, useFS = false }, gh) {
 		this.path = path;
 		this.gh = gh;
+		this.useFS = useFS;
 		this.data = {};
 		this.repo = repo;
 		this.sha = undefined;
@@ -28,10 +30,34 @@ class Config {
 	}
 
 	get URL() {
+		if (this.useFS) {
+			return `file://${this.path}`;
+		}
+
 		return `https://github.com/${this.repo.owner}/${this.repo.repo}/blob/${this.sha}/${this.path}`;
 	}
 
 	async load() {
+		if (this.useFS) {
+			return this.loadFromFS();
+		}
+
+		return this.loadFromGitHub();
+	}
+
+	async loadFromFS() {
+		core.notice(`Using config file: ${this.path}`);
+
+		return fs
+			.readFile(this.path, { encoding: "utf-8" })
+			.then((content) => yaml.load(content))
+			.then((data) => (this.data = data))
+			.then(() => this.parse())
+			.then(() => this.getContents())
+			.then(() => this.groupLinks());
+	}
+
+	async loadFromGitHub() {
 		core.notice(
 			`Using config file: ${this.repo.owner}/${this.repo.repo}:${this.path}@${this.sha}`,
 		);
