@@ -55,6 +55,7 @@ class Config {
 	async loadFromFS() {
 		core.notice(`Using config file: ${this.path}`);
 
+		// TODO: this should be changed to something less useless.
 		this.sha = "runninglocally123";
 		return fs.readFile(this.path, { encoding: "utf-8" });
 	}
