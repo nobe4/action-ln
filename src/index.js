@@ -1,3 +1,7 @@
+/*
+ Entrypoint to run action-ln from GitHub Actions.
+*/
+
 const core = require("@actions/core");
 const context = require("@actions/github").context;
 const { main } = require("./main");

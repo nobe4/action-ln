@@ -26,6 +26,8 @@ links:
       path: path/to/other/file
 ```
 
+See [`example.config.yaml`](./example.config.yaml) for an example.
+
 ## Running locally
 
 ```shell
