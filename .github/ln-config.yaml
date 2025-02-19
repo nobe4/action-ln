@@ -1,0 +1,13 @@
+links:
+  - from:
+      repo: nobe4/ln-source
+      path: script/tag-release
+    to:
+      path: script/tag-release
+
+  # Do this bootstrap later
+  # - from:
+  #     repo: nobe4/ln-source
+  #     path: .github/workflows/link.yaml
+  #   to:
+  #     path: .github/workflows/link.yaml
