@@ -195,7 +195,7 @@ describe("Config", () => {
 	});
 
 	describe("loadFromFS", () => {
-		it("loads from FS", async () => {
+		it("loads", async () => {
 			const mockReadFile = jest.spyOn(fs, "readFile").mockResolvedValue("data");
 
 			await expect(c.loadFromFS()).resolves.toEqual("data");
@@ -204,7 +204,7 @@ describe("Config", () => {
 			expect(c.sha).toEqual("runninglocally123");
 		});
 
-		it("fails to load from FS", async () => {
+		it("fails to load", async () => {
 			const mockReadFile = jest
 				.spyOn(fs, "readFile")
 				.mockRejectedValue("error");
@@ -219,7 +219,7 @@ describe("Config", () => {
 	describe("loadFromGitHub", () => {
 		it("loads", async () => {
 			c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
-			c.gh.getContent.mockResolvedValue("data");
+			c.gh.getContent.mockResolvedValue({ content: "data" });
 
 			await expect(c.loadFromGitHub()).resolves.toEqual("data");
 			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
