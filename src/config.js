@@ -70,6 +70,7 @@ class Config {
 				// TODO: can this be loaded from the context?
 				.then(({ sha }) => (this.sha = sha))
 				.then(() => this.gh.getContent(this.repo, this.path))
+				.then(({ content }) => content)
 		);
 	}
 
