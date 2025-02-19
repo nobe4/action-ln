@@ -45,7 +45,7 @@ class Config {
 
 			return this.loadFromGitHub();
 		})()
-			.then((content) => yaml.load(content))
+			.then(yaml.load)
 			.then((data) => (this.data = data))
 			.then(() => this.parse())
 			.then(() => this.getContents())
