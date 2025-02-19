@@ -5,11 +5,11 @@ inputs:
   token:
     description: GitHub token to authenticate with.
     required: false
-    default: ${{ github.token }}
+    default: "${{ github.token }}"
   config-path:
     description: Relative path to the config file.
     required: true
-    default: ln-config.yaml
+    default: ".github/ln-config.yaml"
   noop:
     description: Only load the data, but don't update anything.
     required: true

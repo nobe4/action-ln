@@ -1,4 +1,4 @@
-name: link
+name: ln
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  link:
+  ln:
     runs-on: ubuntu-latest
     permissions:
       contents: write
