@@ -1,0 +1,7 @@
+links:
+  - from:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README.md
+    to:
+      repo: frozen-fishsticks/action-ln-test-1
+      path: README.md

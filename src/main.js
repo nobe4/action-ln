@@ -11,13 +11,9 @@ const {
 	prettify: p,
 } = require("./format");
 
-async function main() {
-	const configPath = core.getInput("config-path", { required: true });
-	let token = core.getInput("token", { required: true });
-	let noop = core.getInput("noop", { required: true }) == "true";
-
+async function main({ configConfig, token, noop }) {
 	const gh = new GitHub(token);
-	const config = new Config(context.repo, configPath, gh);
+	const config = new Config(configConfig, gh);
 	await config.load();
 
 	for (let i in config.data.groups) {
@@ -114,8 +110,4 @@ async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
 	});
 }
 
-main().catch((e) => {
-	core.error(e);
-	core.error(e.stack);
-	core.setFailed(e.message);
-});
+module.exports = { main };

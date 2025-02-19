@@ -1,8 +1,11 @@
 // required by File, which is required by Link
 jest.mock("@actions/github", () => ({ context: { repo: "repo" } }));
 
-const core = require("@actions/core");
+// Prevents core logging
 jest.mock("@actions/core");
+
+const fs = require("node:fs/promises");
+jest.mock("node:fs/promises");
 
 const yaml = require("js-yaml");
 jest.mock("js-yaml");
@@ -16,16 +19,20 @@ jest.mock("../src/link");
 const repo = { owner: "owner", repo: "repo" };
 
 describe("Config", () => {
-	let c = new Config();
+	let c = new Config({});
 
 	beforeEach(() => {
-		c.repo = repo;
-		c.path = "path";
-		c.sha = "sha";
-		c.gh = {
-			getDefaultBranch: jest.fn(),
-			getContent: jest.fn(),
-		};
+		c = new Config(
+			{
+				repo: repo,
+				path: "path",
+				useFS: false,
+			},
+			{
+				getDefaultBranch: jest.fn(),
+				getContent: jest.fn(),
+			},
+		);
 	});
 
 	describe("toString", () => {
@@ -51,92 +58,192 @@ describe("Config", () => {
 	});
 
 	describe("URL", () => {
-		it("formats correctly", () => {
-			c.path = "path";
+		it("formats correctly for GitHub", () => {
+			c.useFS = false;
+			c.sha = "sha";
 			expect(c.URL).toEqual("https://github.com/owner/repo/blob/sha/path");
+		});
+
+		it("formats correctly for FS", () => {
+			c.useFS = true;
+			expect(c.URL).toEqual("file://path");
 		});
 	});
 
 	describe("load", () => {
-		const expectedcalls = () => {
-			expect(core.notice).toHaveBeenCalledWith(
-				"Using config file: owner/repo:path@sha",
-			);
-			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
-			expect(c.gh.getContent).toHaveBeenCalledWith(c.repo, c.path);
-		};
+		let mocks = {};
 
-		describe("fails", () => {
-			it("cannot read", async () => {
-				c.gh.getContent.mockRejectedValue(new Error("ENOENT"));
-				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
+		beforeEach(() => {
+			c.data = undefined;
 
-				await expect(c.load()).rejects.toThrow(/ENOENT/);
-
-				expectedcalls();
-			});
-
-			it("cannot load YAML", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
-				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
-				yaml.load.mockRejectedValue(new Error("Invalid YAML"));
-
-				await expect(c.load()).rejects.toThrow(/Invalid YAML/);
-
-				expectedcalls();
-			});
-
-			it("cannot parse", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
-				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
-				yaml.load.mockResolvedValue("yaml");
-				jest
-					.spyOn(Config.prototype, "parse")
-					.mockRejectedValue(new Error("Invalid config"));
-
-				await expect(c.load()).rejects.toThrow(/Invalid config/);
-
-				expectedcalls();
-			});
-
-			it("cannot getContents", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
-				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
-				yaml.load.mockResolvedValue("yaml");
-				jest.spyOn(Config.prototype, "parse").mockResolvedValue("data");
-				jest
-					.spyOn(Config.prototype, "getContents")
-					.mockRejectedValue(new Error("Error getting contents"));
-
-				await expect(c.load()).rejects.toThrow(/Error getting contents/);
-
-				expectedcalls();
-			});
+			mocks = {
+				loadFromFS: jest.spyOn(Config.prototype, "loadFromFS"),
+				loadFromGitHub: jest.spyOn(Config.prototype, "loadFromGitHub"),
+				parse: jest.spyOn(Config.prototype, "parse"),
+				getContents: jest.spyOn(Config.prototype, "getContents"),
+				groupLinks: jest.spyOn(Config.prototype, "groupLinks"),
+			};
 		});
 
-		describe("succeeds", () => {
-			it("read, load, parse, and getContents", async () => {
-				c.gh.getContent.mockResolvedValue({ content: "content" });
-				c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
-				yaml.load.mockResolvedValue("yaml");
-				const mockParse = jest
-					.spyOn(Config.prototype, "parse")
-					.mockResolvedValue("data");
-				const mockGetContents = jest
-					.spyOn(Config.prototype, "getContents")
-					.mockResolvedValue("data");
-				const mockGroupLinks = jest
-					.spyOn(Config.prototype, "groupLinks")
-					.mockResolvedValue("data");
-
-				await expect(c.load()).resolves.toEqual("data");
-				expect(c.sha).toEqual("sha");
-
-				expect(mockParse).toHaveBeenCalled();
-				expect(mockGetContents).toHaveBeenCalled();
-				expect(mockGroupLinks).toHaveBeenCalled();
-				expectedcalls();
+		describe("from FS", () => {
+			beforeEach(() => {
+				c.useFS = true;
 			});
+			it("loads", async () => {
+				mocks.loadFromFS.mockResolvedValue("data");
+				yaml.load.mockResolvedValue("yaml");
+				mocks.parse.mockResolvedValue(c);
+				mocks.getContents.mockResolvedValue(c);
+				mocks.groupLinks.mockResolvedValue(c);
+
+				await expect(c.load()).resolves.toEqual(c);
+
+				expect(c.data).toEqual("yaml");
+				expect(mocks.loadFromFS).toHaveBeenCalled();
+				expect(yaml.load).toHaveBeenCalledWith("data");
+				expect(mocks.parse).toHaveBeenCalled();
+				expect(mocks.getContents).toHaveBeenCalled();
+				expect(mocks.groupLinks).toHaveBeenCalled();
+			});
+
+			it("fails to load", async () => {
+				mocks.loadFromFS.mockRejectedValue("error");
+
+				await expect(c.load()).rejects.toEqual("error");
+
+				expect(c.data).toEqual(undefined);
+				expect(mocks.loadFromFS).toHaveBeenCalled();
+				expect(yaml.load).not.toHaveBeenCalled();
+				expect(mocks.parse).not.toHaveBeenCalled();
+				expect(mocks.getContents).not.toHaveBeenCalled();
+				expect(mocks.groupLinks).not.toHaveBeenCalled();
+			});
+
+			it("fails to parse YAML", async () => {
+				mocks.loadFromFS.mockResolvedValue("data");
+				yaml.load.mockRejectedValue("error");
+
+				await expect(c.load()).rejects.toEqual("error");
+
+				expect(c.data).toEqual(undefined);
+				expect(mocks.loadFromFS).toHaveBeenCalled();
+				expect(yaml.load).toHaveBeenCalledWith("data");
+				expect(mocks.parse).not.toHaveBeenCalled();
+				expect(mocks.getContents).not.toHaveBeenCalled();
+				expect(mocks.groupLinks).not.toHaveBeenCalled();
+			});
+
+			it("fails to process the data", async () => {
+				mocks.loadFromFS.mockResolvedValue("data");
+				yaml.load.mockResolvedValue("yaml");
+				mocks.parse.mockRejectedValue("error");
+				mocks.getContents.mockResolvedValue(c);
+				mocks.groupLinks.mockResolvedValue(c);
+
+				await expect(c.load()).rejects.toEqual("error");
+
+				expect(c.data).toEqual("yaml");
+				expect(mocks.loadFromFS).toHaveBeenCalled();
+				expect(yaml.load).toHaveBeenCalledWith("data");
+				expect(mocks.parse).toHaveBeenCalled();
+				expect(mocks.getContents).not.toHaveBeenCalled();
+				expect(mocks.groupLinks).not.toHaveBeenCalled();
+			});
+
+			// Ignoring further failures, as they would just be mocking the call
+			// to the config's function.
+		});
+
+		describe("from GitHub", () => {
+			beforeEach(() => {
+				c.useFS = false;
+			});
+
+			it("loads", async () => {
+				mocks.loadFromGitHub.mockResolvedValue("data");
+				yaml.load.mockResolvedValue("yaml");
+				mocks.parse.mockResolvedValue(c);
+				mocks.getContents.mockResolvedValue(c);
+				mocks.groupLinks.mockResolvedValue(c);
+
+				await expect(c.load()).resolves.toEqual(c);
+
+				expect(c.data).toEqual("yaml");
+				expect(mocks.loadFromGitHub).toHaveBeenCalled();
+				expect(yaml.load).toHaveBeenCalledWith("data");
+				expect(mocks.parse).toHaveBeenCalled();
+				expect(mocks.getContents).toHaveBeenCalled();
+				expect(mocks.groupLinks).toHaveBeenCalled();
+			});
+
+			it("fails to load", async () => {
+				mocks.loadFromGitHub.mockRejectedValue("error");
+
+				await expect(c.load()).rejects.toEqual("error");
+
+				expect(c.data).toEqual(undefined);
+				expect(mocks.loadFromGitHub).toHaveBeenCalled();
+				expect(yaml.load).not.toHaveBeenCalled();
+				expect(mocks.parse).not.toHaveBeenCalled();
+				expect(mocks.getContents).not.toHaveBeenCalled();
+				expect(mocks.groupLinks).not.toHaveBeenCalled();
+			});
+
+			// Ignoring further failures as they are in the 'from FS' block as
+			// well;
+		});
+	});
+
+	describe("loadFromFS", () => {
+		it("loads", async () => {
+			const mockReadFile = jest.spyOn(fs, "readFile").mockResolvedValue("data");
+
+			await expect(c.loadFromFS()).resolves.toEqual("data");
+
+			expect(mockReadFile).toHaveBeenCalledWith(c.path, { encoding: "utf-8" });
+			expect(c.sha).toEqual("runninglocally123");
+		});
+
+		it("fails to load", async () => {
+			const mockReadFile = jest
+				.spyOn(fs, "readFile")
+				.mockRejectedValue("error");
+
+			await expect(c.loadFromFS()).rejects.toEqual("error");
+
+			expect(mockReadFile).toHaveBeenCalledWith(c.path, { encoding: "utf-8" });
+			expect(c.sha).toEqual("runninglocally123");
+		});
+	});
+
+	describe("loadFromGitHub", () => {
+		it("loads", async () => {
+			c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
+			c.gh.getContent.mockResolvedValue({ content: "data" });
+
+			await expect(c.loadFromGitHub()).resolves.toEqual("data");
+			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
+			expect(c.gh.getContent).toHaveBeenCalledWith(c.repo, c.path);
+			expect(c.sha).toEqual("sha");
+		});
+
+		it("fails to get the default branch", async () => {
+			c.gh.getDefaultBranch.mockRejectedValue("error");
+
+			await expect(c.loadFromGitHub()).rejects.toEqual("error");
+			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
+			expect(c.gh.getContent).not.toHaveBeenCalledWith(c.repo, c.path);
+			expect(c.sha).toEqual(undefined);
+		});
+
+		it("fails to get the content", async () => {
+			c.gh.getDefaultBranch.mockResolvedValue({ sha: "sha" });
+			c.gh.getContent.mockRejectedValue("error");
+
+			await expect(c.loadFromGitHub()).rejects.toEqual("error");
+			expect(c.gh.getDefaultBranch).toHaveBeenCalledWith(c.repo);
+			expect(c.gh.getContent).toHaveBeenCalledWith(c.repo, c.path);
+			expect(c.sha).toEqual("sha");
 		});
 	});
 

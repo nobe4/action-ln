@@ -1,4 +1,5 @@
 const core = require("@actions/core");
+const fs = require("node:fs/promises");
 const yaml = require("js-yaml");
 const { indent } = require("./format");
 const { Link } = require("./link");
@@ -11,11 +12,12 @@ class ParseError extends Error {
 }
 
 class Config {
-	constructor(repo, path, gh) {
+	constructor({ repo = {}, path = "", useFS = false }, gh) {
+		this.repo = repo;
 		this.path = path;
+		this.useFS = useFS;
 		this.gh = gh;
 		this.data = {};
-		this.repo = repo;
 		this.sha = undefined;
 	}
 
@@ -28,26 +30,49 @@ class Config {
 	}
 
 	get URL() {
+		if (this.useFS) {
+			return `file://${this.path}`;
+		}
+
 		return `https://github.com/${this.repo.owner}/${this.repo.repo}/blob/${this.sha}/${this.path}`;
 	}
 
 	async load() {
+		return (() => {
+			if (this.useFS) {
+				return this.loadFromFS();
+			}
+
+			return this.loadFromGitHub();
+		})()
+			.then(yaml.load)
+			.then((data) => (this.data = data))
+			.then(() => this.parse())
+			.then(() => this.getContents())
+			.then(() => this.groupLinks());
+	}
+
+	async loadFromFS() {
+		core.notice(`Using config file: ${this.path}`);
+
+		// TODO: this should be changed to something less useless.
+		this.sha = "runninglocally123";
+		return fs.readFile(this.path, { encoding: "utf-8" });
+	}
+
+	async loadFromGitHub() {
 		core.notice(
 			`Using config file: ${this.repo.owner}/${this.repo.repo}:${this.path}@${this.sha}`,
 		);
 
-		return Promise.all([
+		return (
 			this.gh
-				.getContent(this.repo, this.path)
-
-				.then(({ content }) => yaml.load(content))
-				.then((data) => (this.data = data)),
-
-			this.gh.getDefaultBranch(this.repo).then(({ sha }) => (this.sha = sha)),
-		])
-			.then(() => this.parse())
-			.then(() => this.getContents())
-			.then(() => this.groupLinks());
+				.getDefaultBranch(this.repo)
+				// TODO: can this be loaded from the context?
+				.then(({ sha }) => (this.sha = sha))
+				.then(() => this.gh.getContent(this.repo, this.path))
+				.then(({ content }) => content)
+		);
 	}
 
 	async getContents() {
