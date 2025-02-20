@@ -1,0 +1,42 @@
+name: edge
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-edge:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - run: |
+          # cleanup
+          git push -d origin edge
+          git branch -D edge
+
+          # switch branch
+          git branch edge
+          git switch edge
+
+          # generate
+          npm clean-install
+          npm run all
+          npm run build
+          npm run build:add
+
+          # commit
+          git commit -m "chore(dist): automatically publish on edge"
+          git push --force origin edge
