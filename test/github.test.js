@@ -300,18 +300,21 @@ describe("GitHub", () => {
 	});
 
 	describe("getOrCreatePullRequest", () => {
+		const expectedcalls = () => {
+			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
+				owner: repo.owner,
+				repo: repo.repo,
+				head: `${repo.owner}:${branch}`,
+				per_page: 2,
+			});
+		};
 		it("gets an existing pull request", async () => {
 			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull"] });
 
 			await expect(
 				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
 			).resolves.toEqual("pull");
-
-			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				head: branch,
-			});
+			expectedcalls();
 		});
 
 		it("gets an existing pull request and warns for duplicates", async () => {
@@ -324,11 +327,7 @@ describe("GitHub", () => {
 			expect(core.warning).toHaveBeenCalledWith(
 				`found 2 PRs for ${prettyBranch}`,
 			);
-			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				head: branch,
-			});
+			expectedcalls();
 		});
 
 		it("creates a new pull request", async () => {
@@ -339,11 +338,7 @@ describe("GitHub", () => {
 				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
 			).resolves.toEqual("pull");
 
-			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
-				owner: repo.owner,
-				repo: repo.repo,
-				head: branch,
-			});
+			expectedcalls();
 			expect(g.octokit.rest.pulls.create).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,

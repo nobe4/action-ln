@@ -135,7 +135,11 @@ class GitHub {
 			.list({
 				owner: owner,
 				repo: repo,
-				head: head,
+				head: `${owner}:${head}`,
+
+				// We'll use only the first item anyway, and we'll warn if more
+				// than one PR exist for such a head.
+				per_page: 2,
 			})
 			.then(({ data }) => {
 				// There really should not be more than one Pull matching this
