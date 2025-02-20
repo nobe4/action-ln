@@ -10,6 +10,12 @@ The configuration is loaded from a local file.
 const core = require("@actions/core");
 const { parseArgs } = require("node:util");
 
+// Required by @action/github, imported by ./main
+// TODO: find a way to set the context only once, and mock it from locally.
+// Should be able to move it to its own file, in a global var, and from here
+// fix its value.
+process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
+
 const { main } = require("./main");
 
 try {
@@ -31,11 +37,9 @@ try {
 		},
 	});
 
-	// required by @action/github, imported by ./main
-	// TODO: find a way to set the context only once, and mock it from locally.
-	// Should be able to move it to its own file, in a global var, and from here
-	// fix its value.
-	process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
+	core.info(
+		`Running action-ln with the following values: ${JSON.stringify(values, null, 2)}`,
+	);
 
 	main({
 		configConfig: {
