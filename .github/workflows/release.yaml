@@ -27,6 +27,8 @@ jobs:
 
       - run: npm run all
 
+      - run: npm run build
+
       # TODO: delete all but the dist folder
 
       - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
