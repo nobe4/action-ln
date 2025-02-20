@@ -17,3 +17,5 @@ jobs:
       pull-requests: write
     steps:
       - uses: nobe4/action-ln@v0
+        with:
+          noop: true # until I get a github app setup

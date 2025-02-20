@@ -59,5 +59,12 @@ Once testing is done, run `npm run build:clean` before you merge to the main bra
 approve pull requests` from
   `https://github.com/organizations/<org>/settings/actions`
 
+- If using not from an org, you also need to enable `Allow GitHub Actions to create and
+approve pull requests` from
+  `https://github.com/<owner>/<repo>/settings/actions`
+
 - For Classic tokens `repo` scope is needed, assuming you have write access to
   all the updated repositories.
+
+- Creating PRs from the default GITHUB_TOKEN provided by actions don't
+automatically run CI checks. https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
