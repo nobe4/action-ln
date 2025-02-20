@@ -23,7 +23,7 @@ jobs:
           node-version-file: .node-version
 
       - run: |
-          git push -d origin edge
+          git push -d origin edge || true
           git checkout -b edge
 
           npm clean-install
