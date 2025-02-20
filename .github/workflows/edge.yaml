@@ -32,7 +32,7 @@ jobs:
           npm clean-install
           npm run all
           npm run build
-          npm run build:add
 
+          git add --force './dist/*'
           git commit -m "chore(dist): automatically publish on edge"
           git push --force origin edge
