@@ -66,3 +66,8 @@ approve pull requests` from
 
 - For Classic tokens `repo` scope is needed, assuming you have write access to
   all the updated repositories.
+
+- For GitHub App, the installation cannot cross org boundaries. This is a know
+limitation and the only way to work across multiple orgs is with a Classic PAT
+token. It _would_ be possible to have multiple octokit instance for each org,
+but this would be an intense rewrite and not planned at the moment.
