@@ -12,8 +12,8 @@ import {
 	prettify as p,
 } from "./format.js";
 
-async function main({ configConfig, token, noop }) {
-	const gh = new GitHub(token);
+async function main({ configConfig, githubConfig, noop }) {
+	const gh = new GitHub(githubConfig);
 	const config = new Config(configConfig, gh);
 	await config.load();
 
