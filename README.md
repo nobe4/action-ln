@@ -1,4 +1,9 @@
-# action-ln
+<div align="center">
+  <img width="300" src="https://github.com/nobe4/action-ln/blob/main/docs/logo.png" /> <br>
+  <sub>Logo by <a href="https://www.instagram.com/malohff">@malohff</a></sub>
+</div>
+
+# `action-ln`
 
 Link files between repositories.
 
