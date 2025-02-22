@@ -1,9 +1,11 @@
-const currentRepo = { owner: "owner", repo: "repo" };
-jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
+import { jest } from "@jest/globals";
 
-const { File, ParseError } = require("../src/file");
+import { github } from "../__fixtures__/@actions/github.js";
+jest.unstable_mockModule("@actions/github", () => github);
 
-const { dedent } = require("../src/format");
+const { File, ParseError } = await import("../src/file.js");
+
+import { dedent } from "../src/format.js";
 
 describe("File", () => {
 	let l = new File();
@@ -93,11 +95,11 @@ describe("File", () => {
 			it.each([
 				{
 					raw: undefined,
-					want: currentRepo,
+					want: github.context.repo,
 				},
 				{
 					raw: "",
-					want: currentRepo,
+					want: github.context.repo,
 				},
 				{
 					raw: "owner/repo",

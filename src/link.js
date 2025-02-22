@@ -1,7 +1,7 @@
-const { hash } = require("crypto");
+import { hash } from "node:crypto";
 
-const { indent } = require("./format");
-const { File } = require("./file");
+import { indent } from "./format.js";
+import { File } from "./file.js";
 
 class ParseError extends Error {
 	constructor(message) {
@@ -81,4 +81,4 @@ class Link {
 	}
 }
 
-module.exports = { Link, ParseError };
+export { Link, ParseError };

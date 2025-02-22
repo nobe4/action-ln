@@ -7,8 +7,8 @@ will be mocked.
 The configuration is loaded from a local file.
 */
 
-const core = require("@actions/core");
-const { parseArgs } = require("node:util");
+import * as core from "@actions/core";
+import { parseArgs } from "node:util";
 
 // Required by @action/github, imported by ./main
 // TODO: find a way to set the context only once, and mock it from locally.
@@ -16,7 +16,7 @@ const { parseArgs } = require("node:util");
 // fix its value.
 process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
 
-const { main } = require("./main");
+import { main } from "./main";
 
 try {
 	// TODO: write some simple help if --help is passed

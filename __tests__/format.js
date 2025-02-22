@@ -1,9 +1,9 @@
-const {
-	indent: indentFn,
+import {
+	indent as indentFn,
 	dedent,
 	commitMessage,
 	pullBody,
-} = require("../src/format");
+} from "../src/format";
 
 describe("indent", () => {
 	it.each([

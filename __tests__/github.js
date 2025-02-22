@@ -1,10 +1,11 @@
-const core = require("@actions/core");
-jest.mock("@actions/core");
+import { jest } from "@jest/globals";
 
-const { getOctokit } = require("@actions/github");
-jest.mock("@actions/github");
+import * as core from "../__fixtures__/@actions/core.js";
+jest.unstable_mockModule("@actions/core", () => core);
+import { github } from "../__fixtures__/@actions/github.js";
+jest.unstable_mockModule("@actions/github", () => github);
 
-const { GitHub } = require("../src/github");
+const { GitHub } = await import("../src/github.js");
 
 const repo = { owner: "owner", repo: "repo" };
 const path = "path";
@@ -38,7 +39,7 @@ describe("GitHub", () => {
 
 	describe("constructor", () => {
 		it("sets up the octokit client", () => {
-			const mockOctokit = getOctokit.mockReturnValue("ok");
+			const mockOctokit = github.getOctokit.mockReturnValue("ok");
 			expect(new GitHub("token")).toBeDefined();
 			expect(mockOctokit).toHaveBeenCalledWith("token", { log: console });
 		});
