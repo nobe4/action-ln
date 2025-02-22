@@ -38,7 +38,6 @@ const help = () => {
 				--noop                 don't actually run the action, just print what it would do
 		`),
 	);
-	return;
 };
 
 const options = {
@@ -66,7 +65,8 @@ try {
 	const { values } = parseArgs({ options: options });
 
 	if (values.help) {
-		return help();
+		help();
+		process.exit(0);
 	}
 
 	if (values.app_private_key_file) {
@@ -89,8 +89,8 @@ try {
 		noop: values.noop,
 	});
 } catch (e) {
-	core.error(e);
-	core.error(e.stack);
-	core.setFailed(e.message);
+	console.error(e);
+	console.error(e.stack);
 	help();
+	process.exit(1);
 }
