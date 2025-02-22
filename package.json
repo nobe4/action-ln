@@ -7,7 +7,7 @@
 		"node": ">=18"
 	},
 	"scripts": {
-		"start": "node src/cli.js",
+		"start": "GITHUB_REPOSITORY=nobe4/action-ln node src/cli.js",
 		"watch:all": "find ./src/ ./test/ -type f | entr npm run all",
 		"watch:test": "find ./src/ ./test/ -type f | entr npm test",
 		"all": "npm run format && npm run lint && npm run test",

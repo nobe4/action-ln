@@ -14,7 +14,11 @@ import { parseArgs } from "node:util";
 // TODO: find a way to set the context only once, and mock it from locally.
 // Should be able to move it to its own file, in a global var, and from here
 // fix its value.
-process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
+// FIXME: this doesn't anymore with ESM, since imports are hoisted to the top of
+// the file.
+// cc https://stackoverflow.com/a/51730422
+// Instead, it's setup in package.json, and the value is read from there.
+// process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
 
 import { main } from "./main.js";
 
