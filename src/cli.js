@@ -7,7 +7,6 @@ will be mocked.
 The configuration is loaded from a local file.
 */
 
-import * as core from "@actions/core";
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 
