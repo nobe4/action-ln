@@ -42,16 +42,8 @@ const help = () => {
 };
 
 const options = {
-	noop: {
-		type: "boolean",
-		default: false,
-	},
-
-	help: {
-		type: "boolean",
-		short: "h",
-		default: false,
-	},
+	noop: { type: "boolean" },
+	help: { type: "boolean" },
 
 	config: {
 		type: "string",
@@ -65,23 +57,16 @@ const options = {
 	},
 
 	// Auth with a GitHub Application
-	app_id: {
-		type: "string",
-	},
-	app_private_key_file: {
-		type: "string",
-	},
-	app_install_id: {
-		type: "string",
-	},
+	app_id: { type: "string" },
+	app_private_key_file: { type: "string" },
+	app_install_id: { type: "string" },
 };
 
 try {
-	// TODO: write some simple help if --help is passed
 	const { values } = parseArgs({ options: options });
 
 	if (values.help) {
-		help();
+		return help();
 	}
 
 	if (values.app_private_key_file) {
@@ -89,10 +74,6 @@ try {
 			values.app_private_key_file,
 		).toString();
 	}
-
-	core.info(
-		`Running action-ln with the following values: ${JSON.stringify(values, null, 2)}`,
-	);
 
 	main({
 		configConfig: {
