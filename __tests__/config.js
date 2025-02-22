@@ -1,20 +1,23 @@
-// required by File, which is required by Link
-jest.mock("@actions/github", () => ({ context: { repo: "repo" } }));
+import { jest } from "@jest/globals";
 
-// Prevents core logging
-jest.mock("@actions/core");
+import { github } from "../__fixtures__/@actions/github.js";
+jest.unstable_mockModule("@actions/github", () => github);
 
-const fs = require("node:fs/promises");
-jest.mock("node:fs/promises");
+import * as core from "../__fixtures__/@actions/core.js";
+jest.unstable_mockModule("@actions/core", () => core);
 
-const yaml = require("js-yaml");
-jest.mock("js-yaml");
+import fs from "../__fixtures__/node/fs/promises.js";
+jest.unstable_mockModule("node:fs/promises", () => fs);
 
-const { dedent } = require("../src/format");
-const { Config, ParseError } = require("../src/config");
+import yaml from "../__fixtures__/js-yaml.js";
+jest.unstable_mockModule("js-yaml", () => yaml);
 
-const { Link } = require("../src/link");
-jest.mock("../src/link");
+import { Link } from "../__fixtures__/src/link.js";
+jest.unstable_mockModule("../src/link.js", () => ({ Link: Link }));
+
+const { Config, ParseError } = await import("../src/config.js");
+
+import { dedent } from "../src/format.js";
 
 const repo = { owner: "owner", repo: "repo" };
 
@@ -354,14 +357,12 @@ describe("Config", () => {
 					},
 				},
 			])("%# %j", ({ data, want }) => {
-				const mockParse = jest
-					.spyOn(Link.prototype, "parse")
-					.mockImplementation(() => "parsed");
+				Link.parse.mockImplementation(() => "parsed");
 
 				c.data = data;
 
 				expect(c.parse().data).toStrictEqual(want);
-				expect(mockParse).toHaveBeenCalledTimes(data.links.length);
+				expect(Link.parse).toHaveBeenCalledTimes(data.links.length);
 			});
 		});
 	});

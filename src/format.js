@@ -75,7 +75,7 @@ function pullBody(group, config, context) {
 	`);
 }
 
-module.exports = {
+export {
 	indent,
 	dedent,
 	prettify,

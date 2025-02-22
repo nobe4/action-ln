@@ -1,13 +1,15 @@
-// Needed for the import of File
-const currentRepo = { owner: "owner", repo: "repo" };
-jest.mock("@actions/github", () => ({ context: { repo: currentRepo } }));
+import { jest } from "@jest/globals";
 
-const { hash } = require("crypto");
-jest.mock("crypto");
+import { github } from "../__fixtures__/@actions/github.js";
+jest.unstable_mockModule("@actions/github", () => github);
 
-const { Link, ParseError } = require("../src/link");
-const { File } = require("../src/file");
-const { dedent } = require("../src/format");
+import { crypto } from "../__fixtures__/node/crypto.js";
+jest.unstable_mockModule("node:crypto", () => crypto);
+
+const { Link, ParseError } = await import("../src/link.js");
+const { File } = await import("../src/file.js");
+
+import { dedent } from "../src/format.js";
 
 describe("Link", () => {
 	let l = new Link();
@@ -57,10 +59,10 @@ describe("Link", () => {
 				repo: { repo: "repo", owner: "owner" },
 				path: "path",
 			});
-			hash.mockReturnValue("hash");
+			crypto.hash.mockReturnValue("hash");
 
 			expect(l.SHA256).toStrictEqual("hash");
-			expect(hash).toHaveBeenCalledWith(
+			expect(crypto.hash).toHaveBeenCalledWith(
 				"sha256",
 				"owner repo path owner repo path",
 				"hex",

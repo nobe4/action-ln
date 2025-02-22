@@ -1,6 +1,6 @@
-const core = require("@actions/core");
-const { getOctokit } = require("@actions/github");
-const { prettify: _ } = require("./format");
+import * as core from "@actions/core";
+import { getOctokit } from "@actions/github";
+import { prettify as _ } from "./format.js";
 
 class GitHub {
 	constructor(token) {
@@ -191,4 +191,4 @@ class GitHub {
 	}
 }
 
-module.exports = { GitHub };
+export { GitHub };
