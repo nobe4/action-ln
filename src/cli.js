@@ -16,7 +16,7 @@ import { parseArgs } from "node:util";
 // fix its value.
 process.env.GITHUB_REPOSITORY = "nobe4/action-ln";
 
-import { main } from "./main";
+import { main } from "./main.js";
 
 try {
 	// TODO: write some simple help if --help is passed

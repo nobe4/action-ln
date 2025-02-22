@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 import { getOctokit } from "@actions/github";
-import { prettify as _ } from "./format";
+import { prettify as _ } from "./format.js";
 
 class GitHub {
 	constructor(token) {

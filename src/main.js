@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 import { context } from "@actions/github";
 
-import { Config } from "./config";
-import { GitHub } from "./github";
+import { Config } from "./config.js";
+import { GitHub } from "./github.js";
 
 import {
 	branchName,
@@ -10,7 +10,7 @@ import {
 	pullBody,
 	pullTitle,
 	prettify as p,
-} from "./format";
+} from "./format.js";
 
 async function main({ configConfig, token, noop }) {
 	const gh = new GitHub(token);
@@ -111,4 +111,4 @@ async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
 	});
 }
 
-export default { main };
+export { main };

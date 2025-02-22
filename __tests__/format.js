@@ -3,7 +3,7 @@ import {
 	dedent,
 	commitMessage,
 	pullBody,
-} from "../src/format";
+} from "../src/format.js";
 
 describe("indent", () => {
 	it.each([

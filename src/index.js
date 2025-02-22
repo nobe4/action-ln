@@ -4,7 +4,8 @@
 
 import * as core from "@actions/core";
 import { context } from "@actions/github";
-import { main } from "./main";
+
+import { main } from "./main.js";
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
