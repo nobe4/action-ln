@@ -1,9 +1,8 @@
+/* eslint-disable jest/no-mocks-import */
+
 import { jest } from "@jest/globals";
 
-import { github } from "../__fixtures__/@actions/github.js";
-jest.unstable_mockModule("@actions/github", () => github);
-
-import * as core from "../__fixtures__/@actions/core.js";
+import * as core from "../__mocks__/@actions/core.js";
 jest.unstable_mockModule("@actions/core", () => core);
 
 const fs = { readFile: jest.fn() };
@@ -12,7 +11,7 @@ jest.unstable_mockModule("node:fs/promises", () => fs);
 const yaml = { load: jest.fn() };
 jest.unstable_mockModule("js-yaml", () => yaml);
 
-import { Link } from "../__fixtures__/src/link.js";
+import { Link } from "../__mocks__/src/link.js";
 jest.unstable_mockModule("../src/link.js", () => ({ Link: Link }));
 
 const { Config, ParseError } = await import("../src/config.js");

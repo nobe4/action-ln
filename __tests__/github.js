@@ -1,8 +1,11 @@
+/* eslint-disable jest/no-mocks-import */
+
 import { jest } from "@jest/globals";
 
-import * as core from "../__fixtures__/@actions/core.js";
+import * as core from "../__mocks__/@actions/core.js";
 jest.unstable_mockModule("@actions/core", () => core);
-import { github } from "../__fixtures__/@actions/github.js";
+
+import { github } from "../__mocks__/@actions/github.js";
 jest.unstable_mockModule("@actions/github", () => github);
 
 const { GitHub } = await import("../src/github.js");
