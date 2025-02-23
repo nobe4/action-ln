@@ -1,4 +1,9 @@
-# action-ln
+<div align="center">
+  <img width="300" src="https://github.com/nobe4/action-ln/blob/main/docs/logo.png" /> <br>
+  <sub>Logo by <a href="https://www.instagram.com/malohff">@malohff</a></sub>
+</div>
+
+# `action-ln`
 
 Link files between repositories.
 
@@ -68,3 +73,8 @@ approve pull requests` from
 
 - Creating PRs from the default GITHUB_TOKEN provided by actions don't
 automatically run CI checks. https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+
+- For GitHub App, the installation cannot cross org boundaries. This is a know
+  limitation and the only way to work across multiple orgs is with a Classic PAT
+  token. It _would_ be possible to have multiple octokit instance for each org,
+  but this would be an intense rewrite and not planned at the moment.

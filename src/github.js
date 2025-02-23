@@ -1,12 +1,10 @@
-const core = require("@actions/core");
-const { getOctokit } = require("@actions/github");
-const { prettify: _ } = require("./format");
+import * as core from "@actions/core";
+
+import { prettify as _ } from "./format.js";
 
 class GitHub {
-	constructor(token) {
-		this.octokit = getOctokit(token, {
-			log: console,
-		});
+	constructor(octokit) {
+		this.octokit = octokit;
 	}
 
 	async getContent({ owner, repo }, path, ref = undefined) {
@@ -135,7 +133,11 @@ class GitHub {
 			.list({
 				owner: owner,
 				repo: repo,
-				head: head,
+				head: `${owner}:${head}`,
+
+				// We'll use only the first item anyway, and we'll warn if more
+				// than one PR exist for such a head.
+				per_page: 2,
 			})
 			.then(({ data }) => {
 				// There really should not be more than one Pull matching this
@@ -187,4 +189,4 @@ class GitHub {
 	}
 }
 
-module.exports = { GitHub };
+export { GitHub };

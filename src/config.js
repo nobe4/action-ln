@@ -1,8 +1,8 @@
-const core = require("@actions/core");
-const fs = require("node:fs/promises");
-const yaml = require("js-yaml");
-const { indent } = require("./format");
-const { Link } = require("./link");
+import * as core from "@actions/core";
+import * as fs from "node:fs/promises";
+import * as yaml from "js-yaml";
+import { indent } from "./format.js";
+import { Link } from "./link.js";
 
 class ParseError extends Error {
 	constructor(message) {
@@ -139,4 +139,4 @@ class Config {
 	}
 }
 
-module.exports = { Config, ParseError };
+export { Config, ParseError };

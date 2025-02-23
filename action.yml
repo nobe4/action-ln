@@ -2,18 +2,27 @@ name: ln
 description: Link files between repositories
 
 inputs:
-  token:
-    description: GitHub token to authenticate with.
-    required: false
-    default: "${{ github.token }}"
+  noop:
+    description: Load the data, but don't update anything.
+    required: true
+    default: "false"
   config-path:
     description: Relative path to the config file.
     required: true
     default: ".github/ln-config.yaml"
-  noop:
-    description: Only load the data, but don't update anything.
-    required: true
-    default: "false"
+  token:
+    description: GitHub token to authenticate with.
+    required: false
+    default: "${{ github.token }}"
+  app-id:
+    description: GitHub App Id to authenticate with
+    required: false
+  app-private-key:
+    description: GitHub App Private Key to authenticate with
+    required: false
+  app-install-id:
+    description: GitHub App installation Id to authenticate with
+    required: false
 
 runs:
   using: node20

@@ -1,18 +1,20 @@
-const core = require("@actions/core");
-const context = require("@actions/github").context;
+import * as core from "@actions/core";
+import { context } from "@actions/github";
 
-const { Config } = require("./config");
-const { GitHub } = require("./github");
-const {
+import { Config } from "./config.js";
+import { GitHub } from "./github.js";
+import { createOctokit } from "./octokit.js";
+import {
 	branchName,
 	commitMessage,
 	pullBody,
 	pullTitle,
-	prettify: p,
-} = require("./format");
+	prettify as p,
+} from "./format.js";
 
-async function main({ configConfig, token, noop }) {
-	const gh = new GitHub(token);
+async function main({ configConfig, auth, noop }) {
+	const octokit = createOctokit(auth);
+	const gh = new GitHub(octokit);
 	const config = new Config(configConfig, gh);
 	await config.load();
 
@@ -110,4 +112,4 @@ async function checkIfLinkNeedsUpdate(link, gh, toRepo, headBranch) {
 	});
 }
 
-module.exports = { main };
+export { main };

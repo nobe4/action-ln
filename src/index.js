@@ -2,21 +2,30 @@
  Entrypoint to run action-ln from GitHub Actions.
 */
 
-const core = require("@actions/core");
-const context = require("@actions/github").context;
-const { main } = require("./main");
+import * as core from "@actions/core";
+import { context } from "@actions/github";
+
+import { main } from "./main.js";
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
-	let token = core.getInput("token", { required: true });
-	let noop = core.getInput("noop", { required: true }) == "true";
+	const noop = core.getInput("noop", { required: true }) == "true";
+	const token = core.getInput("token", { required: true });
+	const appId = core.getInput("app-id");
+	const appPrivKey = core.getInput("app-private-key");
+	const appInstallId = core.getInput("app-install-id");
 
 	main({
 		configConfig: {
 			repo: context.repo,
 			path: configPath,
 		},
-		token: token,
+		auth: {
+			token: token,
+			appId: appId,
+			appPrivKey: appPrivKey,
+			appInstallId: appInstallId,
+		},
 		noop: noop,
 	});
 } catch (e) {

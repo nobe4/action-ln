@@ -1,4 +1,5 @@
-const currentRepo = require("@actions/github").context.repo;
+import * as github from "@actions/github";
+const currentRepo = github.context.repo;
 
 class ParseError extends Error {
 	constructor(message) {
@@ -79,4 +80,4 @@ class File {
 	}
 }
 
-module.exports = { File, ParseError };
+export { File, ParseError };
