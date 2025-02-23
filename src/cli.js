@@ -79,7 +79,7 @@ try {
 			useFS: true,
 			path: values.config,
 		},
-		githubConfig: {
+		auth: {
 			token: values.token,
 			appId: values.app_id,
 			appPrivKey: values.app_private_key_file,

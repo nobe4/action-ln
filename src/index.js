@@ -20,7 +20,7 @@ try {
 			repo: context.repo,
 			path: configPath,
 		},
-		githubConfig: {
+		auth: {
 			token: token,
 			appId: appId,
 			appPrivKey: appPrivKey,

@@ -17,10 +17,10 @@ const prettyBranch = `${repo.owner}/${repo.repo}@${branch}`;
 
 describe("GitHub", () => {
 	let g = undefined;
+	let octokit = undefined;
 
 	beforeEach(() => {
-		g = new GitHub();
-		g.octokit = {
+		octokit = {
 			rest: {
 				git: {
 					createCommit: jest.fn(),
@@ -35,13 +35,13 @@ describe("GitHub", () => {
 				},
 			},
 		};
+
+		g = new GitHub(octokit);
 	});
 
 	describe("constructor", () => {
 		it("sets up the octokit client", () => {
-			const mockOctokit = github.getOctokit.mockReturnValue("ok");
-			expect(new GitHub("token")).toBeDefined();
-			expect(mockOctokit).toHaveBeenCalledWith("token", { log: console });
+			expect(octokit).toEqual(octokit);
 		});
 	});
 
@@ -49,7 +49,7 @@ describe("GitHub", () => {
 		const expectedcalls = () => {
 			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
 
-			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
+			expect(octokit.rest.repos.getContent).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
@@ -58,7 +58,7 @@ describe("GitHub", () => {
 		};
 
 		it("catches a 404", async () => {
-			g.octokit.rest.repos.getContent.mockRejectedValue({ status: 404 });
+			octokit.rest.repos.getContent.mockRejectedValue({ status: 404 });
 
 			await expect(g.getContent(repo, path, branch)).resolves.not.toBeDefined();
 
@@ -67,7 +67,7 @@ describe("GitHub", () => {
 		});
 
 		it("fails to decode a base64 string", async () => {
-			g.octokit.rest.repos.getContent.mockResolvedValue({
+			octokit.rest.repos.getContent.mockResolvedValue({
 				data: { content: content },
 			});
 			global.Buffer = {
@@ -86,7 +86,7 @@ describe("GitHub", () => {
 		});
 
 		it("succeeds", async () => {
-			g.octokit.rest.repos.getContent.mockResolvedValue({
+			octokit.rest.repos.getContent.mockResolvedValue({
 				data: { content: content, sha: 123 },
 			});
 			global.Buffer = {
@@ -109,7 +109,7 @@ describe("GitHub", () => {
 
 		it("succeeds without a ref", async () => {
 			const prettyRepo = `${repo.owner}/${repo.repo}:${path}@undefined`;
-			g.octokit.rest.repos.getContent.mockResolvedValue({
+			octokit.rest.repos.getContent.mockResolvedValue({
 				data: { content: content, sha: 123 },
 			});
 			global.Buffer = {
@@ -129,7 +129,7 @@ describe("GitHub", () => {
 			);
 			expect(core.debug).toHaveBeenCalledWith(`fetching ${prettyRepo}`);
 
-			expect(g.octokit.rest.repos.getContent).toHaveBeenCalledWith({
+			expect(octokit.rest.repos.getContent).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				path: path,
@@ -210,19 +210,19 @@ describe("GitHub", () => {
 	// do very little more than calling octokit and returning the data.
 	describe("getDefaultBranchName", () => {
 		it("fetches the default branch", async () => {
-			g.octokit.rest.repos.get.mockResolvedValue({
+			octokit.rest.repos.get.mockResolvedValue({
 				data: { default_branch: "main" },
 			});
 			await expect(g.getDefaultBranchName(repo)).resolves.toEqual("main");
-			expect(g.octokit.rest.repos.get).toHaveBeenCalledWith(repo);
+			expect(octokit.rest.repos.get).toHaveBeenCalledWith(repo);
 		});
 	});
 
 	describe("getBranch", () => {
 		it("fetches the branch", async () => {
-			g.octokit.rest.git.getRef.mockResolvedValue({ data: branch });
+			octokit.rest.git.getRef.mockResolvedValue({ data: branch });
 			await expect(g.getBranch(repo, branch)).resolves.toEqual(branch);
-			expect(g.octokit.rest.git.getRef).toHaveBeenCalledWith({
+			expect(octokit.rest.git.getRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				ref: `heads/${branch}`,
@@ -232,9 +232,9 @@ describe("GitHub", () => {
 
 	describe("createBranch", () => {
 		it("creates the branch", async () => {
-			g.octokit.rest.git.createRef.mockResolvedValue({ data: branch });
+			octokit.rest.git.createRef.mockResolvedValue({ data: branch });
 			await expect(g.createBranch(repo, branch, sha)).resolves.toEqual(branch);
-			expect(g.octokit.rest.git.createRef).toHaveBeenCalledWith({
+			expect(octokit.rest.git.createRef).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				ref: `refs/heads/${branch}`,
@@ -250,7 +250,7 @@ describe("GitHub", () => {
 					return { toString: () => "base64'ed content" };
 				}),
 			};
-			g.octokit.rest.repos.createOrUpdateFileContents.mockResolvedValue({
+			octokit.rest.repos.createOrUpdateFileContents.mockResolvedValue({
 				data: "ok",
 			});
 		});
@@ -265,7 +265,7 @@ describe("GitHub", () => {
 			expect(global.Buffer.from).toHaveBeenCalledWith(content);
 			expect(g.getContent).toHaveBeenCalledWith(repo, path, branch);
 			expect(
-				g.octokit.rest.repos.createOrUpdateFileContents,
+				octokit.rest.repos.createOrUpdateFileContents,
 			).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
@@ -287,7 +287,7 @@ describe("GitHub", () => {
 			expect(g.getContent).toHaveBeenCalledWith(repo, path, branch);
 			expect(global.Buffer.from).toHaveBeenCalledWith(content);
 			expect(
-				g.octokit.rest.repos.createOrUpdateFileContents,
+				octokit.rest.repos.createOrUpdateFileContents,
 			).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
@@ -302,7 +302,7 @@ describe("GitHub", () => {
 
 	describe("getOrCreatePullRequest", () => {
 		const expectedcalls = () => {
-			expect(g.octokit.rest.pulls.list).toHaveBeenCalledWith({
+			expect(octokit.rest.pulls.list).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				head: `${repo.owner}:${branch}`,
@@ -310,7 +310,7 @@ describe("GitHub", () => {
 			});
 		};
 		it("gets an existing pull request", async () => {
-			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull"] });
+			octokit.rest.pulls.list.mockResolvedValue({ data: ["pull"] });
 
 			await expect(
 				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
@@ -319,7 +319,7 @@ describe("GitHub", () => {
 		});
 
 		it("gets an existing pull request and warns for duplicates", async () => {
-			g.octokit.rest.pulls.list.mockResolvedValue({ data: ["pull1", "pull2"] });
+			octokit.rest.pulls.list.mockResolvedValue({ data: ["pull1", "pull2"] });
 
 			await expect(
 				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
@@ -332,15 +332,15 @@ describe("GitHub", () => {
 		});
 
 		it("creates a new pull request", async () => {
-			g.octokit.rest.pulls.list.mockResolvedValue({ data: [] });
-			g.octokit.rest.pulls.create.mockResolvedValue({ data: "pull" });
+			octokit.rest.pulls.list.mockResolvedValue({ data: [] });
+			octokit.rest.pulls.create.mockResolvedValue({ data: "pull" });
 
 			await expect(
 				g.getOrCreatePullRequest(repo, branch, "base", "title", "body"),
 			).resolves.toEqual("pull");
 
 			expectedcalls();
-			expect(g.octokit.rest.pulls.create).toHaveBeenCalledWith({
+			expect(octokit.rest.pulls.create).toHaveBeenCalledWith({
 				owner: repo.owner,
 				repo: repo.repo,
 				head: branch,

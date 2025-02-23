@@ -3,7 +3,7 @@ import { context } from "@actions/github";
 
 import { Config } from "./config.js";
 import { GitHub } from "./github.js";
-
+import { createOctokit } from "./octokit.js";
 import {
 	branchName,
 	commitMessage,
@@ -12,8 +12,9 @@ import {
 	prettify as p,
 } from "./format.js";
 
-async function main({ configConfig, githubConfig, noop }) {
-	const gh = new GitHub(githubConfig);
+async function main({ configConfig, auth, noop }) {
+	const octokit = createOctokit(auth);
+	const gh = new GitHub(octokit);
 	const config = new Config(configConfig, gh);
 	await config.load();
 

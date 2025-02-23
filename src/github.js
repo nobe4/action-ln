@@ -1,45 +1,10 @@
 import * as core from "@actions/core";
 
-import { Octokit } from "@octokit/rest";
-import { getOctokit } from "@actions/github";
-import { createAppAuth } from "@octokit/auth-app";
-
 import { prettify as _ } from "./format.js";
 
 class GitHub {
-	constructor({ token, appId, appPrivKey, appInstallId }) {
-		if (!token && !appId && !appPrivKey) {
-			throw new Error("either token or app_* should be provided");
-		}
-
-		if (appId && appPrivKey) {
-			this.createOctokitFromApp(appId, appPrivKey, appInstallId);
-			return;
-		}
-
-		this.createOctokitFromToken(token);
-	}
-
-	createOctokitFromToken(token) {
-		core.debug("creating octokit from token");
-		this.octokit = getOctokit(token, {
-			log: console,
-		});
-	}
-
-	createOctokitFromApp(id, key, installId) {
-		core.debug("creating octokit from application");
-		console.log(id, key);
-		// TODO: can't this be done with getOctokit?
-		this.octokit = new Octokit({
-			authStrategy: createAppAuth,
-			auth: {
-				appId: id,
-				privateKey: key,
-				installationId: installId,
-			},
-		});
-		console.log(this.octokit);
+	constructor(octokit) {
+		this.octokit = octokit;
 	}
 
 	async getContent({ owner, repo }, path, ref = undefined) {
