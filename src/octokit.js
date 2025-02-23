@@ -4,7 +4,7 @@ import { Octokit } from "@octokit/rest";
 import { createAppAuth } from "@octokit/auth-app";
 import { getOctokit } from "@actions/github";
 
-function createOctokit({ token, appId, appPrivKey, installId }) {
+function createOctokit({ token, appId, appPrivKey, appInstallId }) {
 	if (!token && !appId && !appPrivKey) {
 		throw new Error("either token or app_* should be provided");
 	}
@@ -18,7 +18,7 @@ function createOctokit({ token, appId, appPrivKey, installId }) {
 			auth: {
 				appId: appId,
 				privateKey: appPrivKey,
-				installationId: installId,
+				installationId: appInstallId,
 			},
 		});
 	}
