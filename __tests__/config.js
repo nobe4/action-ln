@@ -6,10 +6,10 @@ jest.unstable_mockModule("@actions/github", () => github);
 import * as core from "../__fixtures__/@actions/core.js";
 jest.unstable_mockModule("@actions/core", () => core);
 
-import fs from "../__fixtures__/node/fs/promises.js";
+const fs = { readFile: jest.fn() };
 jest.unstable_mockModule("node:fs/promises", () => fs);
 
-import yaml from "../__fixtures__/js-yaml.js";
+const yaml = { load: jest.fn() };
 jest.unstable_mockModule("js-yaml", () => yaml);
 
 import { Link } from "../__fixtures__/src/link.js";
