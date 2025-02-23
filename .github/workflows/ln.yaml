@@ -16,6 +16,8 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: nobe4/action-ln@0
+      - uses: nobe4/action-ln@v0
         with:
-          config: .github/ln-config.yaml
+          app-id: ${{ secrets.ACTION_LN_APP_ID }}
+          app-private-key: ${{ secrets.ACTION_LN_APP_PRIVATE_KEY }}
+          app-install-id: ${{ secrets.ACTION_LN_APP_INSTALL_ID }}
