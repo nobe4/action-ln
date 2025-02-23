@@ -1,11 +1,12 @@
-/* eslint-disable jest/no-mocks-import */
-
 import { jest } from "@jest/globals";
+
+import * as core from "../__mocks__/@actions/core.js";
+jest.unstable_mockModule("@actions/core", () => core);
 
 import { github } from "../__mocks__/@actions/github.js";
 jest.unstable_mockModule("@actions/github", () => github);
 
-const rest = { Octokit: jest.fn() };
+const rest = { Octokit: class Octokit {} };
 jest.unstable_mockModule("@octokit/rest", () => rest);
 
 const authApp = { createAppAuth: jest.fn() };
@@ -20,10 +21,18 @@ describe("createOctokit", () => {
 		);
 	});
 
-	it("create an octokit instance with app authentication", () => {});
+	it("create an octokit instance with app authentication", () => {
+		expect(createOctokit({ appId: "id", appPrivKey: "key" })).toBeInstanceOf(
+			rest.Octokit,
+		);
+		// TODO: not really sure how to check that the constructor was called.
+	});
 
 	it("create an octokit instance with token authentication", () => {
 		github.getOctokit.mockReturnValue("octokit");
 		expect(createOctokit({ token: "TOKEN" })).toStrictEqual("octokit");
+		expect(github.getOctokit).toHaveBeenCalledWith("TOKEN", {
+			log: console,
+		});
 	});
 });

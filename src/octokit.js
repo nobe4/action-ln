@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 
 import { Octokit } from "@octokit/rest";
-import { getOctokit } from "@actions/github";
 import { createAppAuth } from "@octokit/auth-app";
+import { getOctokit } from "@actions/github";
 
 function createOctokit({ token, appId, appPrivKey, installId }) {
 	if (!token && !appId && !appPrivKey) {
