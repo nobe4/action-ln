@@ -3,7 +3,7 @@ description: Link files between repositories
 
 inputs:
   noop:
-    description: Only load the data, but don't update anything.
+    description: Load the data, but don't update anything.
     required: true
     default: "false"
   config-path:
