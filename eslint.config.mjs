@@ -8,6 +8,13 @@ export default [
 	prettierRecommended,
 	jest.configs["flat/recommended"],
 	{
+		rules: {
+			// Seems that the support for mocking with ESM is not perfect yet.
+			// I found a thing  that worked, so I'll stick with it.
+			"jest/no-mocks-import": "off",
+		},
+	},
+	{
 		ignores: ["**/coverage", "**/dist", "**/linter", "**/node_modules"],
 	},
 	{

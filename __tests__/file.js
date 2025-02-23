@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-import { github } from "../__fixtures__/@actions/github.js";
+import { github } from "../__mocks__/@actions/github.js";
 jest.unstable_mockModule("@actions/github", () => github);
 
 const { File, ParseError } = await import("../src/file.js");

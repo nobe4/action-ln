@@ -1,12 +1,10 @@
 import * as core from "@actions/core";
-import { getOctokit } from "@actions/github";
+
 import { prettify as _ } from "./format.js";
 
 class GitHub {
-	constructor(token) {
-		this.octokit = getOctokit(token, {
-			log: console,
-		});
+	constructor(octokit) {
+		this.octokit = octokit;
 	}
 
 	async getContent({ owner, repo }, path, ref = undefined) {

@@ -1,9 +1,9 @@
 import { jest } from "@jest/globals";
 
-import { github } from "../__fixtures__/@actions/github.js";
+import { github } from "../__mocks__/@actions/github.js";
 jest.unstable_mockModule("@actions/github", () => github);
 
-import { crypto } from "../__fixtures__/node/crypto.js";
+const crypto = { hash: jest.fn() };
 jest.unstable_mockModule("node:crypto", () => crypto);
 
 const { Link, ParseError } = await import("../src/link.js");

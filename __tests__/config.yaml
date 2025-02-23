@@ -1,0 +1,41 @@
+# Taken from https://github.com/frozen-fishsticks/action-ln-test-0/blob/main/ln-config.yaml
+links:
+  # MOOT
+  - from:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README.md
+    to:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README.md
+
+  # local
+  - from:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README.md
+    to:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README2.md
+
+  # export
+  - from:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README.md
+    to:
+      repo: frozen-fishsticks/action-ln-test-1
+      path: README.md
+
+  # import
+  - from:
+      repo: frozen-fishsticks/action-ln-test-1
+      path: README.md
+    to:
+      repo: frozen-fishsticks/action-ln-test-0
+      path: README3.md
+
+  # transfer
+  - from:
+      path: README.md
+      repo: frozen-fishsticks/action-ln-test-1
+    to:
+      path: README.md
+      repo: frozen-fishsticks/action-ln-test-2

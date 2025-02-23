@@ -9,15 +9,23 @@ import { main } from "./main.js";
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
-	let token = core.getInput("token", { required: true });
 	let noop = core.getInput("noop", { required: true }) == "true";
+	let token = core.getInput("token", { required: true });
+	let appId = core.getInput("app-id");
+	let appPrivKey = core.getInput("app-private-key");
+	let appInstallId = core.getInput("app-install-id");
 
 	main({
 		configConfig: {
 			repo: context.repo,
 			path: configPath,
 		},
-		token: token,
+		auth: {
+			token: token,
+			appId: appId,
+			appPrivKey: appPrivKey,
+			appInstallId: appInstallId,
+		},
 		noop: noop,
 	});
 } catch (e) {
