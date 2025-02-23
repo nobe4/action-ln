@@ -19,3 +19,6 @@ jobs:
       - uses: nobe4/action-ln@v0
         with:
           noop: true # until I get a github app setup
+          app-id: ${{ secrets.ACTION_LN_APP_ID }}
+          app-private-key: ${{ secrets.ACTION_LN_APP_PRIVATE_KEY }}
+          app-install-id: ${{ secrets.ACTION_LN_APP_INSTALL_ID }}
