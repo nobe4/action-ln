@@ -1,5 +1,3 @@
-/* eslint-disable jest/no-mocks-import */
-
 import { jest } from "@jest/globals";
 
 import { github } from "../__mocks__/@actions/github.js";
