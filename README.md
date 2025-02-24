@@ -14,7 +14,7 @@ It works by using the GitHub API to read files and create Pull Requests where an
 update is needed. You can specify the source, destination, and schedule for the
 synchronization.
 
-> [!TIPS]
+> [!TIP]
 > The authentication for this can be rather tricky, make sure you read
 > [authentication](/docs/authentication.md) to get familiar with the various
 > methods.
