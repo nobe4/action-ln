@@ -5,7 +5,19 @@
 
 # `action-ln`
 
-Link files between repositories.
+> Link files between repositories.
+
+This action creates a _link_ between files in various places. When the source is
+updated, the destination is as well.
+
+It works by using the GitHub API to read files and create Pull Requests where an
+update is needed. You can specify the source, destination, and schedule for the
+synchronization.
+
+> [!TIPS]
+> The authentication for this can be rather tricky, make sure you read
+> [authentication](/docs/authentication.md) to get familiar with the various
+> methods.
 
 ## Quickstart
 
@@ -25,21 +37,5 @@ Link files between repositories.
 
 - [Authentication](/docs/authentication.md)
 - [Configuration](/docs/configuration.md)
+- [Development](/docs/development.md)
 - [Examples](/docs/examples.md)
-
-## Running locally
-
-```shell
-npm start -- [--token="..."] [--config="..."] [--noop]
-```
-
-## Development
-
-To test the action from a branch, run `npm run build` and `npm run build:add`.
-Then, commit the `dist` folder, it make CI fails but allows you to use the
-branch name/commit sha as a version to run the action on.
-
-Once testing is done, run `npm run build:clean` before you merge to the main branch.
-
-> [!NOTE]
-> There's no need to push the code, just pushing the dist is enough for testing.

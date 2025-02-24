@@ -5,7 +5,7 @@ this action can be used.
 
 Assumptions:
 - The default repo is `nobe4/action-ln`.
-- Valid [authentication](/docs/authentication.md)).
+- Valid [authentication](/docs/authentication.md).
 
 ## Update LICENSE once a year
 
@@ -22,8 +22,9 @@ jobs:
       - uses: nobe4/action-ln@v0
         with:
           token: ${{ secret.GITHUB_ORG_TOKEN }}
+          config-path: .action-ln-config.yaml
 
-# .github/ln-config.yaml
+# .action-ln-config.yaml
 links:
   - from:
       path: LICENSE
