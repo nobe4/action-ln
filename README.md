@@ -7,6 +7,8 @@
 
 Link files between repositories.
 
+- [Authentication](/docs/authentication.md)
+
 ## Config
 
 Use `ln-config.yaml` at the root of your repository, or specify a custom path
