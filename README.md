@@ -19,7 +19,7 @@ Link files between repositories.
     uses: nobe4/action-ln@v0
     ```
 
-    E.g. [`ln.yaml`](.github/workflow/ln.yaml)
+    E.g. [`ln.yaml`](.github/workflows/ln.yaml)
 
 ## Further readings
 
