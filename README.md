@@ -7,6 +7,24 @@
 
 Link files between repositories.
 
+## Quickstart
+
+1. Create a config file in `.github/ln-config.yaml`.
+
+  E.g. [`ln-config.yaml`](.github/ln-config.yaml)
+
+2. Create a workflow.
+
+  ```yaml
+  uses: nobe4/action-ln@v0
+  ```
+
+  E.g. [`ln.yaml`](.github/workflow/.ln.yaml)
+
+## Further readings
+
+- [Authentication](/docs/authentication.md)
+
 ## Config
 
 Use `ln-config.yaml` at the root of your repository, or specify a custom path
@@ -49,32 +67,3 @@ Once testing is done, run `npm run build:clean` before you merge to the main bra
 
 > [!NOTE]
 > There's no need to push the code, just pushing the dist is enough for testing.
-
-## Random notes
-
-- If within a repo, at least the following permissions are needed:
-
-  ```yaml
-  permissions:
-    contents: write
-    pull-requests: write
-  ```
-
-- If using from an org, you need to enable `Allow GitHub Actions to create and
-approve pull requests` from
-  `https://github.com/organizations/<org>/settings/actions`
-
-- If using not from an org, you also need to enable `Allow GitHub Actions to create and
-approve pull requests` from
-  `https://github.com/<owner>/<repo>/settings/actions`
-
-- For Classic tokens `repo` scope is needed, assuming you have write access to
-  all the updated repositories.
-
-- Creating PRs from the default GITHUB_TOKEN provided by actions don't
-automatically run CI checks. https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-
-- For GitHub App, the installation cannot cross org boundaries. This is a know
-  limitation and the only way to work across multiple orgs is with a Classic PAT
-  token. It _would_ be possible to have multiple octokit instance for each org,
-  but this would be an intense rewrite and not planned at the moment.
