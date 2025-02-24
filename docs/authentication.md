@@ -57,9 +57,6 @@ Store it in your repository's secret and use it like so:
 jobs:
   ln:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - uses: nobe4/action-ln@v0
         with:
