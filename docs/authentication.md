@@ -33,8 +33,7 @@ jobs:
 > Requests](#allowing-github-action-to-create-pull-requests)
 
 > [!NOTE]
-> GitHub action's provided token don't trigger CI checks[^automatic token ci
-> checks trigger].
+> GitHub action's provided token don't trigger CI checks[^automatic-token-ci-checks-trigger].
 > You need to use another authentication method if you need that.
 
 ## Custom GitHub token
@@ -95,5 +94,5 @@ pull requests`:
 - `https://github.com/<owner>/<repo>/settings/actions`
 
 
-[^automatic token authentication]: https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication
-[^automatic token ci checks trigger]: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+[^automatic-token-authentication]: https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication
+[^automatic-token-ci-checks-trigger]: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/triggering-a-workflow#triggering-a-workflow-from-a-workflow
