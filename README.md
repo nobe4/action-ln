@@ -7,6 +7,22 @@
 
 Link files between repositories.
 
+## Quickstart
+
+1. Create a config file in `.github/ln-config.yaml`.
+
+  E.g. [`ln-config.yaml`](.github/ln-config.yaml)
+
+2. Create a workflow.
+
+  ```yaml
+  uses: nobe4/action-ln@v0
+  ```
+
+  E.g. [`ln.yaml`](.github/workflow/.ln.yaml)
+
+## Further readings
+
 - [Authentication](/docs/authentication.md)
 
 ## Config
