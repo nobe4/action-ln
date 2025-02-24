@@ -24,32 +24,8 @@ Link files between repositories.
 ## Further readings
 
 - [Authentication](/docs/authentication.md)
-
-## Config
-
-Use `ln-config.yaml` at the root of your repository, or specify a custom path
-with the `config-path` action input.
-
-The format is:
-
-```yaml
-links:
-  # Local files
-  - from:
-      path: path/to/file
-    to:
-      path: path/to/other/file
-
-  # Remote files
-  - from:
-      repo: org/repo
-      path: path/to/file
-    to:
-      repo: org/repo
-      path: path/to/other/file
-```
-
-See [`example.config.yaml`](./example.config.yaml) for an example.
+- [Configuration](/docs/configuration.md)
+- [Examples](/docs/examples.md)
 
 ## Running locally
 
