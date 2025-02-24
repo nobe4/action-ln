@@ -33,26 +33,26 @@ It is composed of 3 parts:
 - `repo`: the full name of a repository, with `owner` and `repo` parts.
 
     If the `owner` part is omitted, it defaults to the current owner.
-    If the `owner` and `repo` parts are ommitted, it defaults to the current
+    If the `owner` and `repo` parts are omitted, it defaults to the current
     owner and repo.
 
     E.g.
 
     ```yaml
-      # => nobe4/action-ln (TBD #34)
+      # => nobe4/action-ln (TBD #33)
       # repo key not set
 
-      # => nobe4/action-ln (TBD #34)
+      # => nobe4/action-ln (TBD #33)
       repo: action-ln
 
       # => cli/cli
       repo: cli/cli
 
-      # => cli/go-gh (TBD #34)
+      # => cli/go-gh (TBD #33)
       owner: cli
       repo: go-gh
 
-      # => nobe4/gh-not (TBD #34)
+      # => nobe4/gh-not (TBD #33)
       repo: gh-not
 
       # etc.
@@ -92,7 +92,7 @@ similarly):
     ref: ref
   ```
 
-- Verbose (TBD #34)
+- Verbose (TBD #33)
   ```yaml
   from:
     owner: owner
@@ -101,22 +101,22 @@ similarly):
     ref: ref
   ```
 
-- Short path (TBD #34)
+- Short path (TBD #33)
   ```yaml
   from: owner/repo/ref/path/to/file
   ```
 
-- Alternative short path (TBD #34)
+- Alternative short path (TBD #33)
   ```yaml
   from: owner/repo:path/to/file@ref
   ```
 
-- Alternative short path with implicit repo and ref (TBD #34)
+- Alternative short path with implicit repo and ref (TBD #33)
   ```yaml
   from: path/to/file
   ```
 
-- GitHub full URL (TBD #34)
+- GitHub full URL (TBD #33)
   ```yaml
   from: https://github.com/owner/repo/blob/ref/path/to/file
   ```
