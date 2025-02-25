@@ -17,6 +17,8 @@ GitHub Action generates a token[^automatic-token-authentication] for you.
 You can use it like so:
 
 ```yaml
+# ...
+
 jobs:
   ln:
     runs-on: ubuntu-latest
@@ -53,6 +55,8 @@ The permissions needed for the token are:
 Store it in your repository's secret and use it like so:
 
 ```yaml
+# ...
+
 jobs:
   ln:
     runs-on: ubuntu-latest
@@ -68,6 +72,8 @@ jobs:
 > This section needs some love, I'm new in this.
 
 ```yaml
+# ...
+
 jobs:
   ln:
     runs-on: ubuntu-latest
