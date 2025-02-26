@@ -15,13 +15,13 @@ jobs:
       packages: write
 
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       # NOTE: The publish-immutable-action is still in early development and
       # isn't ready to be used yet, so I'll just comment all the related code
       # and go back to pushing the `dist` folder for now.
-      # - uses: actions/checkout@v4
-      #   with:
-      #     fetch-depth: 0
-      #
       # - uses: actions/setup-node@v4
       #   with:
       #     node-version-file: .node-version
