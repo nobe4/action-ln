@@ -2,9 +2,15 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/"
+    groups:
+      all:
+        patterns: ["*"]
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"
     directory: "/"
+    groups:
+      all:
+        patterns: ["*"]
     schedule:
       interval: "weekly"
