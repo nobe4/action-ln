@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "**.md"
   pull_request:
-    paths-ignore:
-      - "**.md"
   workflow_dispatch:
 
 concurrency:
@@ -42,11 +38,35 @@ jobs:
       - run: npm clean-install
       - run: npm run lint
 
-  no-dist:
+  # NOTE: The publish-immutable-action is still in early development and
+  # isn't ready to be used yet, so I'll just comment all the related code
+  # and go back to pushing the `dist` folder for now.
+  # no-dist:
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     - run: '[ ! -d "./dist" ]'
+
+  check-dist:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: '[ ! -d "./dist" ]'
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: npm clean-install
+      - run: npm run build
+      - name: Compare the expected and actual dist/ directories
+        id: diff
+        run: |
+          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
+            echo "Detected uncommitted changes after build:"
+            git diff --stat
+            exit 1
+          fi

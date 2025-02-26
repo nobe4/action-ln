@@ -5,7 +5,19 @@
 
 # `action-ln`
 
-Link files between repositories.
+> Link files between repositories.
+
+This action creates a _link_ between files in various places. When the source is
+updated, the destination is as well.
+
+It works by using the GitHub API to read files and create Pull Requests where an
+update is needed. You can specify the source, destination, and schedule for the
+synchronization.
+
+> [!TIP]
+> The authentication for this can be rather tricky, make sure you read
+> [authentication](/docs/authentication.md) to get familiar with the various
+> methods.
 
 ## Quickstart
 
@@ -24,46 +36,6 @@ Link files between repositories.
 ## Further readings
 
 - [Authentication](/docs/authentication.md)
-
-## Config
-
-Use `ln-config.yaml` at the root of your repository, or specify a custom path
-with the `config-path` action input.
-
-The format is:
-
-```yaml
-links:
-  # Local files
-  - from:
-      path: path/to/file
-    to:
-      path: path/to/other/file
-
-  # Remote files
-  - from:
-      repo: org/repo
-      path: path/to/file
-    to:
-      repo: org/repo
-      path: path/to/other/file
-```
-
-See [`example.config.yaml`](./example.config.yaml) for an example.
-
-## Running locally
-
-```shell
-npm start -- [--token="..."] [--config="..."] [--noop]
-```
-
-## Development
-
-To test the action from a branch, run `npm run build` and `npm run build:add`.
-Then, commit the `dist` folder, it make CI fails but allows you to use the
-branch name/commit sha as a version to run the action on.
-
-Once testing is done, run `npm run build:clean` before you merge to the main branch.
-
-> [!NOTE]
-> There's no need to push the code, just pushing the dist is enough for testing.
+- [Configuration](/docs/configuration.md)
+- [Development](/docs/development.md)
+- [Examples](/docs/examples.md)

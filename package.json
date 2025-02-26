@@ -14,8 +14,7 @@
 		"__comments for test": "take from https://github.com/actions/javascript-action/blob/1d80419c548552e60ac84dfda8d04911c7e79025/package.json#L27C56-L27C74",
 		"test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
 		"build": "ncc build src/index.js --source-map --minify --out dist/ --license LICENSE",
-		"build:add": "git add --force './dist/*' && git commit -m 'TODROP: dist generate'",
-		"build:clean": "rm -rf ./dist && git commit -m 'TODROP: dist cleanup' -- 'dist/*'",
+		"build:add": "git add './dist/*' && git commit -m 'chore(dist): generate'",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint ."

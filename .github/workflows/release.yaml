@@ -19,20 +19,40 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-
-      - run: npm clean-install
-
-      - run: npm run all
-
-      - run: npm run build
-
+      # NOTE: The publish-immutable-action is still in early development and
+      # isn't ready to be used yet, so I'll just comment all the related code
+      # and go back to pushing the `dist` folder for now.
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version-file: .node-version
+      #
+      # - run: npm clean-install
+      #
+      # - run: npm run all
+      #
+      # - run: npm run build
+      #
       # TODO: delete all but the dist folder
 
       - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - uses: actions/publish-immutable-action@0.0.3
+      # - uses: actions/publish-immutable-action@0.0.3
+      #
+      # - run: |
+      #     # This is an ugly hack until the publish-immutable-action is fully
+      #     # ready for public usage.
+      #     # It pushes the generated code on a branch of the name of the tag
+      #     # (which is allowed, surprisingly). So when the action resolutino
+      #     # runs, it will try _either_ release or branch, both of which will
+      #     # have the 'dist' folder and will be able to run the code.
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      #
+      #     git checkout -b ${{ github.ref_name }}
+      #
+      #     git add --force './dist/*'
+      #     git commit -m "chore(release): automatically publish on edge"
+      #     git push --force origin <TAG>
+      #     git push origin ${{ github.ref_name }}
