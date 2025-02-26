@@ -25,6 +25,7 @@ function createOctokit({ token, appId, appPrivKey, appInstallId }) {
 
 	core.debug("creating octokit from token");
 	return getOctokit(token, {
+		userAgent: "nobe4/action-ln",
 		log: console,
 	});
 }
