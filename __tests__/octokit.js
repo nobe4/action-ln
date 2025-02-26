@@ -6,7 +6,7 @@ jest.unstable_mockModule("@actions/core", () => core);
 import { github } from "../__mocks__/@actions/github.js";
 jest.unstable_mockModule("@actions/github", () => github);
 
-const retry = { octokitRetry: jest.fn() };
+const retry = { retry: jest.fn() };
 jest.unstable_mockModule("@octokit/plugin-retry", () => retry);
 
 const rest = { Octokit: class Octokit {} };

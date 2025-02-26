@@ -3,7 +3,7 @@ import * as core from "@actions/core";
 import { Octokit } from "@octokit/rest";
 import { createAppAuth } from "@octokit/auth-app";
 import { getOctokit } from "@actions/github";
-import { octokitRetry } from "@octokit/plugin-retry";
+import { retry } from "@octokit/plugin-retry";
 
 function createOctokit({ token, appId, appPrivKey, appInstallId }) {
 	if (!token && !appId && !appPrivKey) {
@@ -27,7 +27,7 @@ function createOctokit({ token, appId, appPrivKey, appInstallId }) {
 	core.debug("creating octokit from token");
 	return getOctokit(token, {
 		userAgent: "nobe4/action-ln",
-		additionalPlugins: [octokitRetry],
+		additionalPlugins: [retry],
 		log: console,
 	});
 }
