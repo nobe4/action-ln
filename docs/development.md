@@ -8,8 +8,7 @@ npm start -- [--token="..."] [--config="..."] [--noop]
 
 ## Development
 
-To test the action from a branch, run `npm run build` and commit the `dist`
-folder.
+To test the action from a branch, run `npm run build` and `npm run build:add`.
 
 You can now use the branch name to test your code.
 
