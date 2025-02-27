@@ -7,6 +7,9 @@
 
 > Link files between repositories.
 
+> [!IMPORTANT]
+> This project is under heavy development.
+
 This action creates a _link_ between files in various places. When the source is
 updated, the destination is as well.
 

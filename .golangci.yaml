@@ -1,0 +1,80 @@
+---
+# Ref: https://golangci-lint.run/usage/configuration/
+linters:
+  enable-all: true
+
+  disable:
+    - exhaustruct # it's ok not to specify all the fields in a struct definition
+    - godox # I like leaving TODOs in the code
+    - testpackage # keep the tests close to the code
+    - varnamelen # short variable names are okay
+    - depguard # Using go.mod is enough
+    - tenv # deprecated
+
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - bodyclose
+        - funlen
+        - revive
+
+linters-settings:
+  nolintlint:
+    require-explanation: true
+
+  gci:
+    sections:
+      - standard
+      - default
+      - localmodule
+
+  mnd:
+    ignored-numbers:
+      # UNIX permissions mask
+      - "0o700" # rwx------
+      # - "0o600" # rw-------
+
+    ignored-functions:
+      # Functions that require a UNIX permissions mask
+      - "os.WriteFile"
+      - "os.OpenFile"
+      - "os.MkdirAll"
+
+  revive:
+    enable-all-rules: true
+    rules:
+      - name: add-constant
+        disabled: true
+
+      - name: context-as-argument
+        arguments:
+          - allowTypesBefore: "*testing.T"
+
+      - name: comment-spacings
+        arguments:
+          - "nolint"
+
+      - name: import-alias-naming
+        arguments:
+          - "^[a-z][A-Za-z0-9]{0,}$"
+
+      - name: line-length-limit
+        disabled: true # using lll
+
+      - name: unhandled-error
+        arguments:
+          - "fmt.Printf"
+          - "fmt.Println"
+          - "fmt.Fprint"
+          - "fmt.Fprintf"
+          - "fmt.Fprintln"
+
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+
+  misspell:
+    locale: US
+    mode: default

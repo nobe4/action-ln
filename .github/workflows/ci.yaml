@@ -12,56 +12,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      - run: go build -v -race ./cmd/action-ln
+
   test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - run: npm clean-install
-      - run: npm run test
+          go-version-file: 'go.mod'
+      - run: go test -race -count 10 -cover ./...
 
-  lint:
+  golangci-lint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - run: npm clean-install
-      - run: npm run lint
-
-  # NOTE: The publish-immutable-action is still in early development and
-  # isn't ready to be used yet, so I'll just comment all the related code
-  # and go back to pushing the `dist` folder for now.
-  # no-dist:
-  #   runs-on: ubuntu-latest
-  #
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #     - run: '[ ! -d "./dist" ]'
+          go-version-file: 'go.mod'
+      - uses: golangci/golangci-lint-action@v6
 
   check-dist:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-      - run: npm clean-install
-      - run: npm run build
+          go-version-file: 'go.mod'
+      - run: go build -v -race ./cmd/action-ln
       - name: Compare the expected and actual dist/ directories
         id: diff
         run: |
