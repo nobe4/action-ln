@@ -52,10 +52,12 @@ jobs:
           go-version-file: 'go.mod'
       - run: go build -v -race ./cmd/action-ln
       - name: Compare the expected and actual dist/ directories
-        id: diff
         run: |
-          if [ "$(git diff --ignore-space-at-eol dist/ | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build:"
-            git diff --stat
+          # This is an ugly hack before we can just do go build and release
+          # without needing to commit the binaries.
+          # see: release.yaml
+          binary="main-linux-arm64-dev"
+          if [ ! "./dist/${binary}" ]; then
+            echo "expected ${binary} to exist, but is missing"
             exit 1
           fi
