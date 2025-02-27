@@ -53,7 +53,7 @@ jobs:
           # without needing to commit the binaries.
           # see: release.yaml
           binary="main-linux-arm64-dev"
-          if [ ! "./dist/${binary}" ]; then
+          if [ ! -f "./dist/${binary}" ]; then
             echo "expected ${binary} to exist, but is missing"
             exit 1
           fi
