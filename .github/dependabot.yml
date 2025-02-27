@@ -3,14 +3,14 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     groups:
-      all:
+      npm:
         patterns: ["*"]
     schedule:
       interval: monthly
   - package-ecosystem: "github-actions"
     directory: "/"
     groups:
-      all:
+      github-actions:
         patterns: ["*"]
     schedule:
       interval: monthly
