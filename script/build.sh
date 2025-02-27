@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
+#/ usage: build.sh [VERSION]
 
-VERSION='dev'
+VERSION="${1:-dev}"
 
 build (){
-	OS="${1}"
-	ARCH="${2}"
+	os="${1}"
+	arch="${2}"
+	bin="main-${os}-${arch}-${VERSION}"
 
-	CGO_ENABLED=0 GOOS="${OS}" GOARCH="${ARCH}" \
+	echo "building ${bin}..."
+	CGO_ENABLED=0 GOOS="${os}" GOARCH="${arch}" \
 		go build \
 			-ldflags="-s -w" \
-			-o "dist/main-${OS}-${ARCH}-${VERSION}" \
+			-o "dist/${bin}" \
 			./cmd/action-ln/
 }
 
