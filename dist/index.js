@@ -11,6 +11,7 @@ const arch = {
 }[os.arch()];
 
 const binary = `main-${platform}-${arch}-${version}`;
+console.log(`Binary: ${binary}`);
 
 function main() {
 	try {
