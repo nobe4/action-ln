@@ -6,11 +6,11 @@ updates:
       all:
         patterns: ["*"]
     schedule:
-      interval: "weekly"
+      interval: monthly
   - package-ecosystem: "github-actions"
     directory: "/"
     groups:
       all:
         patterns: ["*"]
     schedule:
-      interval: "weekly"
+      interval: monthly
