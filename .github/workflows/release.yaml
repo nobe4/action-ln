@@ -19,19 +19,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      # NOTE: The publish-immutable-action is still in early development and
-      # isn't ready to be used yet, so I'll just comment all the related code
-      # and go back to pushing the `dist` folder for now.
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version-file: .node-version
-      #
-      # - run: npm clean-install
-      #
-      # - run: npm run all
-      #
-      # - run: npm run build
-      #
+      - run: |
+          # This is an ugly hack before we can just do go build and release
+          # without needing to commit the binaries.
+          binary="main-linux-arm64-${{ github.ref_name }}"
+          if [ ! "./dist/${binary}" ]; then
+            echo "expected ${binary} to exist, but is missing"
+            echo "commit it before making a release"
+            exit 1
+          fi
+
       # TODO: delete all but the dist folder
 
       - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
