@@ -9,7 +9,7 @@ import { main } from "./main.js";
 
 try {
 	const configPath = core.getInput("config-path", { required: true });
-	const noop = core.getInput("noop", { required: true }) == "true";
+	const noop = core.getBooleanInput("noop", { required: true });
 	const token = core.getInput("token", { required: true });
 	const appId = core.getInput("app-id");
 	const appPrivKey = core.getInput("app-private-key");
