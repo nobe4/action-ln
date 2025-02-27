@@ -47,10 +47,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-      - run: go build -v -race ./cmd/action-ln
       - name: Compare the expected and actual dist/ directories
         run: |
           # This is an ugly hack before we can just do go build and release
