@@ -12,9 +12,13 @@ build (){
 	CGO_ENABLED=0 GOOS="${os}" GOARCH="${arch}" \
 		go build \
 			-ldflags="-s -w" \
-			-o "dist/${bin}" \
+			-o "./dist/${bin}" \
 			./cmd/action-ln/
 }
 
+rm ./dist/main-*
 build linux arm64
 build linux amd64
+
+sed -i 's/const version = ".\+/const version = "'"${VERSION}"'";/g' ./dist/index.js
+

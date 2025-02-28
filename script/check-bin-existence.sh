@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-
-version="${1:-dev}"
-
 # This is an ugly hack before we can just do go build and release
 # without needing to commit the binaries.
+
+set -e
+
+version="${1:-*}"
 binary="main-linux-arm64-${version}"
-if [ ! -f "./dist/${binary}" ]; then
-	echo "expected ${binary} to exist, but is missing"
-	echo "commit it before making a release"
+
+# shellcheck disable=SC2086
+if ! ls ./dist/${binary} 1> /dev/null 2>&1; then
+	echo "${binary} is missing"
+	echo "make sure you build the expected version"
 	exit 1
 fi
 
