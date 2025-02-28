@@ -12,6 +12,7 @@ type Repo struct {
 	DefaultBranch string `json:"default_branch"`
 }
 
+// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g GitHub) GetDefaultBranch(ctx context.Context, repo Repo) (string, error) {
 	path := fmt.Sprintf("/repos/%s/%s", repo.Owner, repo.Repo)
 
