@@ -14,15 +14,15 @@ const (
 )
 
 func main() {
-
 	e, err := environment.Parse()
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Fprintln(os.Stdout, "Environment:", e)
+
 	g := github.New(e.Token, endpoint)
 	ctx := context.TODO()
-	repo := github.Repo{Owner: github.User{Login: "nobe4"}, Repo: "action-ln"}
 
 	u, err := g.GetUser(ctx)
 	if err != nil {
@@ -33,7 +33,7 @@ func main() {
 
 	c, err := g.GetContent(
 		ctx,
-		repo,
+		e.Repo,
 		"go.mod",
 	)
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 		fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
 	}
 
-	b, err := g.GetDefaultBranch(ctx, repo)
+	b, err := g.GetDefaultBranch(ctx, e.Repo)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting default branch:", err)
 	} else {
