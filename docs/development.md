@@ -11,6 +11,10 @@ Until #70 is solved, the release workflow is gonna be wonky.
 1. Commit, PR, Merge
 1. On the merge commit, run `script/tag-release` again
 
+> [!NOTE]
+> If the current PR is known to create a new version, it's acceptable to commit
+> the next bin as part of it.
+
 ## Development
 
 To test the action from a branch, run `script/build.sh` and commit the results.
