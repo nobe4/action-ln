@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -27,6 +29,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -37,6 +41,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -47,13 +53,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Compare the expected and actual dist/ directories
-        run: |
-          # This is an ugly hack before we can just do go build and release
-          # without needing to commit the binaries.
-          # see: release.yaml
-          binary="main-linux-arm64-dev"
-          if [ ! -f "./dist/${binary}" ]; then
-            echo "expected ${binary} to exist, but is missing"
-            exit 1
-          fi
+        with:
+          fetch-depth: 0
+      - run: ./script/check-bin-existence.sh "dev"

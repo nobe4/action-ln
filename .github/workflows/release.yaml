@@ -19,16 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: |
-          # This is an ugly hack before we can just do go build and release
-          # without needing to commit the binaries.
-          # see: ci.yaml
-          binary="main-linux-arm64-${{ github.ref_name }}"
-          if [ ! -f "./dist/${binary}" ]; then
-            echo "expected ${binary} to exist, but is missing"
-            echo "commit it before making a release"
-            exit 1
-          fi
+      - run: ./script/check-bin-existence.sh "${{ github.ref_name }}"
 
       # TODO: delete all but the dist folder
 
