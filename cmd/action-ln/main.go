@@ -14,6 +14,15 @@ const (
 
 func main() {
 	token := os.Getenv("GITHUB_TOKEN")
+
+	if token == "" {
+		os.Getenv("INPUT_TOKEN")
+	}
+
+	if token == "" {
+		panic("GITHUB_TOKEN/input 'token' is required")
+	}
+
 	g := github.New(token, endpoint)
 
 	u, err := g.GetUser(context.TODO())
