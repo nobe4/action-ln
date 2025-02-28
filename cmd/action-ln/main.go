@@ -33,7 +33,7 @@ func main() {
 
 	g := github.New(token, endpoint)
 	ctx := context.TODO()
-	repo := github.Repo{Owner: "nobe4", Repo: "action-ln"}
+	repo := github.Repo{Owner: github.User{Login: "nobe4"}, Repo: "action-ln"}
 
 	u, err := g.GetUser(ctx)
 	if err != nil {

@@ -7,14 +7,14 @@ import (
 )
 
 type Repo struct {
-	Owner         string `json:"owner"`
+	Owner         User   `json:"owner"`
 	Repo          string `json:"repo"`
 	DefaultBranch string `json:"default_branch"`
 }
 
 // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g GitHub) GetDefaultBranch(ctx context.Context, repo Repo) (string, error) {
-	path := fmt.Sprintf("/repos/%s/%s", repo.Owner, repo.Repo)
+	path := fmt.Sprintf("/repos/%s/%s", repo.Owner.Login, repo.Repo)
 
 	if err := g.req(ctx, "GET", path, nil, &repo); err != nil {
 		return "", fmt.Errorf("failed to get repo: %w", err)
@@ -34,7 +34,7 @@ type Content struct {
 func (g GitHub) GetContent(ctx context.Context, repo Repo, path string) (Content, error) {
 	c := Content{}
 
-	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner, repo.Repo, path)
+	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
 	if err := g.req(ctx, "GET", path, nil, &c); err != nil {
 		return c, fmt.Errorf("failed to get user: %w", err)

@@ -12,7 +12,7 @@ import (
 func TestGetDefaultBranch(t *testing.T) {
 	t.Parallel()
 
-	repo := Repo{Owner: "owner", Repo: "repo"}
+	repo := Repo{Owner: User{Login: "owner"}, Repo: "repo"}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/repos/owner/repo" {
@@ -42,7 +42,7 @@ func TestGetDefaultBranch(t *testing.T) {
 func TestGetContent(t *testing.T) {
 	t.Parallel()
 
-	repo := Repo{Owner: "owner", Repo: "repo"}
+	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
 
 	t.Run("fails to decode the content", func(t *testing.T) {
 		t.Parallel()
