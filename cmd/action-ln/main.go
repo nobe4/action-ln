@@ -32,8 +32,10 @@ func main() {
 	}
 
 	g := github.New(token, endpoint)
+	ctx := context.TODO()
+	repo := github.Repo{Owner: "nobe4", Repo: "action-ln"}
 
-	u, err := g.GetUser(context.TODO())
+	u, err := g.GetUser(ctx)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting user:", err)
 	} else {
@@ -41,13 +43,20 @@ func main() {
 	}
 
 	c, err := g.GetContent(
-		context.TODO(),
-		github.Repo{Owner: "nobe4", Repo: "action-ln"},
+		ctx,
+		repo,
 		"go.mod",
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting user:", err)
 	} else {
 		fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
+	}
+
+	b, err := g.GetDefaultBranch(ctx, repo)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting default branch:", err)
+	} else {
+		fmt.Fprintln(os.Stdout, "Default branch:", b)
 	}
 }
