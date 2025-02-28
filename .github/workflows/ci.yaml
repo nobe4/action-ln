@@ -55,4 +55,4 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: ./script/check-bin-existence.sh "dev"
+      - run: ./script/check-bin-existence.sh
