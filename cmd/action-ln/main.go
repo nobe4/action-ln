@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/nobe4/action-ln/internal/github"
 )
@@ -20,6 +21,13 @@ func main() {
 	}
 
 	if token == "" {
+		fmt.Fprintln(os.Stdout, "Environment variables:")
+
+		for _, env := range os.Environ() {
+			parts := strings.Split(env, "=")
+			fmt.Fprintln(os.Stdout, parts[0])
+		}
+
 		panic("GITHUB_TOKEN/input 'token' is required")
 	}
 
