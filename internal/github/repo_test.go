@@ -9,15 +9,49 @@ import (
 	"testing"
 )
 
+func TestGetDefaultBranch(t *testing.T) {
+	t.Parallel()
+
+	repo := Repo{Owner: User{Login: "owner"}, Repo: "repo"}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/repos/owner/repo" {
+			t.Fatal("invalid path", r.URL.Path)
+		}
+
+		fmt.Fprintln(w, `{"default_branch": "main"}`)
+	}))
+
+	g := New("token", ts.URL)
+
+	b, err := g.GetDefaultBranch(t.Context(), repo)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	if b != "main" {
+		t.Fatalf("expected default_branch to be 'main' but got %s", b)
+	}
+
+	// ensures that this doesn't modify the repo passed as an argument.
+	if repo.DefaultBranch != "" {
+		t.Fatalf("expected repo not to change got %v", repo)
+	}
+}
+
 func TestGetContent(t *testing.T) {
 	t.Parallel()
 
-	repo := Repo{Owner: "owner", Repo: "repo"}
+	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
 
 	t.Run("fails to decode the content", func(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/repos/owner/repo/contents/path/to/file" {
+				t.Fatal("invalid path", r.URL.Path)
+			}
+
 			fmt.Fprintln(w, `{"content": "_not base64"}`)
 		}))
 
@@ -33,6 +67,10 @@ func TestGetContent(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != "/repos/owner/repo/contents/path/to/file" {
+				t.Fatal("invalid path", r.URL.Path)
+			}
+
 			fmt.Fprintln(w, `{"content": "b2s="}`)
 		}))
 
