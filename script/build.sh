@@ -18,3 +18,5 @@ build (){
 
 build linux arm64
 build linux amd64
+
+sed -i 's/const version = ".\+/const version = "'"${VERSION}"'";/g' ./dist/index.js
