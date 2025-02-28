@@ -1,14 +1,23 @@
 > Still in progress, here be 🐉
 
-## Running locally
+## Release
 
-```shell
-npm start -- [--token="..."] [--config="..."] [--noop]
-```
+Until #70 is solved, the release workflow is gonna be wonky.
+
+1. Make a branch for the release
+1. Run `script/tag-release` and choose the next tag
+1. Run `script/build.sh TAG`, add the results
+1. Remove any older bin version from `dist`
+1. Commit, PR, Merge
+1. On the merge commit, run `script/tag-release` again
+
+> [!NOTE]
+> If the current PR is known to create a new version, it's acceptable to commit
+> the next bin as part of it.
 
 ## Development
 
-To test the action from a branch, run `npm run build` and `npm run build:add`.
+To test the action from a branch, run `script/build.sh` and commit the results.
 
 You can now use the branch name to test your code.
 

@@ -19,19 +19,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # NOTE: The publish-immutable-action is still in early development and
-      # isn't ready to be used yet, so I'll just comment all the related code
-      # and go back to pushing the `dist` folder for now.
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version-file: .node-version
-      #
-      # - run: npm clean-install
-      #
-      # - run: npm run all
-      #
-      # - run: npm run build
-      #
+      - run: ./script/check-bin-existence.sh "${{ github.ref_name }}"
+
       # TODO: delete all but the dist folder
 
       - run: gh release create --generate-notes --verify-tag --latest ${{ github.ref_name }}
