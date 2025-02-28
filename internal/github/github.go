@@ -17,6 +17,10 @@ import (
 
 var errRequest = errors.New("request failed")
 
+const (
+	PathUser = "/user"
+)
+
 type GitHub struct {
 	client   http.Client
 	token    string
@@ -38,7 +42,7 @@ type User struct {
 func (g GitHub) GetUser(ctx context.Context) (User, error) {
 	u := User{}
 
-	if err := g.req(ctx, "GET", "/user", nil, &u); err != nil {
+	if err := g.req(ctx, "GET", PathUser, nil, &u); err != nil {
 		return u, fmt.Errorf("failed to get user: %w", err)
 	}
 

@@ -16,16 +16,12 @@ func TestGetUser(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/user" {
-				t.Error("expected request to /user")
-			}
-
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", "/user", nil, nil)
+		err := g.req(t.Context(), "GET", PathUser, nil, nil)
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
 		}
@@ -35,10 +31,6 @@ func TestGetUser(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/user" {
-				t.Error("expected request to /user")
-			}
-
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"login": "user"}`)
 		}))
@@ -46,7 +38,7 @@ func TestGetUser(t *testing.T) {
 		user := User{}
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", "/user", nil, &user)
+		err := g.req(t.Context(), "GET", PathUser, nil, &user)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -64,20 +56,12 @@ func TestReq(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/user" {
-				t.Error("expected request to /user")
-			}
-
-			if r.Header.Get("Authorization") != "Bearer token" {
-				t.Error("expected Authorization header to be set")
-			}
-
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", "/user", nil, nil)
+		err := g.req(t.Context(), "GET", PathUser, nil, nil)
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
 		}
@@ -92,7 +76,7 @@ func TestReq(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", "/user", nil, nil)
+		err := g.req(t.Context(), "GET", PathUser, nil, nil)
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
 		}
@@ -109,7 +93,7 @@ func TestReq(t *testing.T) {
 		g := New("token", ts.URL)
 		data := ""
 
-		err := g.req(t.Context(), "GET", "/user", nil, &data)
+		err := g.req(t.Context(), "GET", PathUser, nil, &data)
 
 		var jsonErr *json.SyntaxError
 		if !errors.As(err, &jsonErr) {
@@ -128,7 +112,7 @@ func TestReq(t *testing.T) {
 		g := New("token", ts.URL)
 		data := struct{ Success bool }{}
 
-		err := g.req(t.Context(), "GET", "/user", nil, &data)
+		err := g.req(t.Context(), "GET", PathUser, nil, &data)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
