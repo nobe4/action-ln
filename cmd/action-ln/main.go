@@ -34,10 +34,10 @@ func main() {
 	c, err := g.GetContent(
 		ctx,
 		e.Repo,
-		"go.mod",
+		"README.md",
 	)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error getting user:", err)
+		fmt.Fprintln(os.Stderr, "Error getting contents:", err)
 	} else {
 		fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
 	}
