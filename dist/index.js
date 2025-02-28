@@ -2,7 +2,7 @@ const childProcess = require("child_process");
 const os = require("os");
 const process = require("process");
 
-const version = "v0.0.14";
+const version = "dev";
 
 const platform = os.platform();
 const arch = {
