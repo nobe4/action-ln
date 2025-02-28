@@ -35,8 +35,19 @@ func main() {
 
 	u, err := g.GetUser(context.TODO())
 	if err != nil {
-		panic(err)
+		fmt.Fprintln(os.Stderr, "Error getting user:", err)
+	} else {
+		fmt.Fprintln(os.Stdout, "User:", u.Login)
 	}
 
-	fmt.Fprintln(os.Stdout, "Hello, "+u.Login)
+	c, err := g.GetContent(
+		context.TODO(),
+		github.Repo{Owner: "nobe4", Repo: "action-ln"},
+		"go.mod",
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting user:", err)
+	} else {
+		fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
+	}
 }
