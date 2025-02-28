@@ -21,7 +21,7 @@ func TestGetUser(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", PathUser, nil, nil)
+		_, err := g.GetUser(t.Context())
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
 		}
@@ -35,15 +35,14 @@ func TestGetUser(t *testing.T) {
 			fmt.Fprintln(w, `{"login": "user"}`)
 		}))
 
-		user := User{}
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), "GET", PathUser, nil, &user)
+		u, err := g.GetUser(t.Context())
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if user.Login != "user" {
+		if u.Login != "user" {
 			t.Fatal("expected user to parse correctly")
 		}
 	})
