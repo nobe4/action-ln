@@ -17,7 +17,7 @@ func main() {
 	token := os.Getenv("GITHUB_TOKEN")
 
 	if token == "" {
-		os.Getenv("INPUT_TOKEN")
+		token = os.Getenv("INPUT_TOKEN")
 	}
 
 	if token == "" {
