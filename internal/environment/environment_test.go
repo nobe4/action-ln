@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-//nolint:tparallel // t.Setenv is not thread-safe.
 func TestParseToken(t *testing.T) {
 	const want = "token"
 
@@ -36,7 +35,8 @@ func TestParseToken(t *testing.T) {
 	})
 
 	t.Run("gets nothing", func(t *testing.T) {
-		t.Parallel()
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("INPUT_TOKEN", "")
 
 		_, err := parseToken()
 		if !errors.Is(err, errNoToken) {
@@ -45,9 +45,11 @@ func TestParseToken(t *testing.T) {
 	})
 }
 
-//nolint:tparallel // t.Setenv is not thread-safe.
 func TestParseRepo(t *testing.T) {
 	t.Run("gets nothing", func(t *testing.T) {
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("GITHUB_REPOSITORY", "")
+
 		_, err := parseRepo()
 		if !errors.Is(err, errNoRepo) {
 			t.Fatalf("want %v but got error: %v", errNoRepo, err)
