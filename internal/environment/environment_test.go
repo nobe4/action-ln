@@ -48,8 +48,6 @@ func TestParseToken(t *testing.T) {
 //nolint:tparallel // t.Setenv is not thread-safe.
 func TestParseRepo(t *testing.T) {
 	t.Run("gets nothing", func(t *testing.T) {
-		t.Parallel()
-
 		_, err := parseRepo()
 		if !errors.Is(err, errNoRepo) {
 			t.Fatalf("want %v but got error: %v", errNoRepo, err)
