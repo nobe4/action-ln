@@ -13,7 +13,7 @@ func TestParseToken(t *testing.T) {
 
 		got, err := parseToken()
 		if err != nil {
-			t.Fatalf("got error: %v", err)
+			t.Fatalf("expected no error, got %v", err)
 		}
 
 		if got != want {
@@ -26,7 +26,7 @@ func TestParseToken(t *testing.T) {
 
 		got, err := parseToken()
 		if err != nil {
-			t.Fatalf("got error: %v", err)
+			t.Fatalf("expected no error, got %v", err)
 		}
 
 		if got != want {
@@ -70,7 +70,7 @@ func TestParseRepo(t *testing.T) {
 
 		got, err := parseRepo()
 		if err != nil {
-			t.Fatalf("got error: %v", err)
+			t.Fatalf("expected no error, got %v", err)
 		}
 
 		if got.Owner.Login != "owner" || got.Repo != "repo" {
