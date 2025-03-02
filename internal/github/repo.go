@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 )
 
 type Repo struct {
@@ -16,7 +17,7 @@ type Repo struct {
 func (g GitHub) GetDefaultBranch(ctx context.Context, repo Repo) (string, error) {
 	path := fmt.Sprintf("/repos/%s/%s", repo.Owner.Login, repo.Repo)
 
-	if err := g.req(ctx, "GET", path, nil, &repo); err != nil {
+	if err := g.req(ctx, http.MethodGet, path, nil, &repo); err != nil {
 		return "", fmt.Errorf("failed to get repo: %w", err)
 	}
 
@@ -36,7 +37,7 @@ func (g GitHub) GetContent(ctx context.Context, repo Repo, path string) (Content
 
 	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
-	if err := g.req(ctx, "GET", path, nil, &c); err != nil {
+	if err := g.req(ctx, http.MethodGet, path, nil, &c); err != nil {
 		return c, fmt.Errorf("failed to get user: %w", err)
 	}
 

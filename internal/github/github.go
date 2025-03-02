@@ -42,14 +42,13 @@ type User struct {
 func (g GitHub) GetUser(ctx context.Context) (User, error) {
 	u := User{}
 
-	if err := g.req(ctx, "GET", PathUser, nil, &u); err != nil {
+	if err := g.req(ctx, http.MethodGet, PathUser, nil, &u); err != nil {
 		return u, fmt.Errorf("failed to get user: %w", err)
 	}
 
 	return u, nil
 }
 
-//nolint:unparam // Will add more requests later
 func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) error {
 	path = g.endpoint + path
 
