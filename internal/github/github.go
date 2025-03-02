@@ -49,8 +49,7 @@ func (g GitHub) GetUser(ctx context.Context) (User, error) {
 	return u, nil
 }
 
-//nolint:unparam // Will add more requests later
-func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, data any) error {
+func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) error {
 	path = g.endpoint + path
 
 	req, err := http.NewRequestWithContext(ctx, method, path, body)
@@ -67,12 +66,16 @@ func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, da
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
+	// All the 2XX codes
+	success := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
+	if !success {
 		return fmt.Errorf("%w: %s", errRequest, res.Status)
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(data); err != nil {
-		return fmt.Errorf("failed to decode response: %w", err)
+	if out != nil {
+		if err := json.NewDecoder(res.Body).Decode(out); err != nil {
+			return fmt.Errorf("failed to decode response: %w", err)
+		}
 	}
 
 	return nil

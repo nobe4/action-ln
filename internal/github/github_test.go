@@ -100,6 +100,22 @@ func TestReq(t *testing.T) {
 		}
 	})
 
+	t.Run("decodes nothing", func(t *testing.T) {
+		t.Parallel()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintln(w, `{"data":"123"}`)
+		}))
+
+		g := New("token", ts.URL)
+
+		err := g.req(t.Context(), "GET", PathUser, nil, nil)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
 	t.Run("decodes JSON response correctly", func(t *testing.T) {
 		t.Parallel()
 
