@@ -49,6 +49,7 @@ func (g GitHub) GetUser(ctx context.Context) (User, error) {
 	return u, nil
 }
 
+//nolint:unparam // Will add more requests later
 func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) error {
 	path = g.endpoint + path
 
