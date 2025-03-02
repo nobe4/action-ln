@@ -24,28 +24,31 @@ func main() {
 	g := github.New(e.Token, endpoint)
 	ctx := context.TODO()
 
-	u, err := g.GetUser(ctx)
-	if err != nil {
+	if u, err := g.GetUser(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting user:", err)
 	} else {
 		fmt.Fprintln(os.Stdout, "User:", u.Login)
 	}
 
-	c, err := g.GetContent(
+	if c, err := g.GetContent(
 		ctx,
 		e.Repo,
 		"README.md",
-	)
-	if err != nil {
+	); err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting contents:", err)
 	} else {
 		fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
 	}
 
-	b, err := g.GetDefaultBranch(ctx, e.Repo)
-	if err != nil {
+	if b, err := g.GetDefaultBranch(ctx, e.Repo); err != nil {
 		fmt.Fprintln(os.Stderr, "Error getting default branch:", err)
 	} else {
 		fmt.Fprintln(os.Stdout, "Default branch:", b)
+	}
+
+	if b, err := g.GetBranch(ctx, e.Repo, "main"); err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting branch", "test", err)
+	} else {
+		fmt.Fprintln(os.Stdout, "Branch main:", b)
 	}
 }
