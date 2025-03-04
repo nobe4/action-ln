@@ -59,7 +59,9 @@ func (g GitHub) CreateOrUpdateContent(
 		return Content{}, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	// The response wrapes the content in an extra `{ "content": {} }`.
+	// NOTE: The response wrapes the content in an extra `{ "content": {} }`.
+	// It's not technically the same as the Content we get from GetContent. For
+	// this purpose it's enough, we can reinject the `Content` value after.
 	out := struct {
 		Content Content `json:"content"`
 	}{}
@@ -73,6 +75,8 @@ func (g GitHub) CreateOrUpdateContent(
 	); err != nil {
 		return Content{}, fmt.Errorf("failed to create branch: %w", err)
 	}
+
+	out.Content.Content = c.Content
 
 	return out.Content, nil
 }
