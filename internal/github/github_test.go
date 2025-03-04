@@ -60,9 +60,13 @@ func TestReq(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
+		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
+		}
+
+		if status != http.StatusUnauthorized {
+			t.Fatalf("expected %d, got %d", http.StatusUnauthorized, status)
 		}
 	})
 
@@ -75,9 +79,13 @@ func TestReq(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
+		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
 		if !errors.Is(err, errRequest) {
 			t.Fatalf("expected request error, got %v", err)
+		}
+
+		if status != http.StatusInternalServerError {
+			t.Fatalf("expected %d, got %d", http.StatusInternalServerError, status)
 		}
 	})
 
@@ -92,11 +100,15 @@ func TestReq(t *testing.T) {
 		g := New("token", ts.URL)
 		data := ""
 
-		err := g.req(t.Context(), http.MethodGet, PathUser, nil, &data)
+		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, &data)
 
 		var jsonErr *json.SyntaxError
 		if !errors.As(err, &jsonErr) {
 			t.Fatalf("expected json syntax error, got %v", err)
+		}
+
+		if status != http.StatusInternalServerError {
+			t.Fatalf("expected %d, got %d", http.StatusInternalServerError, status)
 		}
 	})
 
@@ -110,9 +122,13 @@ func TestReq(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
+		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if status != http.StatusOK {
+			t.Fatalf("expected %d, got %d", http.StatusOK, status)
 		}
 	})
 
@@ -127,13 +143,17 @@ func TestReq(t *testing.T) {
 		g := New("token", ts.URL)
 		data := struct{ Success bool }{}
 
-		err := g.req(t.Context(), http.MethodGet, PathUser, nil, &data)
+		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, &data)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
 		if !data.Success {
 			t.Fatal("expected success")
+		}
+
+		if status != http.StatusOK {
+			t.Fatalf("expected %d, got %d", http.StatusOK, status)
 		}
 	})
 }

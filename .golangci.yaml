@@ -19,6 +19,8 @@ issues:
         - bodyclose
         - funlen
         - revive
+        - cyclop
+        - gocognit
 
     - linters:
       - revive
