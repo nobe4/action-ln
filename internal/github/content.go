@@ -17,7 +17,7 @@ type Content struct {
 	Content    string
 }
 
-// https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-contenhttps://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
+// https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g GitHub) GetContent(ctx context.Context, repo Repo, path string) (Content, error) {
 	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
