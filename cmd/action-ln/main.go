@@ -27,49 +27,7 @@ func main() {
 	g := github.New(e.Token, endpoint)
 	ctx := context.TODO()
 
-	// if u, err := g.GetUser(ctx); err != nil {
-	// 	fmt.Fprintln(os.Stderr, "Error getting user:", err)
-	// } else {
-	// 	fmt.Fprintln(os.Stdout, "User:", u.Login)
-	// }
-	//
-	// if b, err := g.GetDefaultBranch(ctx, e.Repo); err != nil {
-	// 	fmt.Fprintln(os.Stderr, "Error getting default branch:", err)
-	// } else {
-	// 	fmt.Fprintln(os.Stdout, "Default branch:", b)
-	// }
-
-	// branch := "test"
-	//
-	// var defaultBranch github.Branch
-	//
-	// if defaultBranch, err = g.GetBranch(ctx, e.Repo, "main"); err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Error getting default %s %+v", branch, err)
-	// } else {
-	// 	fmt.Fprintln(os.Stdout, "Default branch:", defaultBranch)
-	// }
-	//
-	// if b, err := g.GetOrCreateBranch(ctx, e.Repo, branch, defaultBranch.Commit.SHA); err != nil {
-	// 	fmt.Fprintf(os.Stderr, "Error getting or creating branch %s %+v\n", branch, err)
-	// } else {
-	// 	fmt.Fprintln(os.Stdout, "Branch:", b)
-	// }
-
-	path := "README.md"
-
-	c, err := g.GetFile(
-		ctx,
-		e.Repo,
-		path,
-	)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error getting contents:", err)
-		os.Exit(1)
-	}
-
-	c.Content += "\n\nHello, World!"
-
-	c, err = g.UpdateFile(ctx, e.Repo, c, "main", "Update README.md")
-	fmt.Fprintln(os.Stdout, "Content:", c)
-	fmt.Fprintln(os.Stdout, "Error:", err)
+	p, err := g.GetPull(ctx, e.Repo, "main", "test-1")
+	fmt.Fprintf(os.Stdout, "Pull request: %+v", p)
+	fmt.Fprintf(os.Stdout, "Err: %+v", err)
 }
