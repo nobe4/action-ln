@@ -69,5 +69,7 @@ func main() {
 
 	c.Content += "\n\nHello, World!"
 
-	fmt.Println(g.CreateOrUpdateContent(ctx, e.Repo, c, "main", "Update README.md"))
+	c, err = g.CreateOrUpdateContent(ctx, e.Repo, c, "main", "Update README.md")
+	fmt.Fprintln(os.Stdout, "Content:", c)
+	fmt.Fprintln(os.Stdout, "Error:", err)
 }
