@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -38,13 +37,7 @@ func TestGetFile(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != contentPath {
-				t.Fatal("invalid path", r.URL.Path)
-			}
-
-			if r.Method != http.MethodGet {
-				t.Fatal("invalid method", r.Method)
-			}
+			assertReq(t, r, http.MethodGet, contentPath, nil)
 
 			fmt.Fprintln(w, `{"content": "b2s="}`)
 		}))
@@ -91,22 +84,11 @@ func TestUpdateFile(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != contentPath {
-				t.Fatal("invalid path", r.URL.Path)
-			}
-
-			if r.Method != http.MethodPut {
-				t.Fatal("invalid method", r.Method)
-			}
-
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				t.Fatal("failed to read body", err)
-			}
-
-			if string(body) != `{"message":"message","content":"b2s=","sha":"sha","branch":"branch"}` {
-				t.Fatal("invalid body", string(body))
-			}
+			assertReq(t, r,
+				http.MethodPut,
+				contentPath,
+				[]byte(`{"message":"message","content":"b2s=","sha":"sha","branch":"branch"}`),
+			)
 
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprintln(w, `{"content": {"sha":"newSha"}}`)
