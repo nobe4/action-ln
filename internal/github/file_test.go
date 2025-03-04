@@ -14,7 +14,7 @@ const (
 	contentPath = "/repos/owner/repo/contents/path/to/file"
 )
 
-func TestGetContent(t *testing.T) {
+func TestGetFile(t *testing.T) {
 	t.Parallel()
 
 	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
@@ -32,7 +32,7 @@ func TestGetContent(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		_, err := g.GetContent(t.Context(), repo, "path/to/file")
+		_, err := g.GetFile(t.Context(), repo, "path/to/file")
 		if !errors.Is(err, base64.CorruptInputError(0)) {
 			t.Fatalf("expected base64 error, got %v", err)
 		}
@@ -51,7 +51,7 @@ func TestGetContent(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		c, err := g.GetContent(t.Context(), repo, "path/to/file")
+		c, err := g.GetFile(t.Context(), repo, "path/to/file")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -62,11 +62,11 @@ func TestGetContent(t *testing.T) {
 	})
 }
 
-func TestCreateOrUpdateContent(t *testing.T) {
+func TestUpdateFile(t *testing.T) {
 	t.Parallel()
 
 	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
-	content := Content{
+	content := File{
 		Content: "ok",
 		SHA:     "sha",
 		Path:    "path/to/file",
@@ -81,7 +81,7 @@ func TestCreateOrUpdateContent(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		_, err := g.CreateOrUpdateContent(t.Context(), repo, content, "branch", "message")
+		_, err := g.UpdateFile(t.Context(), repo, content, "branch", "message")
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -114,7 +114,7 @@ func TestCreateOrUpdateContent(t *testing.T) {
 
 		g := New("token", ts.URL)
 
-		c, err := g.CreateOrUpdateContent(t.Context(), repo, content, "branch", "message")
+		c, err := g.UpdateFile(t.Context(), repo, content, "branch", "message")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

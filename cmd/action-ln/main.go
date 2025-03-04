@@ -57,7 +57,7 @@ func main() {
 
 	path := "README.md"
 
-	c, err := g.GetContent(
+	c, err := g.GetFile(
 		ctx,
 		e.Repo,
 		path,
@@ -69,7 +69,7 @@ func main() {
 
 	c.Content += "\n\nHello, World!"
 
-	c, err = g.CreateOrUpdateContent(ctx, e.Repo, c, "main", "Update README.md")
+	c, err = g.UpdateFile(ctx, e.Repo, c, "main", "Update README.md")
 	fmt.Fprintln(os.Stdout, "Content:", c)
 	fmt.Fprintln(os.Stdout, "Error:", err)
 }
