@@ -33,35 +33,41 @@ func main() {
 	// 	fmt.Fprintln(os.Stdout, "User:", u.Login)
 	// }
 	//
-	// if c, err := g.GetContent(
-	// 	ctx,
-	// 	e.Repo,
-	// 	"README.md",
-	// ); err != nil {
-	// 	fmt.Fprintln(os.Stderr, "Error getting contents:", err)
-	// } else {
-	// 	fmt.Fprintln(os.Stdout, "Content:\n", c.Content)
-	// }
-
 	// if b, err := g.GetDefaultBranch(ctx, e.Repo); err != nil {
 	// 	fmt.Fprintln(os.Stderr, "Error getting default branch:", err)
 	// } else {
 	// 	fmt.Fprintln(os.Stdout, "Default branch:", b)
 	// }
 
-	branch := "test"
+	// branch := "test"
+	//
+	// var defaultBranch github.Branch
+	//
+	// if defaultBranch, err = g.GetBranch(ctx, e.Repo, "main"); err != nil {
+	// 	fmt.Fprintf(os.Stderr, "Error getting default %s %+v", branch, err)
+	// } else {
+	// 	fmt.Fprintln(os.Stdout, "Default branch:", defaultBranch)
+	// }
+	//
+	// if b, err := g.GetOrCreateBranch(ctx, e.Repo, branch, defaultBranch.Commit.SHA); err != nil {
+	// 	fmt.Fprintf(os.Stderr, "Error getting or creating branch %s %+v\n", branch, err)
+	// } else {
+	// 	fmt.Fprintln(os.Stdout, "Branch:", b)
+	// }
 
-	var defaultBranch github.Branch
+	path := "README.md"
 
-	if defaultBranch, err = g.GetBranch(ctx, e.Repo, "main"); err != nil {
-		fmt.Fprintf(os.Stderr, "Error getting default %s %+v", branch, err)
-	} else {
-		fmt.Fprintln(os.Stdout, "Default branch:", defaultBranch)
+	c, err := g.GetContent(
+		ctx,
+		e.Repo,
+		path,
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting contents:", err)
+		os.Exit(1)
 	}
 
-	if b, err := g.GetOrCreateBranch(ctx, e.Repo, branch, defaultBranch.Commit.SHA); err != nil {
-		fmt.Fprintf(os.Stderr, "Error getting or creating branch %s %+v\n", branch, err)
-	} else {
-		fmt.Fprintln(os.Stdout, "Branch:", b)
-	}
+	c.Content += "\n\nHello, World!"
+
+	fmt.Println(g.CreateOrUpdateContent(ctx, e.Repo, c, "main", "Update README.md"))
 }
