@@ -39,6 +39,7 @@ func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch
 	}
 
 	b.New = false
+
 	return b, nil
 }
 
