@@ -35,10 +35,12 @@ func New(token, endpoint string) GitHub {
 	}
 }
 
+// TODO: remove.
 type User struct {
 	Login string `json:"login"`
 }
 
+// TODO: remove.
 func (g GitHub) GetUser(ctx context.Context) (User, error) {
 	u := User{}
 

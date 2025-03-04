@@ -13,9 +13,7 @@ func TestGetDefaultBranch(t *testing.T) {
 	repo := Repo{Owner: User{Login: "owner"}, Repo: "repo"}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/repos/owner/repo" {
-			t.Fatal("invalid path", r.URL.Path)
-		}
+		assertReq(t, r, http.MethodGet, "/repos/owner/repo", nil)
 
 		fmt.Fprintln(w, `{"default_branch": "main"}`)
 	}))

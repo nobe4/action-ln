@@ -1,14 +1,40 @@
 package github
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
+func assertReq(t *testing.T, r *http.Request, method, path string, body []byte) {
+	t.Helper()
+
+	if r.URL.Path != path {
+		t.Fatalf("want path '%s', got %s", path, r.URL.Path)
+	}
+
+	if r.Method != method {
+		t.Fatalf("want method '%s', got %s", method, r.Method)
+	}
+
+	if body != nil {
+		gotBody, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal("failed to read body", err)
+		}
+
+		if !bytes.Equal(gotBody, body) {
+			t.Fatalf("want body '%s', got '%s'", string(body), string(gotBody))
+		}
+	}
+}
+
+// TODO: remove.
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
@@ -116,6 +142,12 @@ func TestReq(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodGet, PathUser, nil)
+
+			if auth := r.Header.Get("Authorization"); auth != "Bearer token" {
+				t.Fatal("invalid token", auth)
+			}
+
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"data":"123"}`)
 		}))

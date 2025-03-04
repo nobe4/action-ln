@@ -1,9 +1,7 @@
 package github
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,9 +19,7 @@ func TestGetBranch(t *testing.T) {
 	repo := Repo{Owner: User{Login: "owner"}, Repo: "repo"}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != branchAPIPath {
-			t.Fatal("invalid path", r.URL.Path)
-		}
+		assertReq(t, r, http.MethodGet, branchAPIPath, nil)
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, `{"name": "branch", "commit": { "sha": "sha123" } }`)
@@ -54,23 +50,6 @@ func TestCreateBranch(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/repos/owner/repo/git/refs" {
-				t.Fatal("invalid path", r.URL.Path)
-			}
-
-			if r.Method != http.MethodPost {
-				t.Fatal("invalid method", r.Method)
-			}
-
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				t.Fatal("failed to read body", err)
-			}
-
-			if !bytes.Equal(body, []byte(`{"ref":"refs/heads/branch","sha":"sha123"}`)) {
-				t.Fatal("invalid body", string(body))
-			}
-
 			w.WriteHeader(http.StatusNotImplemented)
 		}))
 
@@ -86,6 +65,12 @@ func TestCreateBranch(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r,
+				http.MethodPost,
+				"/repos/owner/repo/git/refs",
+				[]byte(`{"ref":"refs/heads/branch","sha":"sha123"}`),
+			)
+
 			w.WriteHeader(http.StatusCreated)
 		}))
 
@@ -111,14 +96,7 @@ func TestGetOrCreateBranch(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/repos/owner/repo/branches/branch" {
-				t.Fatal("invalid path", r.URL.Path)
-			}
-
-			if r.Method != http.MethodGet {
-				t.Fatal("invalid method", r.Method)
-			}
-
+			assertReq(t, r, http.MethodGet, "/repos/owner/repo/branches/branch", nil)
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"name": "branch", "commit": { "sha": "sha123" } }`)
 		}))
@@ -157,24 +135,10 @@ func TestGetOrCreateBranch(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch reqIndex {
 			case 0:
-				if r.URL.Path != "/repos/owner/repo/branches/branch" {
-					t.Fatal("invalid path", r.URL.Path)
-				}
-
-				if r.Method != http.MethodGet {
-					t.Fatal("invalid method", r.Method)
-				}
-
+				assertReq(t, r, http.MethodGet, "/repos/owner/repo/branches/branch", nil)
 				w.WriteHeader(http.StatusNotFound)
 			case 1:
-				if r.URL.Path != "/repos/owner/repo/git/refs" {
-					t.Fatal("invalid path", r.URL.Path)
-				}
-
-				if r.Method != http.MethodPost {
-					t.Fatal("invalid method", r.Method)
-				}
-
+				assertReq(t, r, http.MethodPost, "/repos/owner/repo/git/refs", nil)
 				w.WriteHeader(http.StatusOK)
 			}
 
