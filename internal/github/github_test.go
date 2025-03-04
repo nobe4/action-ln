@@ -9,6 +9,7 @@ import (
 	"testing"
 )
 
+// TODO: remove.
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 
@@ -116,6 +117,18 @@ func TestReq(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != PathUser {
+				t.Fatal("invalid path", r.URL.Path)
+			}
+
+			if r.Method != http.MethodGet {
+				t.Fatal("invalid method", r.Method)
+			}
+
+			if auth := r.Header.Get("Authorization"); auth != "Bearer token" {
+				t.Fatal("invalid token", auth)
+			}
+
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"data":"123"}`)
 		}))

@@ -23,10 +23,6 @@ func TestGetFile(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != contentPath {
-				t.Fatal("invalid path", r.URL.Path)
-			}
-
 			fmt.Fprintln(w, `{"content": "_not base64"}`)
 		}))
 
@@ -44,6 +40,10 @@ func TestGetFile(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != contentPath {
 				t.Fatal("invalid path", r.URL.Path)
+			}
+
+			if r.Method != http.MethodGet {
+				t.Fatal("invalid method", r.Method)
 			}
 
 			fmt.Fprintln(w, `{"content": "b2s="}`)

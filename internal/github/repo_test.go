@@ -17,6 +17,10 @@ func TestGetDefaultBranch(t *testing.T) {
 			t.Fatal("invalid path", r.URL.Path)
 		}
 
+		if r.Method != http.MethodGet {
+			t.Fatal("invalid method", r.Method)
+		}
+
 		fmt.Fprintln(w, `{"default_branch": "main"}`)
 	}))
 

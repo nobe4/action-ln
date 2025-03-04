@@ -25,6 +25,10 @@ func TestGetBranch(t *testing.T) {
 			t.Fatal("invalid path", r.URL.Path)
 		}
 
+		if r.Method != http.MethodGet {
+			t.Fatal("invalid method", r.Method)
+		}
+
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, `{"name": "branch", "commit": { "sha": "sha123" } }`)
 	}))
@@ -54,6 +58,21 @@ func TestCreateBranch(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotImplemented)
+		}))
+
+		g := New("token", ts.URL)
+
+		_, err := g.CreateBranch(t.Context(), repo, branch, sha)
+		if err == nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("succeeds", func(t *testing.T) {
+		t.Parallel()
+
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/repos/owner/repo/git/refs" {
 				t.Fatal("invalid path", r.URL.Path)
 			}
@@ -71,21 +90,6 @@ func TestCreateBranch(t *testing.T) {
 				t.Fatal("invalid body", string(body))
 			}
 
-			w.WriteHeader(http.StatusNotImplemented)
-		}))
-
-		g := New("token", ts.URL)
-
-		_, err := g.CreateBranch(t.Context(), repo, branch, sha)
-		if err == nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-	})
-
-	t.Run("succeeds", func(t *testing.T) {
-		t.Parallel()
-
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 		}))
 
