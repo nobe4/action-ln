@@ -10,6 +10,10 @@ import (
 	"testing"
 )
 
+const (
+	contentPath = "/repos/owner/repo/contents/path/to/file"
+)
+
 func TestGetContent(t *testing.T) {
 	t.Parallel()
 
@@ -19,7 +23,7 @@ func TestGetContent(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/repos/owner/repo/contents/path/to/file" {
+			if r.URL.Path != contentPath {
 				t.Fatal("invalid path", r.URL.Path)
 			}
 
@@ -38,7 +42,7 @@ func TestGetContent(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/repos/owner/repo/contents/path/to/file" {
+			if r.URL.Path != contentPath {
 				t.Fatal("invalid path", r.URL.Path)
 			}
 
@@ -87,7 +91,7 @@ func TestCreateOrUpdateContent(t *testing.T) {
 		t.Parallel()
 
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/repos/owner/repo/contents/path/to/file" {
+			if r.URL.Path != contentPath {
 				t.Fatal("invalid path", r.URL.Path)
 			}
 
