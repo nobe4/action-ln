@@ -46,17 +46,19 @@ func main() {
 	// 	fmt.Fprintln(os.Stdout, "Default branch:", b)
 	// }
 
-	var b github.Branch
+	branch := "test"
 
-	if b, err = g.GetBranch(ctx, e.Repo, "main"); err != nil {
-		fmt.Fprintln(os.Stderr, "Error getting branch", "main", err)
+	var defaultBranch github.Branch
+
+	if defaultBranch, err = g.GetBranch(ctx, e.Repo, "main"); err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting default %s %+v", branch, err)
 	} else {
-		fmt.Fprintln(os.Stdout, "Branch main:", b)
+		fmt.Fprintln(os.Stdout, "Default branch:", defaultBranch)
 	}
 
-	if nb, err := g.CreateBranch(ctx, e.Repo, "test", b.Commit.SHA); err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating branch", "test", err)
+	if b, err := g.GetOrCreateBranch(ctx, e.Repo, branch, defaultBranch.Commit.SHA); err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting or creating branch %s %+v\n", branch, err)
 	} else {
-		fmt.Fprintln(os.Stdout, "Created branch:", nb)
+		fmt.Fprintln(os.Stdout, "Branch:", b)
 	}
 }
