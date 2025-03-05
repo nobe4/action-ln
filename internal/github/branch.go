@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrBranchNotFound      = errors.New("branch not found")
-	ErrBranchAlreadyExists = errors.New("branch already exists")
+	ErrNoBranch     = errors.New("branch not found")
+	ErrBranchExists = errors.New("branch already exist")
 )
 
 type Commit struct {
@@ -32,7 +32,7 @@ func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch
 
 	if status, err := g.req(ctx, http.MethodGet, path, nil, &b); err != nil {
 		if status == http.StatusNotFound {
-			return b, ErrBranchNotFound
+			return b, ErrNoBranch
 		}
 
 		return b, fmt.Errorf("failed to get branch: %w", err)
@@ -67,7 +67,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), nil); err != nil {
 		if status == http.StatusUnprocessableEntity {
-			return b, ErrBranchAlreadyExists
+			return b, ErrBranchExists
 		}
 
 		return b, fmt.Errorf("failed to create branch: %w", err)
@@ -84,7 +84,7 @@ func (g GitHub) GetOrCreateBranch(ctx context.Context, repo Repo, branch, sha st
 		return b, nil
 	}
 
-	if !errors.Is(err, ErrBranchNotFound) {
+	if !errors.Is(err, ErrNoBranch) {
 		return b, err
 	}
 
