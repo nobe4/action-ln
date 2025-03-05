@@ -15,6 +15,7 @@ const (
 	token = "token"
 )
 
+//nolint:gochecknoglobals // This is used across GitHub tests.
 var repo = Repo{Owner: User{Login: "owner"}, Repo: "repo"}
 
 func assertReq(t *testing.T, r *http.Request, method, path string, body []byte) {
@@ -55,7 +56,7 @@ func TestGetUser(t *testing.T) {
 	t.Run("fails", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		})
 
@@ -68,7 +69,7 @@ func TestGetUser(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"login": "user"}`)
 		})
@@ -90,7 +91,7 @@ func TestReq(t *testing.T) {
 	t.Run("fails to authenticate", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		})
 
@@ -107,7 +108,7 @@ func TestReq(t *testing.T) {
 	t.Run("fails with 500", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		})
 
@@ -124,7 +125,7 @@ func TestReq(t *testing.T) {
 	t.Run("fails to decode JSON", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `<invalid json>`)
 		})
@@ -170,7 +171,7 @@ func TestReq(t *testing.T) {
 	t.Run("decodes JSON response correctly", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `{"success": true}`)
 		})

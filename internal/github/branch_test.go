@@ -43,7 +43,7 @@ func TestCreateBranch(t *testing.T) {
 	t.Run("fails to create a new branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusNotImplemented)
 		})
 
@@ -102,7 +102,7 @@ func TestGetOrCreateBranch(t *testing.T) {
 	t.Run("fails to get existing branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		})
 

@@ -47,7 +47,7 @@ func TestGetPull(t *testing.T) {
 	t.Run("finds no pull", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintln(w, `[]`)
 		})
@@ -65,7 +65,7 @@ func TestCreatePull(t *testing.T) {
 	t.Run("pull exists", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 		})
 
@@ -128,7 +128,7 @@ func TestGetOrCreatePull(t *testing.T) {
 	t.Run("fails to get existing pull", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		})
 

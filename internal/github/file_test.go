@@ -22,7 +22,7 @@ func TestGetFile(t *testing.T) {
 	t.Run("fails to decode the content", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			fmt.Fprintln(w, `{"content": "_not base64"}`)
 		})
 
@@ -64,7 +64,7 @@ func TestUpdateFile(t *testing.T) {
 	t.Run("fails", func(t *testing.T) {
 		t.Parallel()
 
-		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		})
 
