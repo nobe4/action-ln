@@ -1,14 +1,19 @@
 package github
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 )
 
-var errNoPull = errors.New("no pull requests")
+var (
+	errNoPull     = errors.New("no pull requests")
+	errPullExists = errors.New("pull request already exists")
+)
 
 type Pull struct {
 	Number int `json:"number"`
@@ -43,4 +48,35 @@ func (g GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull
 	}
 
 	return pulls[0], nil
+}
+
+// https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request
+func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pullBody string) (Pull, error) {
+	body, err := json.Marshal(struct {
+		Title string `json:"title"`
+		Head  string `json:"head"`
+		Base  string `json:"base"`
+		Body  string `json:"body"`
+	}{
+		Title: title,
+		Body:  pullBody,
+		Head:  repo.Owner.Login + ":" + head,
+		Base:  base,
+	})
+	if err != nil {
+		return Pull{}, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	path := fmt.Sprintf("/repos/%s/%s/pulls", repo.Owner.Login, repo.Repo)
+
+	pull := Pull{}
+	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), &pull); err != nil {
+		if status == http.StatusUnprocessableEntity {
+			return Pull{}, errPullExists
+		}
+
+		return Pull{}, fmt.Errorf("failed to create pull: %w", err)
+	}
+
+	return pull, nil
 }
