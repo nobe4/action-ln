@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	errNoPull     = errors.New("no pull requests")
-	errPullExists = errors.New("pull request already exists")
+	errNoPull     = errors.New("pull not found")
+	errPullExists = errors.New("pull already exist")
 )
 
 type Pull struct {
@@ -79,4 +79,17 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 	}
 
 	return pull, nil
+}
+
+func (g GitHub) GetOrCreatePull(ctx context.Context, repo Repo, base, head, title, body string) (Pull, error) {
+	p, err := g.GetPull(ctx, repo, base, head)
+	if err == nil {
+		return p, nil
+	}
+
+	if !errors.Is(err, errNoPull) {
+		return Pull{}, err
+	}
+
+	return g.CreatePull(ctx, repo, base, head, title, body)
 }

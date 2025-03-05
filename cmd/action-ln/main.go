@@ -27,11 +27,7 @@ func main() {
 	g := github.New(e.Token, endpoint)
 	ctx := context.TODO()
 
-	p, err := g.GetPull(ctx, e.Repo, "main", "test-1")
+	p, err := g.GetOrCreatePull(ctx, e.Repo, "main", "test-1", "title", "body")
 	fmt.Fprintf(os.Stdout, "Pull request: %+v\n", p)
-	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
-
-	p, err = g.CreatePull(ctx, e.Repo, "main", "test-1", "test", "test")
-	fmt.Fprintf(os.Stdout, "Created pull request: %+v\n", p)
 	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
 }
