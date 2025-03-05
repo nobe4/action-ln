@@ -28,6 +28,10 @@ func main() {
 	ctx := context.TODO()
 
 	p, err := g.GetPull(ctx, e.Repo, "main", "test-1")
-	fmt.Fprintf(os.Stdout, "Pull request: %+v", p)
-	fmt.Fprintf(os.Stdout, "Err: %+v", err)
+	fmt.Fprintf(os.Stdout, "Pull request: %+v\n", p)
+	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
+
+	p, err = g.CreatePull(ctx, e.Repo, "main", "test-1", "test", "test")
+	fmt.Fprintf(os.Stdout, "Created pull request: %+v\n", p)
+	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
 }
