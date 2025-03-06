@@ -16,15 +16,29 @@ issues:
   exclude-rules:
     - path: _test.go
       linters:
-        - gochecknoglobals
         - bodyclose
         - funlen
-        - revive
         - cyclop
         - gocognit
 
-    - linters:
-      - revive
+    # Ignore the revive equivalent of the linters above.
+    - path: _test
+      linters: [revive]
+      text: "line-length-limit"
+
+    - path: _test
+      linters: [revive]
+      text: "function-length"
+
+    - path: _test
+      linters: [revive]
+      text: "cyclomatic"
+
+    - path: _test
+      linters: [revive]
+      text: "cognitive-complexity"
+
+    - linters: [revive]
       text: "line-length-limit"
       source: 'https?://'
 

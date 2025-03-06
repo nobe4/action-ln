@@ -5,29 +5,28 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
 const (
-	contentPath = "/repos/owner/repo/contents/path/to/file"
+	filePath      = "path/to/file"
+	contentPath   = "/repos/owner/repo/contents/" + filePath
+	content       = "ok"
+	base64Content = "b2s="
+	message       = "message"
 )
 
 func TestGetFile(t *testing.T) {
 	t.Parallel()
 
-	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
-
 	t.Run("fails to decode the content", func(t *testing.T) {
 		t.Parallel()
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			fmt.Fprintln(w, `{"content": "_not base64"}`)
-		}))
+		})
 
-		g := New("token", ts.URL)
-
-		_, err := g.GetFile(t.Context(), repo, "path/to/file")
+		_, err := g.GetFile(t.Context(), repo, filePath)
 		if !errors.Is(err, base64.CorruptInputError(0)) {
 			t.Fatalf("expected base64 error, got %v", err)
 		}
@@ -36,15 +35,13 @@ func TestGetFile(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		t.Parallel()
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
 			assertReq(t, r, http.MethodGet, contentPath, nil)
 
-			fmt.Fprintln(w, `{"content": "b2s="}`)
-		}))
+			fmt.Fprintf(w, `{"content": "%s"}`, base64Content)
+		})
 
-		g := New("token", ts.URL)
-
-		c, err := g.GetFile(t.Context(), repo, "path/to/file")
+		c, err := g.GetFile(t.Context(), repo, filePath)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -58,23 +55,20 @@ func TestGetFile(t *testing.T) {
 func TestUpdateFile(t *testing.T) {
 	t.Parallel()
 
-	repo := Repo{Owner: User{"owner"}, Repo: "repo"}
 	content := File{
-		Content: "ok",
-		SHA:     "sha",
-		Path:    "path/to/file",
+		Content: content,
+		SHA:     sha,
+		Path:    filePath,
 	}
 
 	t.Run("fails", func(t *testing.T) {
 		t.Parallel()
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
-		}))
+		})
 
-		g := New("token", ts.URL)
-
-		_, err := g.UpdateFile(t.Context(), repo, content, "branch", "message")
+		_, err := g.UpdateFile(t.Context(), repo, content, branch, message)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -83,26 +77,26 @@ func TestUpdateFile(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		t.Parallel()
 
-		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		const newSha = "newSha"
+
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
 			assertReq(t, r,
 				http.MethodPut,
 				contentPath,
-				[]byte(`{"message":"message","content":"b2s=","sha":"sha","branch":"branch"}`),
+				fmt.Appendf(nil, `{"message":"%s","content":"%s","sha":"%s","branch":"%s"}`, message, base64Content, sha, branch),
 			)
 
 			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintln(w, `{"content": {"sha":"newSha"}}`)
-		}))
+			fmt.Fprintf(w, `{"content": {"sha":"%s"}}`, newSha)
+		})
 
-		g := New("token", ts.URL)
-
-		c, err := g.UpdateFile(t.Context(), repo, content, "branch", "message")
+		c, err := g.UpdateFile(t.Context(), repo, content, branch, message)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if c.SHA != "newSha" {
-			t.Fatalf("expected new sha to be 'newSha' but got '%s'", c.SHA)
+		if c.SHA != newSha {
+			t.Fatalf("expected new sha to be '%s' but got '%s'", newSha, c.SHA)
 		}
 
 		if c.Content != content.Content {
