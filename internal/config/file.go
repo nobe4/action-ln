@@ -54,7 +54,6 @@ func parseFileMap(rawFile map[string]any) (File, error) {
 	return f, nil
 }
 
-//nolint:mnd // Those regexp are pretty arbitrary.
 func parseFileString(s string) (File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
 	if m := regexp.

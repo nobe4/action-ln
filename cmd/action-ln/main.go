@@ -1,13 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
+	"strings"
 
-	"github.com/nobe4/action-ln/internal/environment"
-	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/version"
+	"github.com/nobe4/dent.go"
+
+	"github.com/nobe4/action-ln/internal/config"
 )
 
 const (
@@ -15,19 +15,17 @@ const (
 )
 
 func main() {
-	fmt.Fprintln(os.Stdout, version.String())
+	src := dent.DedentString(`
+	links:
+	  - from:
+	      repo: x
+	      path: y
+	    to:
+	      repo: a
+	      path: b
+	`)
 
-	e, err := environment.Parse()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Fprintln(os.Stdout, "Environment:", e)
-
-	g := github.New(e.Token, endpoint)
-	ctx := context.TODO()
-
-	p, err := g.GetOrCreatePull(ctx, e.Repo, "main", "test-1", "title", "body")
-	fmt.Fprintf(os.Stdout, "Pull request: %+v\n", p)
+	c, err := config.Parse(strings.NewReader(src))
+	fmt.Fprintf(os.Stdout, "Config: %+v\n", c)
 	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
 }
