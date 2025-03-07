@@ -11,10 +11,6 @@ import (
 	"github.com/nobe4/action-ln/internal/github"
 )
 
-const (
-	endpoint = "https://api.github.com"
-)
-
 func main() {
 	e, err := environment.Parse()
 	if err != nil {
@@ -23,7 +19,7 @@ func main() {
 
 	fmt.Fprintln(os.Stdout, "Environment:", e)
 
-	g := github.New(e.Token, endpoint)
+	g := github.New(e.Token, e.Endpoint)
 	ctx := context.TODO()
 
 	f, err := g.GetFile(
