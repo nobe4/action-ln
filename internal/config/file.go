@@ -3,10 +3,14 @@ package config
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
-var errInvalidFileType = errors.New("invalid file type")
+var (
+	errInvalidFileType   = errors.New("invalid file type")
+	errInvalidFileFormat = errors.New("invalid file format")
+)
 
 type File struct {
 	Repo  string `yaml:"repo"`
@@ -22,6 +26,8 @@ func parseFile(rawFile any) (File, error) {
 	switch v := rawFile.(type) {
 	case map[string]any:
 		return parseFileMap(v)
+	case string:
+		return parseFileString(v)
 
 	default:
 		return File{}, fmt.Errorf("%w: %v (%T)", errInvalidFileType, rawFile, rawFile)
@@ -46,6 +52,46 @@ func parseFileMap(rawFile map[string]any) (File, error) {
 	}
 
 	return f, nil
+}
+
+//nolint:mnd // Those regexp are pretty arbitrary.
+func parseFileString(s string) (File, error) {
+	// 'https://github.com/owner/repo/blob/ref/path/to/file'
+	if m := regexp.
+		MustCompile(`^https://github.com/(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return File{Owner: m[1], Repo: m[2], Path: m[4]}, nil
+	}
+
+	// 'owner/repo/blob/ref/path/to/file'
+	if m := regexp.
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return File{Owner: m[1], Repo: m[2], Path: m[4]}, nil
+	}
+
+	// 'owner/repo:path/to/file@ref'
+	if m := regexp.
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>.+)@(?P<ref>[\w-]+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return File{Owner: m[1], Repo: m[2], Path: m[3]}, nil
+	}
+
+	// 'path/to/file@ref'
+	if m := regexp.
+		MustCompile(`^(?P<path>[^@]+)@(?P<ref>[\w-]+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return File{Path: m[1]}, nil
+	}
+
+	// 'path/to/file'
+	if m := regexp.
+		MustCompile(`^(?P<path>.+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return File{Path: m[1]}, nil
+	}
+
+	return File{}, fmt.Errorf("%w: %v", errInvalidFileFormat, s)
 }
 
 func getMapKey(m map[string]any, k string) string {
