@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/nobe4/action-ln/internal/config"
 	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/version"
 )
 
 const (
@@ -15,8 +16,6 @@ const (
 )
 
 func main() {
-	fmt.Fprintln(os.Stdout, version.String())
-
 	e, err := environment.Parse()
 	if err != nil {
 		panic(err)
@@ -27,7 +26,20 @@ func main() {
 	g := github.New(e.Token, endpoint)
 	ctx := context.TODO()
 
-	p, err := g.GetOrCreatePull(ctx, e.Repo, "main", "test-1", "title", "body")
-	fmt.Fprintf(os.Stdout, "Pull request: %+v\n", p)
+	f, err := g.GetFile(
+		ctx,
+		github.Repo{
+			Owner: github.User{Login: "nobe4"},
+			Repo:  "action-ln",
+		},
+		".github/ln-config.yaml",
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	c, err := config.Parse(strings.NewReader(f.Content))
+
+	fmt.Fprintf(os.Stdout, "Config: %+v\n", c)
 	fmt.Fprintf(os.Stdout, "Err: %+v\n", err)
 }
