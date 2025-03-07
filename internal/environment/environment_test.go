@@ -78,3 +78,25 @@ func TestParseRepo(t *testing.T) {
 		}
 	})
 }
+
+func TestParseEndpoint(t *testing.T) {
+	t.Run("gets the default", func(t *testing.T) {
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("GITHUB_REPOSITORY", "")
+
+		env := parseEndpoint()
+		if defaultEndpoint != env {
+			t.Fatalf("want %v but got %v", defaultEndpoint, env)
+		}
+	})
+
+	t.Run("gets the set endpoint", func(t *testing.T) {
+		want := "https://example.com"
+		t.Setenv("GITHUB_API_URL", want)
+
+		endpoint := parseEndpoint()
+		if want != endpoint {
+			t.Fatalf("want %v but got %v", want, endpoint)
+		}
+	})
+}

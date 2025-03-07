@@ -24,9 +24,12 @@ var (
 	errInvalidRepo        = errors.New("github repository invalid: want owner/repo")
 )
 
+const defaultEndpoint = "https://api.github.com"
+
 type Environment struct {
-	Token string      `json:"token"` // GITHUB_TOKEN / INPUT_TOKEN
-	Repo  github.Repo `json:"repo"`  // GITHUB_REPOSITORY
+	Token    string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
+	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
+	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
 }
 
 func (e Environment) String() string {
@@ -63,6 +66,8 @@ func Parse() (Environment, error) {
 		return e, fmt.Errorf("%w: %w", errInvalidEnvironment, err)
 	}
 
+	e.Endpoint = parseEndpoint()
+
 	return e, nil
 }
 
@@ -94,4 +99,12 @@ func parseRepo() (github.Repo, error) {
 	}
 
 	return repo, nil
+}
+
+func parseEndpoint() string {
+	if endpoint := os.Getenv("GITHUB_API_URL"); endpoint != "" {
+		return endpoint
+	}
+
+	return defaultEndpoint
 }
