@@ -35,6 +35,7 @@ func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch
 			return b, ErrNoBranch
 		}
 
+		// TODO: make constant error
 		return b, fmt.Errorf("failed to get branch: %w", err)
 	}
 
@@ -62,6 +63,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 		SHA: sha,
 	})
 	if err != nil {
+		// TODO: make constant error
 		return b, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
@@ -70,6 +72,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 			return b, ErrBranchExists
 		}
 
+		// TODO: make constant error
 		return b, fmt.Errorf("failed to create branch: %w", err)
 	}
 

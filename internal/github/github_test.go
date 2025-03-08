@@ -46,7 +46,10 @@ func setup(t *testing.T, f func(w http.ResponseWriter, r *http.Request)) GitHub 
 
 	ts := httptest.NewServer(http.HandlerFunc(f))
 
-	return New(token, ts.URL)
+	g := New(ts.URL)
+	g.Token = token
+
+	return g
 }
 
 // TODO: remove.

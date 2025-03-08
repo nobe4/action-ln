@@ -40,6 +40,7 @@ func (g GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull
 
 	pulls := []Pull{}
 	if _, err := g.req(ctx, http.MethodGet, path, nil, &pulls); err != nil {
+		// TODO: make constant error
 		return Pull{}, fmt.Errorf("failed to get pulls: %w", err)
 	}
 
@@ -64,6 +65,7 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 		Base:  base,
 	})
 	if err != nil {
+		// TODO: make constant error
 		return Pull{}, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
@@ -75,6 +77,7 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 			return Pull{}, errPullExists
 		}
 
+		// TODO: make constant error
 		return Pull{}, fmt.Errorf("failed to create pull: %w", err)
 	}
 

@@ -122,3 +122,60 @@ func TestParseConfig(t *testing.T) {
 		}
 	})
 }
+
+func TestParseApp(t *testing.T) {
+	want := "value"
+	t.Setenv("INPUT_APP_ID", want)
+	t.Setenv("INPUT_APP_PRIVATE_KEY", want)
+	t.Setenv("INPUT_APP_INSTALL_ID", want)
+
+	got := parseApp()
+
+	if want != got.ID {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+
+	if want != got.PrivateKey {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+
+	if want != got.InstallID {
+		t.Fatalf("want %v but got %v", want, got)
+	}
+}
+
+func TestAppValid(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		app  App
+		want bool
+	}{
+		{
+			app:  App{},
+			want: false,
+		},
+		{
+			app:  App{ID: "id"},
+			want: false,
+		},
+		{
+			app:  App{ID: "id", PrivateKey: "key"},
+			want: false,
+		},
+		{
+			app:  App{ID: "id", PrivateKey: "key", InstallID: "install"},
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			if got := test.app.Valid(); got != test.want {
+				t.Fatalf("want %v but got %v", test.want, got)
+			}
+		})
+	}
+}

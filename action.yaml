@@ -7,6 +7,7 @@ inputs:
     required: true
     default: "false"
 
+  # See https://github.com/nobe4/action-ln/blob/main/docs/configuration.md
   config:
     description: Relative path to the config file.
     required: true
@@ -15,21 +16,22 @@ inputs:
     #  - ".action-ln-config.yaml"
     #  - "config/ln/config.yaml"
 
+  # See https://github.com/nobe4/action-ln/blob/main/docs/authentication.md
   token:
     description: GitHub token to authenticate with.
     required: false
     default: "${{ github.token }}"
 
-  app-id:
-    description: GitHub App Id to authenticate with
+  app_id:
+    description: GitHub App ID to authenticate with
     required: false
 
-  app-private-key:
+  app_private_key:
     description: GitHub App Private Key to authenticate with
     required: false
 
-  app-install-id:
-    description: GitHub App installation Id to authenticate with
+  app_install_id:
+    description: GitHub App installation ID to authenticate with
     required: false
 
 runs:

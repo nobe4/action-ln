@@ -23,14 +23,13 @@ const (
 
 type GitHub struct {
 	client   http.Client
-	token    string
+	Token    string
 	endpoint string
 }
 
-func New(token, endpoint string) GitHub {
+func New(endpoint string) GitHub {
 	return GitHub{
 		client:   http.Client{},
-		token:    token,
 		endpoint: endpoint,
 	}
 }
@@ -60,7 +59,7 @@ func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, ou
 	}
 
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("Authorization", "Bearer "+g.token)
+	req.Header.Set("Authorization", "Bearer "+g.Token)
 
 	res, err := g.client.Do(req)
 	if err != nil {
