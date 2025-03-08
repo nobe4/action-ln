@@ -16,6 +16,7 @@ type File struct {
 	Repo  string `yaml:"repo"`
 	Owner string `yaml:"owner"`
 	Path  string `yaml:"path"`
+	Ref   string `yaml:"ref"`
 }
 
 func (f File) Equal(o File) bool {
@@ -40,6 +41,7 @@ func parseFileMap(rawFile map[string]any) (File, error) {
 	f.Repo = getMapKey(rawFile, "repo")
 	f.Owner = getMapKey(rawFile, "owner")
 	f.Path = getMapKey(rawFile, "path")
+	f.Ref = getMapKey(rawFile, "ref")
 
 	if strings.Contains(f.Repo, "/") {
 		parts := strings.Split(f.Repo, "/")
@@ -59,28 +61,28 @@ func parseFileString(s string) (File, error) {
 	if m := regexp.
 		MustCompile(`^https://github.com/(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
-		return File{Owner: m[1], Repo: m[2], Path: m[4]}, nil
+		return File{Owner: m[1], Repo: m[2], Ref: m[3], Path: m[4]}, nil
 	}
 
 	// 'owner/repo/blob/ref/path/to/file'
 	if m := regexp.
 		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
-		return File{Owner: m[1], Repo: m[2], Path: m[4]}, nil
+		return File{Owner: m[1], Repo: m[2], Ref: m[3], Path: m[4]}, nil
 	}
 
 	// 'owner/repo:path/to/file@ref'
 	if m := regexp.
 		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>.+)@(?P<ref>[\w-]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
-		return File{Owner: m[1], Repo: m[2], Path: m[3]}, nil
+		return File{Owner: m[1], Repo: m[2], Path: m[3], Ref: m[4]}, nil
 	}
 
 	// 'path/to/file@ref'
 	if m := regexp.
 		MustCompile(`^(?P<path>[^@]+)@(?P<ref>[\w-]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
-		return File{Path: m[1]}, nil
+		return File{Path: m[1], Ref: m[2]}, nil
 	}
 
 	// 'path/to/file'
