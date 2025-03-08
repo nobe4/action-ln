@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -17,20 +18,24 @@ type File struct {
 	Content    string
 }
 
+var (
+	ErrGetFile    = errors.New("failed to get file")
+	ErrUpdateFile = errors.New("failed to create/update file")
+	ErrDecodeFile = errors.New("failed to decode file")
+)
+
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, error) {
 	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
 	c := File{}
 	if _, err := g.req(ctx, http.MethodGet, path, nil, &c); err != nil {
-		// TODO: make constant error
-		return File{}, fmt.Errorf("failed to get file: %w", err)
+		return File{}, fmt.Errorf("%w: %w", ErrGetFile, err)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(c.RawContent)
 	if err != nil {
-		// TODO: make constant error
-		return File{}, fmt.Errorf("failed to decode content: %w", err)
+		return File{}, fmt.Errorf("%w: %w", ErrDecodeFile, err)
 	}
 
 	c.Content = string(decoded)
@@ -52,8 +57,7 @@ func (g GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, messa
 		SHA:     f.SHA,
 	})
 	if err != nil {
-		// TODO: make constant error
-		return File{}, fmt.Errorf("failed to marshal request: %w", err)
+		return File{}, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
 	// NOTE: The response wrapes the content in an extra `{ "content": {} }`.
@@ -70,8 +74,7 @@ func (g GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, messa
 		bytes.NewReader(body),
 		&out,
 	); err != nil {
-		// TODO: make constant error
-		return File{}, fmt.Errorf("failed to create branch: %w", err)
+		return File{}, fmt.Errorf("%w: %w", ErrUpdateFile, err)
 	}
 
 	out.File.Content = f.Content

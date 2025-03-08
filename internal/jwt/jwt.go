@@ -24,20 +24,20 @@ const (
 )
 
 var (
-	errNotPEM     = errors.New("not PEM")
-	errInvalidKey = errors.New("invalid key")
-	errCannotSign = errors.New("cannot sign")
+	ErrNotPEM     = errors.New("not PEM")
+	ErrInvalidKey = errors.New("invalid key")
+	ErrCannotSign = errors.New("cannot sign")
 )
 
 func New(now int64, id, key string) (string, error) {
 	block, _ := pem.Decode([]byte(key))
 	if block == nil {
-		return "", errNotPEM
+		return "", ErrNotPEM
 	}
 
 	pKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", errInvalidKey, err)
+		return "", fmt.Errorf("%w: %w", ErrInvalidKey, err)
 	}
 
 	iat := now + iatDelta
@@ -57,7 +57,7 @@ func New(now int64, id, key string) (string, error) {
 
 	signature, err := rsa.SignPKCS1v15(nil, pKey, crypto.SHA256, sum)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", errCannotSign, err)
+		return "", fmt.Errorf("%w: %w", ErrCannotSign, err)
 	}
 
 	token := header + "." + payload + "." + encode(string(signature))

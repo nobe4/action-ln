@@ -15,7 +15,10 @@ import (
 	"net/http"
 )
 
-var errRequest = errors.New("request failed")
+var (
+	ErrRequestFailed  = errors.New("request failed")
+	ErrMarshalRequest = errors.New("failed to marshal request")
+)
 
 const (
 	PathUser = "/user"
@@ -34,20 +37,8 @@ func New(endpoint string) GitHub {
 	}
 }
 
-// TODO: remove.
 type User struct {
 	Login string `json:"login"`
-}
-
-// TODO: remove.
-func (g GitHub) GetUser(ctx context.Context) (User, error) {
-	u := User{}
-
-	if _, err := g.req(ctx, http.MethodGet, PathUser, nil, &u); err != nil {
-		return u, fmt.Errorf("failed to get user: %w", err)
-	}
-
-	return u, nil
 }
 
 func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) (int, error) {
@@ -63,14 +54,14 @@ func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, ou
 
 	res, err := g.client.Do(req)
 	if err != nil {
-		return res.StatusCode, fmt.Errorf("%w: %w", errRequest, err)
+		return res.StatusCode, fmt.Errorf("%w: %w", ErrRequestFailed, err)
 	}
 	defer res.Body.Close()
 
 	// All the 2XX codes
 	success := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
 	if !success {
-		return res.StatusCode, fmt.Errorf("%w: %s", errRequest, res.Status)
+		return res.StatusCode, fmt.Errorf("%w: %s", ErrRequestFailed, res.Status)
 	}
 
 	if out != nil {

@@ -11,6 +11,8 @@ import (
 
 var (
 	ErrNoBranch     = errors.New("branch not found")
+	ErrGetBranch    = errors.New("failed to get branch")
+	ErrCreateBranch = errors.New("failed to create branch")
 	ErrBranchExists = errors.New("branch already exist")
 )
 
@@ -35,8 +37,7 @@ func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch
 			return b, ErrNoBranch
 		}
 
-		// TODO: make constant error
-		return b, fmt.Errorf("failed to get branch: %w", err)
+		return b, fmt.Errorf("%w: %w", ErrGetBranch, err)
 	}
 
 	b.New = false
@@ -63,8 +64,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 		SHA: sha,
 	})
 	if err != nil {
-		// TODO: make constant error
-		return b, fmt.Errorf("failed to marshal request: %w", err)
+		return b, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), nil); err != nil {
@@ -72,8 +72,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 			return b, ErrBranchExists
 		}
 
-		// TODO: make constant error
-		return b, fmt.Errorf("failed to create branch: %w", err)
+		return b, fmt.Errorf("%w: %w", ErrCreateBranch, err)
 	}
 
 	b.New = true

@@ -18,10 +18,10 @@ import (
 )
 
 var (
-	errInvalidEnvironment = errors.New("error parsing environment")
-	errNoToken            = errors.New("github token not found")
-	errNoRepo             = errors.New("github repository not found")
-	errInvalidRepo        = errors.New("github repository invalid: want owner/repo")
+	ErrInvalidEnvironment = errors.New("error parsing environment")
+	ErrNoToken            = errors.New("github token not found")
+	ErrNoRepo             = errors.New("github repository not found")
+	ErrInvalidRepo        = errors.New("github repository invalid: want owner/repo")
 )
 
 const (
@@ -77,11 +77,11 @@ func Parse() (Environment, error) {
 	var err error
 
 	if e.Token, err = parseToken(); err != nil {
-		return e, fmt.Errorf("%w: %w", errInvalidEnvironment, err)
+		return e, fmt.Errorf("%w: %w", ErrInvalidEnvironment, err)
 	}
 
 	if e.Repo, err = parseRepo(); err != nil {
-		return e, fmt.Errorf("%w: %w", errInvalidEnvironment, err)
+		return e, fmt.Errorf("%w: %w", ErrInvalidEnvironment, err)
 	}
 
 	e.Noop = parseNoop()
@@ -105,7 +105,7 @@ func parseToken() (string, error) {
 		return token, nil
 	}
 
-	return "", errNoToken
+	return "", ErrNoToken
 }
 
 func parseRepo() (github.Repo, error) {
@@ -113,14 +113,14 @@ func parseRepo() (github.Repo, error) {
 	repoName := os.Getenv("GITHUB_REPOSITORY")
 
 	if repoName == "" {
-		return repo, errNoRepo
+		return repo, ErrNoRepo
 	}
 
 	var found bool
 	repo.Owner.Login, repo.Repo, found = strings.Cut(repoName, "/")
 
 	if !found {
-		return repo, errInvalidRepo
+		return repo, ErrInvalidRepo
 	}
 
 	return repo, nil

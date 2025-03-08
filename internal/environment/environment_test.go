@@ -65,8 +65,8 @@ func TestParseToken(t *testing.T) {
 		t.Setenv("INPUT_TOKEN", "")
 
 		_, err := parseToken()
-		if !errors.Is(err, errNoToken) {
-			t.Fatalf("want %v but got error: %v", errNoToken, err)
+		if !errors.Is(err, ErrNoToken) {
+			t.Fatalf("want %v but got error: %v", ErrNoToken, err)
 		}
 	})
 }
@@ -77,8 +77,8 @@ func TestParseRepo(t *testing.T) {
 		t.Setenv("GITHUB_REPOSITORY", "")
 
 		_, err := parseRepo()
-		if !errors.Is(err, errNoRepo) {
-			t.Fatalf("want %v but got error: %v", errNoRepo, err)
+		if !errors.Is(err, ErrNoRepo) {
+			t.Fatalf("want %v but got error: %v", ErrNoRepo, err)
 		}
 	})
 
@@ -86,8 +86,8 @@ func TestParseRepo(t *testing.T) {
 		t.Setenv("GITHUB_REPOSITORY", "owner+repo+is+invalid")
 
 		_, err := parseRepo()
-		if !errors.Is(err, errInvalidRepo) {
-			t.Fatalf("want %v but got error: %v", errInvalidRepo, err)
+		if !errors.Is(err, ErrInvalidRepo) {
+			t.Fatalf("want %v but got error: %v", ErrInvalidRepo, err)
 		}
 	})
 
