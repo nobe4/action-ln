@@ -22,8 +22,8 @@ func TestParseFileMap(t *testing.T) {
 			want:  File{Repo: "x", Path: "z"},
 		},
 		{
-			input: map[string]any{"repo": "x", "owner": "y", "path": "z"},
-			want:  File{Owner: "y", Repo: "x", Path: "z"},
+			input: map[string]any{"repo": "x", "owner": "y", "path": "z", "ref": "r"},
+			want:  File{Owner: "y", Repo: "x", Path: "z", Ref: "r"},
 		},
 		{
 			input: map[string]any{"repo": "x/y", "path": "z"},
@@ -58,29 +58,29 @@ func TestParseFileString(t *testing.T) {
 	}{
 		{
 			input: "https://github.com/owner/repo/blob/ref/a",
-			want:  File{Owner: "owner", Repo: "repo", Path: "a"},
+			want:  File{Owner: "owner", Repo: "repo", Path: "a", Ref: "ref"},
 		},
 		{
 			input: "https://github.com/owner/repo/blob/ref/" + complexPath,
-			want:  File{Owner: "owner", Repo: "repo", Path: complexPath},
+			want:  File{Owner: "owner", Repo: "repo", Path: complexPath, Ref: "ref"},
 		},
 
 		{
 			input: "owner/repo/blob/ref/a",
-			want:  File{Owner: "owner", Repo: "repo", Path: "a"},
+			want:  File{Owner: "owner", Repo: "repo", Path: "a", Ref: "ref"},
 		},
 		{
 			input: "owner/repo/blob/ref/" + complexPath,
-			want:  File{Owner: "owner", Repo: "repo", Path: complexPath},
+			want:  File{Owner: "owner", Repo: "repo", Path: complexPath, Ref: "ref"},
 		},
 
 		{
 			input: "a@ref",
-			want:  File{Path: "a"},
+			want:  File{Path: "a", Ref: "ref"},
 		},
 		{
 			input: complexPath + "@ref",
-			want:  File{Path: complexPath},
+			want:  File{Path: complexPath, Ref: "ref"},
 		},
 
 		{
