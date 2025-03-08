@@ -143,3 +143,39 @@ func TestParseApp(t *testing.T) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
+
+func TestAppValid(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		app  App
+		want bool
+	}{
+		{
+			app:  App{},
+			want: false,
+		},
+		{
+			app:  App{ID: "id"},
+			want: false,
+		},
+		{
+			app:  App{ID: "id", PrivateKey: "key"},
+			want: false,
+		},
+		{
+			app:  App{ID: "id", PrivateKey: "key", InstallID: "install"},
+			want: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			if got := test.app.Valid(); got != test.want {
+				t.Fatalf("want %v but got %v", test.want, got)
+			}
+		})
+	}
+}
