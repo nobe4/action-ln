@@ -11,8 +11,10 @@ import (
 )
 
 var (
-	errNoPull     = errors.New("pull not found")
-	errPullExists = errors.New("pull already exist")
+	ErrNoPull     = errors.New("pull not found")
+	ErrGetPull    = errors.New("failed to get pull")
+	ErrCreatePull = errors.New("failed to create pull")
+	ErrPullExists = errors.New("pull already exist")
 )
 
 type Pull struct {
@@ -40,12 +42,11 @@ func (g GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull
 
 	pulls := []Pull{}
 	if _, err := g.req(ctx, http.MethodGet, path, nil, &pulls); err != nil {
-		// TODO: make constant error
-		return Pull{}, fmt.Errorf("failed to get pulls: %w", err)
+		return Pull{}, fmt.Errorf("%w: %w", ErrGetPull, err)
 	}
 
 	if len(pulls) == 0 {
-		return Pull{}, errNoPull
+		return Pull{}, ErrNoPull
 	}
 
 	return pulls[0], nil
@@ -65,8 +66,7 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 		Base:  base,
 	})
 	if err != nil {
-		// TODO: make constant error
-		return Pull{}, fmt.Errorf("failed to marshal request: %w", err)
+		return Pull{}, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
 	path := fmt.Sprintf("/repos/%s/%s/pulls", repo.Owner.Login, repo.Repo)
@@ -74,11 +74,10 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 	pull := Pull{}
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), &pull); err != nil {
 		if status == http.StatusUnprocessableEntity {
-			return Pull{}, errPullExists
+			return Pull{}, ErrPullExists
 		}
 
-		// TODO: make constant error
-		return Pull{}, fmt.Errorf("failed to create pull: %w", err)
+		return Pull{}, fmt.Errorf("%w: %w", ErrCreatePull, err)
 	}
 
 	return pull, nil
@@ -90,7 +89,7 @@ func (g GitHub) GetOrCreatePull(ctx context.Context, repo Repo, base, head, titl
 		return p, nil
 	}
 
-	if !errors.Is(err, errNoPull) {
+	if !errors.Is(err, ErrNoPull) {
 		return Pull{}, err
 	}
 

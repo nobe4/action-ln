@@ -52,42 +52,6 @@ func setup(t *testing.T, f func(w http.ResponseWriter, r *http.Request)) GitHub 
 	return g
 }
 
-// TODO: remove.
-func TestGetUser(t *testing.T) {
-	t.Parallel()
-
-	t.Run("fails", func(t *testing.T) {
-		t.Parallel()
-
-		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
-			w.WriteHeader(http.StatusUnauthorized)
-		})
-
-		_, err := g.GetUser(t.Context())
-		if !errors.Is(err, errRequest) {
-			t.Fatalf("expected request error, got %v", err)
-		}
-	})
-
-	t.Run("succeeds", func(t *testing.T) {
-		t.Parallel()
-
-		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintln(w, `{"login": "user"}`)
-		})
-
-		u, err := g.GetUser(t.Context())
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-
-		if u.Login != "user" {
-			t.Fatal("expected user to parse correctly")
-		}
-	})
-}
-
 func TestReq(t *testing.T) {
 	t.Parallel()
 
@@ -99,7 +63,7 @@ func TestReq(t *testing.T) {
 		})
 
 		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
-		if !errors.Is(err, errRequest) {
+		if !errors.Is(err, ErrRequestFailed) {
 			t.Fatalf("expected request error, got %v", err)
 		}
 
@@ -116,7 +80,7 @@ func TestReq(t *testing.T) {
 		})
 
 		status, err := g.req(t.Context(), http.MethodGet, PathUser, nil, nil)
-		if !errors.Is(err, errRequest) {
+		if !errors.Is(err, ErrRequestFailed) {
 			t.Fatalf("expected request error, got %v", err)
 		}
 

@@ -87,8 +87,8 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 
 		_, err := New(now, id, notPEMKey)
-		if !errors.Is(err, errNotPEM) {
-			t.Errorf("expected %q, got %q", errNotPEM, err)
+		if !errors.Is(err, ErrNotPEM) {
+			t.Errorf("expected %q, got %q", ErrNotPEM, err)
 		}
 	})
 
@@ -96,8 +96,8 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 
 		_, err := New(now, id, invalidKey)
-		if !errors.Is(err, errInvalidKey) {
-			t.Errorf("expected %q, got %q", errInvalidKey, err)
+		if !errors.Is(err, ErrInvalidKey) {
+			t.Errorf("expected %q, got %q", ErrInvalidKey, err)
 		}
 	})
 
@@ -105,8 +105,8 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 
 		_, err := New(now, id, insecureKey)
-		if !errors.Is(err, errCannotSign) {
-			t.Errorf("expected %q, got %q", errCannotSign, err)
+		if !errors.Is(err, ErrCannotSign) {
+			t.Errorf("expected %q, got %q", ErrCannotSign, err)
 		}
 	})
 

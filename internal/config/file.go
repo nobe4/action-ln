@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	errInvalidFileType   = errors.New("invalid file type")
-	errInvalidFileFormat = errors.New("invalid file format")
+	ErrInvalidFileType   = errors.New("invalid file type")
+	ErrInvalidFileFormat = errors.New("invalid file format")
 )
 
 type File struct {
@@ -31,7 +31,7 @@ func parseFile(rawFile any) (File, error) {
 		return parseFileString(v)
 
 	default:
-		return File{}, fmt.Errorf("%w: %v (%T)", errInvalidFileType, rawFile, rawFile)
+		return File{}, fmt.Errorf("%w: %v (%T)", ErrInvalidFileType, rawFile, rawFile)
 	}
 }
 
@@ -92,7 +92,7 @@ func parseFileString(s string) (File, error) {
 		return File{Path: m[1]}, nil
 	}
 
-	return File{}, fmt.Errorf("%w: %v", errInvalidFileFormat, s)
+	return File{}, fmt.Errorf("%w: %v", ErrInvalidFileFormat, s)
 }
 
 func getMapKey(m map[string]any, k string) string {

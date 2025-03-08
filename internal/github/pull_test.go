@@ -53,8 +53,8 @@ func TestGetPull(t *testing.T) {
 		})
 
 		_, err := g.GetPull(t.Context(), repo, "base", "head")
-		if !errors.Is(err, errNoPull) {
-			t.Fatalf("expected error to be %q, got %q", errNoPull, err)
+		if !errors.Is(err, ErrNoPull) {
+			t.Fatalf("expected error to be %q, got %q", ErrNoPull, err)
 		}
 	})
 }
@@ -70,8 +70,8 @@ func TestCreatePull(t *testing.T) {
 		})
 
 		_, err := g.CreatePull(t.Context(), repo, "base", "head", "title", "body")
-		if !errors.Is(err, errPullExists) {
-			t.Fatalf("expected error %q, got %q", errPullExists, err)
+		if !errors.Is(err, ErrPullExists) {
+			t.Fatalf("expected error %q, got %q", ErrPullExists, err)
 		}
 	})
 
