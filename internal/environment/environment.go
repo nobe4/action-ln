@@ -24,12 +24,16 @@ var (
 	errInvalidRepo        = errors.New("github repository invalid: want owner/repo")
 )
 
-const defaultEndpoint = "https://api.github.com"
+const (
+	defaultEndpoint = "https://api.github.com"
+	defaultConfig   = ".github/ln-config.yaml"
+)
 
 type Environment struct {
 	Token    string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
 	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
 	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
+	Config   string      `json:"config"`   // INPUT_CONFIG
 }
 
 func (e Environment) String() string {
@@ -67,6 +71,7 @@ func Parse() (Environment, error) {
 	}
 
 	e.Endpoint = parseEndpoint()
+	e.Config = parseConfig()
 
 	return e, nil
 }
@@ -107,4 +112,12 @@ func parseEndpoint() string {
 	}
 
 	return defaultEndpoint
+}
+
+func parseConfig() string {
+	if config := os.Getenv("INPUT_CONFIG"); config != "" {
+		return config
+	}
+
+	return defaultConfig
 }

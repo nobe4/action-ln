@@ -84,9 +84,9 @@ func TestParseEndpoint(t *testing.T) {
 		// Need to force an empty value to not conflict with GitHub Action's Env
 		t.Setenv("GITHUB_REPOSITORY", "")
 
-		env := parseEndpoint()
-		if defaultEndpoint != env {
-			t.Fatalf("want %v but got %v", defaultEndpoint, env)
+		got := parseEndpoint()
+		if defaultEndpoint != got {
+			t.Fatalf("want %v but got %v", defaultEndpoint, got)
 		}
 	})
 
@@ -97,6 +97,28 @@ func TestParseEndpoint(t *testing.T) {
 		endpoint := parseEndpoint()
 		if want != endpoint {
 			t.Fatalf("want %v but got %v", want, endpoint)
+		}
+	})
+}
+
+func TestParseConfig(t *testing.T) {
+	t.Run("gets the default", func(t *testing.T) {
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("INPUT_CONFIG", "")
+
+		got := parseConfig()
+		if defaultConfig != got {
+			t.Fatalf("want %v but got %v", defaultConfig, got)
+		}
+	})
+
+	t.Run("gets the set endpoint", func(t *testing.T) {
+		want := "path/to/config"
+		t.Setenv("INPUT_CONFIG", want)
+
+		got := parseConfig()
+		if want != got {
+			t.Fatalf("want %v but got %v", want, got)
 		}
 	})
 }

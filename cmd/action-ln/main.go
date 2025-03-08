@@ -22,14 +22,7 @@ func main() {
 	g := github.New(e.Token, e.Endpoint)
 	ctx := context.TODO()
 
-	f, err := g.GetFile(
-		ctx,
-		github.Repo{
-			Owner: github.User{Login: "nobe4"},
-			Repo:  "action-ln",
-		},
-		".github/ln-config.yaml",
-	)
+	f, err := g.GetFile(ctx, e.Repo, e.Config)
 	if err != nil {
 		panic(err)
 	}
