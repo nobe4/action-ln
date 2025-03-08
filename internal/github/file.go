@@ -23,11 +23,13 @@ func (g GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, erro
 
 	c := File{}
 	if _, err := g.req(ctx, http.MethodGet, path, nil, &c); err != nil {
-		return File{}, fmt.Errorf("failed to get user: %w", err)
+		// TODO: make constant error
+		return File{}, fmt.Errorf("failed to get file: %w", err)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(c.RawContent)
 	if err != nil {
+		// TODO: make constant error
 		return File{}, fmt.Errorf("failed to decode content: %w", err)
 	}
 
@@ -50,6 +52,7 @@ func (g GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, messa
 		SHA:     f.SHA,
 	})
 	if err != nil {
+		// TODO: make constant error
 		return File{}, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
@@ -67,6 +70,7 @@ func (g GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, messa
 		bytes.NewReader(body),
 		&out,
 	); err != nil {
+		// TODO: make constant error
 		return File{}, fmt.Errorf("failed to create branch: %w", err)
 	}
 
