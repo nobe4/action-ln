@@ -40,13 +40,14 @@ func New(now int64, id, key string) (string, error) {
 		return "", fmt.Errorf("%w: %w", errInvalidKey, err)
 	}
 
+	iat := now + iatDelta
+	exp := now + expDelta
+
 	header := encode(`{"typ":"JWT", "alg":"RS256"}`)
 	payload := encode(
 		fmt.Sprintf(
 			`{"iat":%d,"exp":%d,"iss":"%s"}`,
-			now+iatDelta,
-			now+expDelta,
-			id,
+			iat, exp, id,
 		),
 	)
 
