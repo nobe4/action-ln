@@ -22,15 +22,15 @@ inputs:
     required: false
     default: "${{ github.token }}"
 
-  app-id:
+  app_id:
     description: GitHub App ID to authenticate with
     required: false
 
-  app-private-key:
+  app_private_key:
     description: GitHub App Private Key to authenticate with
     required: false
 
-  app-install-id:
+  app_install_id:
     description: GitHub App installation ID to authenticate with
     required: false
 
