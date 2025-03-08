@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-go test -race -count 10 -cover ./...
+set -e
+
+go test -race -count 10 -cover ./... -coverprofile=coverage ./... | column -t -s '	'
+go tool cover -html=coverage -o coverage.html
