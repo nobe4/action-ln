@@ -5,6 +5,32 @@ import (
 	"testing"
 )
 
+func TestParseNoop(t *testing.T) {
+	tests := []struct {
+		noop string
+		want bool
+	}{
+		{noop: "", want: false},
+		{noop: "no", want: false},
+		{noop: "false", want: false},
+		{noop: "0", want: false},
+		{noop: "yes", want: false},
+		{noop: "1", want: false},
+		{noop: "true", want: true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.noop, func(t *testing.T) {
+			t.Setenv("INPUT_NOOP", test.noop)
+
+			got := parseNoop()
+			if got != test.want {
+				t.Fatalf("want %v but got %v", test.want, got)
+			}
+		})
+	}
+}
+
 func TestParseToken(t *testing.T) {
 	const want = "token"
 
