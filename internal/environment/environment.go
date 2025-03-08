@@ -37,6 +37,7 @@ type App struct {
 }
 
 type Environment struct {
+	Noop     bool        `json:"noop"`     // INPUT_NOOP
 	Token    string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
 	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
 	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
@@ -83,11 +84,16 @@ func Parse() (Environment, error) {
 		return e, fmt.Errorf("%w: %w", errInvalidEnvironment, err)
 	}
 
+	e.Noop = parseNoop()
 	e.Endpoint = parseEndpoint()
 	e.Config = parseConfig()
 	e.App = parseApp()
 
 	return e, nil
+}
+
+func parseNoop() bool {
+	return os.Getenv("INPUT_NOOP") == "true"
 }
 
 func parseToken() (string, error) {
