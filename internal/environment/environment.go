@@ -149,7 +149,3 @@ func parseApp() App {
 		InstallID:  os.Getenv("INPUT_APP_INSTALL_ID"),
 	}
 }
-
-func (a App) Valid() bool {
-	return a.ID != "" && a.PrivateKey != "" && a.InstallID != ""
-}
