@@ -7,11 +7,15 @@ configurations.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/nobe4/action-ln/internal/github"
 )
 
 var errInvalidYAML = errors.New("invalid YAML")
@@ -26,12 +30,12 @@ type RawLink struct {
 }
 
 type Config struct {
-	Links []Link `yaml:"links"`
+	Links []Link `json:"links" yaml:"links"`
 }
 
 type Link struct {
-	From File `yaml:"from"`
-	To   File `yaml:"to"`
+	From github.File `json:"from" yaml:"from"`
+	To   github.File `json:"to"   yaml:"to"`
 }
 
 func Parse(r io.Reader) (Config, error) {
@@ -55,6 +59,17 @@ func Parse(r io.Reader) (Config, error) {
 	}
 
 	return c, nil
+}
+
+func (c Config) String() string {
+	out, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		fmt.Fprintln(os.Stdout, "Error marshaling config:", err)
+
+		return fmt.Sprintf("%#v", c)
+	}
+
+	return string(out)
 }
 
 func parseLink(raw RawLink) (Link, error) {
