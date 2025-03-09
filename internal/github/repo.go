@@ -15,6 +15,10 @@ type Repo struct {
 
 var errGetRepo = errors.New("failed to get repo")
 
+func (r Repo) Equal(o Repo) bool {
+	return r.Repo == o.Repo && r.Owner.Login == o.Owner.Login
+}
+
 // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g *GitHub) GetDefaultBranch(ctx context.Context, repo Repo) (string, error) {
 	path := fmt.Sprintf("/repos/%s/%s", repo.Owner.Login, repo.Repo)

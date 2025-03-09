@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"testing"
+
+	"github.com/nobe4/action-ln/internal/github"
 )
 
 func TestParseFileMap(t *testing.T) {
@@ -10,24 +12,42 @@ func TestParseFileMap(t *testing.T) {
 
 	tests := []struct {
 		input map[string]any
-		want  File
+		want  github.File
 	}{
 		{},
 		{
 			input: map[string]any{"path": "z"},
-			want:  File{Path: "z"},
+			want:  github.File{Path: "z"},
 		},
 		{
 			input: map[string]any{"repo": "x", "path": "z"},
-			want:  File{Repo: "x", Path: "z"},
+			want: github.File{
+				Repo: github.Repo{
+					Repo: "x",
+				},
+				Path: "z",
+			},
 		},
 		{
 			input: map[string]any{"repo": "x", "owner": "y", "path": "z", "ref": "r"},
-			want:  File{Owner: "y", Repo: "x", Path: "z", Ref: "r"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "y"},
+					Repo:  "x",
+				},
+				Path: "z",
+				Ref:  "r",
+			},
 		},
 		{
 			input: map[string]any{"repo": "x/y", "path": "z"},
-			want:  File{Repo: "y", Owner: "x", Path: "z"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "x"},
+					Repo:  "y",
+				},
+				Path: "z",
+			},
 		},
 	}
 
@@ -54,42 +74,70 @@ func TestParseFileString(t *testing.T) {
 
 	tests := []struct {
 		input string
-		want  File
+		want  github.File
 	}{
 		{
 			input: "https://github.com/owner/repo/blob/ref/a",
-			want:  File{Owner: "owner", Repo: "repo", Path: "a", Ref: "ref"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: "a",
+				Ref:  "ref",
+			},
 		},
 		{
 			input: "https://github.com/owner/repo/blob/ref/" + complexPath,
-			want:  File{Owner: "owner", Repo: "repo", Path: complexPath, Ref: "ref"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: complexPath,
+				Ref:  "ref",
+			},
 		},
 
 		{
 			input: "owner/repo/blob/ref/a",
-			want:  File{Owner: "owner", Repo: "repo", Path: "a", Ref: "ref"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: "a",
+				Ref:  "ref",
+			},
 		},
 		{
 			input: "owner/repo/blob/ref/" + complexPath,
-			want:  File{Owner: "owner", Repo: "repo", Path: complexPath, Ref: "ref"},
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: complexPath,
+				Ref:  "ref",
+			},
 		},
 
 		{
 			input: "a@ref",
-			want:  File{Path: "a", Ref: "ref"},
+			want:  github.File{Path: "a", Ref: "ref"},
 		},
 		{
 			input: complexPath + "@ref",
-			want:  File{Path: complexPath, Ref: "ref"},
+			want:  github.File{Path: complexPath, Ref: "ref"},
 		},
 
 		{
 			input: "a",
-			want:  File{Path: "a"},
+			want:  github.File{Path: "a"},
 		},
 		{
 			input: complexPath,
-			want:  File{Path: complexPath},
+			want:  github.File{Path: complexPath},
 		},
 	}
 
