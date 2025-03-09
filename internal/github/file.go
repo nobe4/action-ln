@@ -59,10 +59,7 @@ func (g *GitHub) GetFile(ctx context.Context, f *File) error {
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents
-// TODO: pass a file instead of repo + file.
-// TODO: check that we're creating a new file correctly with the updated commit
-// and sha.
-func (g *GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, message string) (File, error) {
+func (g *GitHub) UpdateFile(ctx context.Context, f File, branch, message string) (File, error) {
 	body, err := json.Marshal(struct {
 		Message string `json:"message"`
 		Content string `json:"content"`
@@ -78,24 +75,25 @@ func (g *GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, mess
 		return File{}, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
-	// NOTE: The response wrapes the content in an extra `{ "content": {} }`.
-	// It's not technically the same as the File we get from GetFile. For
-	// this purpose it's enough, we can reinject the `Content` value after.
+	// NOTE: Non-trivial update.
+	// The response for this call will update the file directly. It's fine
+	// because we want the new `SHA`. The `Name`, and `Path` won't change
+	// because we only update the content of the file. Also, since we're passing
+	// a file value, the original file won't get changed; we are creating a new
+	// file.
 	out := struct {
 		File File `json:"content"`
-	}{}
+	}{File: f}
 
 	if _, err := g.req(
 		ctx,
 		http.MethodPut,
-		fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, f.Path),
+		f.ContentURL(),
 		bytes.NewReader(body),
 		&out,
 	); err != nil {
 		return File{}, fmt.Errorf("%w: %w", ErrUpdateFile, err)
 	}
-
-	out.File.Content = f.Content
 
 	return out.File, nil
 }
