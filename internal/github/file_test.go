@@ -56,10 +56,12 @@ func TestGetFile(t *testing.T) {
 func TestUpdateFile(t *testing.T) {
 	t.Parallel()
 
-	content := File{
+	f := File{
+		Repo:    repo,
 		Content: content,
 		SHA:     sha,
 		Path:    filePath,
+		Ref:     branch,
 	}
 
 	t.Run("fails", func(t *testing.T) {
@@ -69,7 +71,7 @@ func TestUpdateFile(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		})
 
-		_, err := g.UpdateFile(t.Context(), repo, content, branch, message)
+		_, err := g.UpdateFile(t.Context(), f, branch, message)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -91,7 +93,7 @@ func TestUpdateFile(t *testing.T) {
 			fmt.Fprintf(w, `{"content": {"sha":"%s"}}`, newSha)
 		})
 
-		c, err := g.UpdateFile(t.Context(), repo, content, branch, message)
+		c, err := g.UpdateFile(t.Context(), f, branch, message)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -100,8 +102,13 @@ func TestUpdateFile(t *testing.T) {
 			t.Fatalf("expected new sha to be '%s' but got '%s'", newSha, c.SHA)
 		}
 
-		if c.Content != content.Content {
-			t.Fatalf("expected content to be '%s' but got '%s'", content.Content, c.Content)
+		if c.Content != f.Content {
+			t.Fatalf("expected content to be '%s' but got '%s'", f.Content, c.Content)
+		}
+
+		// Ensures that the old file stays unchanged.
+		if c.SHA == f.SHA {
+			t.Fatal("expected the original file not to change, but it did")
 		}
 	})
 }
