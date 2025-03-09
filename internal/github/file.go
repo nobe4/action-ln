@@ -15,12 +15,12 @@ type File struct {
 	Name    string `json:"name"`
 	Path    string `json:"path"`
 	Content string `json:"content"`
-	SHA     string `json:"sha"`
+	SHA     string `json:"sha"` // Blob hash.
 
 	// Content from the config
 	Repo   Repo   `json:"repo"`
 	Ref    string `json:"ref"`
-	Commit string `json:"commit"`
+	Commit string `json:"commit"` // Commit hash.
 }
 
 var (
@@ -33,24 +33,29 @@ func (f File) Equal(o File) bool {
 	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit
 }
 
+func (f File) ContentURL() string {
+	return fmt.Sprintf("/repos/%s/%s/contents/%s", f.Repo.Owner.Login, f.Repo.Repo, f.Path)
+}
+
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
-// TODO: pass a file instead of repo + path.
-func (g *GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, error) {
-	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
-
-	c := File{}
-	if _, err := g.req(ctx, http.MethodGet, path, nil, &c); err != nil {
-		return File{}, fmt.Errorf("%w: %w", ErrGetFile, err)
+func (g *GitHub) GetFile(ctx context.Context, f *File) error {
+	if _, err := g.req(ctx,
+		http.MethodGet,
+		f.ContentURL(),
+		nil,
+		&f,
+	); err != nil {
+		return fmt.Errorf("%w: %w", ErrGetFile, err)
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(c.Content)
+	decoded, err := base64.StdEncoding.DecodeString(f.Content)
 	if err != nil {
-		return File{}, fmt.Errorf("%w: %w", ErrDecodeFile, err)
+		return fmt.Errorf("%w: %w", ErrDecodeFile, err)
 	}
 
-	c.Content = string(decoded)
+	f.Content = string(decoded)
 
-	return c, nil
+	return nil
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents

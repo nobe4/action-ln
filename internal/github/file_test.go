@@ -26,8 +26,8 @@ func TestGetFile(t *testing.T) {
 			fmt.Fprintln(w, `{"content": "_not base64"}`)
 		})
 
-		_, err := g.GetFile(t.Context(), repo, filePath)
-		if !errors.Is(err, base64.CorruptInputError(0)) {
+		f := File{Repo: repo, Path: filePath}
+		if err := g.GetFile(t.Context(), &f); !errors.Is(err, base64.CorruptInputError(0)) {
 			t.Fatalf("expected base64 error, got %v", err)
 		}
 	})
@@ -41,13 +41,14 @@ func TestGetFile(t *testing.T) {
 			fmt.Fprintf(w, `{"content": "%s"}`, base64Content)
 		})
 
-		c, err := g.GetFile(t.Context(), repo, filePath)
-		if err != nil {
+		f := File{Repo: repo, Path: filePath}
+
+		if err := g.GetFile(t.Context(), &f); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if c.Content != "ok" {
-			t.Fatalf("expected content to be 'ok' but got %s", c.Content)
+		if f.Content != "ok" {
+			t.Fatalf("expected content to be 'ok' but got %s", f.Content)
 		}
 	})
 }

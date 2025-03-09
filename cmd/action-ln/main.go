@@ -32,11 +32,14 @@ func main() {
 		panic(err)
 	}
 
-	f, err := g.GetFile(ctx, github.Repo{
-		Owner: github.User{Login: "frozen-fishsticks"},
-		Repo:  "action-ln-test-0",
-	}, "ln-config.yaml")
-	if err != nil {
+	f := github.File{
+		Repo: github.Repo{
+			Owner: github.User{Login: "frozen-fishsticks"},
+			Repo:  "action-ln-test-0",
+		},
+		Path: "ln-config.yaml",
+	}
+	if err = g.GetFile(ctx, &f); err != nil {
 		panic(err)
 	}
 
