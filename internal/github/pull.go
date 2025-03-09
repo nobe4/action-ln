@@ -22,7 +22,7 @@ type Pull struct {
 }
 
 // https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
-func (g GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull, error) {
+func (g *GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull, error) {
 	q := url.Values{
 		"base": []string{base},
 		"head": []string{repo.Owner.Login + ":" + head},
@@ -53,7 +53,7 @@ func (g GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pull
 }
 
 // https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request
-func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pullBody string) (Pull, error) {
+func (g *GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pullBody string) (Pull, error) {
 	body, err := json.Marshal(struct {
 		Title string `json:"title"`
 		Head  string `json:"head"`
@@ -83,7 +83,7 @@ func (g GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, pu
 	return pull, nil
 }
 
-func (g GitHub) GetOrCreatePull(ctx context.Context, repo Repo, base, head, title, body string) (Pull, error) {
+func (g *GitHub) GetOrCreatePull(ctx context.Context, repo Repo, base, head, title, body string) (Pull, error) {
 	p, err := g.GetPull(ctx, repo, base, head)
 	if err == nil {
 		return p, nil
