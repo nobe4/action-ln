@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
+	"github.com/nobe4/action-ln/internal/config"
 	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
 )
@@ -32,11 +34,17 @@ func main() {
 
 	f, err := g.GetFile(ctx, github.Repo{
 		Owner: github.User{Login: "frozen-fishsticks"},
-		Repo:  "action-ln-test-2",
-	}, "README.md")
+		Repo:  "action-ln-test-0",
+	}, "ln-config.yaml")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Fprintln(os.Stdout, f.Content)
+	c, err := config.Parse(strings.NewReader(f.Content))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintln(os.Stdout, "Content:", f.Content)
+	fmt.Fprintln(os.Stdout, "Config:", c)
 }
