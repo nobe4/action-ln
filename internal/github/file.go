@@ -11,11 +11,16 @@ import (
 )
 
 type File struct {
-	Name       string `json:"name"`
-	Path       string `json:"path"`
-	RawContent string `json:"content"`
-	SHA        string `json:"sha"`
-	Content    string
+	// Content from the API
+	Name    string `json:"name"`
+	Path    string `json:"path"`
+	Content string `json:"content"`
+	SHA     string `json:"sha"`
+
+	// Content from the config
+	Repo   Repo   `json:"repo"`
+	Ref    string `json:"ref"`
+	Commit string `json:"commit"`
 }
 
 var (
@@ -24,7 +29,12 @@ var (
 	ErrDecodeFile = errors.New("failed to decode file")
 )
 
+func (f File) Equal(o File) bool {
+	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit
+}
+
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
+// TODO: pass a file instead of repo + path.
 func (g *GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, error) {
 	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
@@ -33,7 +43,7 @@ func (g *GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, err
 		return File{}, fmt.Errorf("%w: %w", ErrGetFile, err)
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(c.RawContent)
+	decoded, err := base64.StdEncoding.DecodeString(c.Content)
 	if err != nil {
 		return File{}, fmt.Errorf("%w: %w", ErrDecodeFile, err)
 	}
@@ -44,6 +54,9 @@ func (g *GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, err
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents
+// TODO: pass a file instead of repo + file.
+// TODO: check that we're creating a new file correctly with the updated commit
+// and sha.
 func (g *GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, message string) (File, error) {
 	body, err := json.Marshal(struct {
 		Message string `json:"message"`
