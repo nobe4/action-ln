@@ -41,7 +41,7 @@ type User struct {
 	Login string `json:"login"`
 }
 
-func (g GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) (int, error) {
+func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) (int, error) {
 	path = g.endpoint + path
 
 	req, err := http.NewRequestWithContext(ctx, method, path, body)

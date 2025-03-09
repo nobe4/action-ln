@@ -27,7 +27,7 @@ type Branch struct {
 }
 
 // https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#get-a-branch
-func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch, error) {
+func (g *GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch, error) {
 	b := Branch{}
 
 	path := fmt.Sprintf("/repos/%s/%s/branches/%s", repo.Owner.Login, repo.Repo, branch)
@@ -46,7 +46,7 @@ func (g GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch
 }
 
 // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#create-a-reference
-func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string) (Branch, error) {
+func (g *GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string) (Branch, error) {
 	b := Branch{
 		Name: branch,
 		Commit: Commit{
@@ -80,7 +80,7 @@ func (g GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string)
 	return b, nil
 }
 
-func (g GitHub) GetOrCreateBranch(ctx context.Context, repo Repo, branch, sha string) (Branch, error) {
+func (g *GitHub) GetOrCreateBranch(ctx context.Context, repo Repo, branch, sha string) (Branch, error) {
 	b, err := g.GetBranch(ctx, repo, branch)
 	if err == nil {
 		return b, nil

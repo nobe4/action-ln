@@ -25,7 +25,7 @@ var (
 )
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
-func (g GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, error) {
+func (g *GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, error) {
 	path = fmt.Sprintf("/repos/%s/%s/contents/%s", repo.Owner.Login, repo.Repo, path)
 
 	c := File{}
@@ -44,7 +44,7 @@ func (g GitHub) GetFile(ctx context.Context, repo Repo, path string) (File, erro
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents
-func (g GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, message string) (File, error) {
+func (g *GitHub) UpdateFile(ctx context.Context, repo Repo, f File, branch, message string) (File, error) {
 	body, err := json.Marshal(struct {
 		Message string `json:"message"`
 		Content string `json:"content"`
