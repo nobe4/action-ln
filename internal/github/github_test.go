@@ -41,7 +41,7 @@ func assertReq(t *testing.T, r *http.Request, method, path string, body []byte) 
 	}
 }
 
-func setup(t *testing.T, f func(w http.ResponseWriter, r *http.Request)) GitHub {
+func setup(t *testing.T, f func(w http.ResponseWriter, r *http.Request)) *GitHub {
 	t.Helper()
 
 	ts := httptest.NewServer(http.HandlerFunc(f))

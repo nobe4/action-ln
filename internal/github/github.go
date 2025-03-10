@@ -15,6 +15,10 @@ import (
 	"net/http"
 )
 
+type FileGetter interface {
+	GetFile(ctx context.Context, file *File) error
+}
+
 var (
 	ErrRequestFailed  = errors.New("request failed")
 	ErrMarshalRequest = errors.New("failed to marshal request")
@@ -30,8 +34,8 @@ type GitHub struct {
 	endpoint string
 }
 
-func New(endpoint string) GitHub {
-	return GitHub{
+func New(endpoint string) *GitHub {
+	return &GitHub{
 		client:   http.Client{},
 		endpoint: endpoint,
 	}
