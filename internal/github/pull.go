@@ -38,7 +38,7 @@ func (g *GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pul
 		"state": []string{"open"},
 	}
 
-	path := fmt.Sprintf("/repos/%s/%s/pulls?%s", repo.Owner.Login, repo.Repo, q.Encode())
+	path := fmt.Sprintf("/repos/%s/pulls?%s", repo, q.Encode())
 
 	pulls := []Pull{}
 	if _, err := g.req(ctx, http.MethodGet, path, nil, &pulls); err != nil {
@@ -69,7 +69,7 @@ func (g *GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, p
 		return Pull{}, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
-	path := fmt.Sprintf("/repos/%s/%s/pulls", repo.Owner.Login, repo.Repo)
+	path := fmt.Sprintf("/repos/%s/pulls", repo)
 
 	pull := Pull{}
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), &pull); err != nil {
