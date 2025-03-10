@@ -24,9 +24,10 @@ type File struct {
 }
 
 var (
-	ErrGetFile    = errors.New("failed to get file")
-	ErrUpdateFile = errors.New("failed to create/update file")
-	ErrDecodeFile = errors.New("failed to decode file")
+	ErrGetFile     = errors.New("failed to get file")
+	ErrMissingFile = errors.New("file does not exist")
+	ErrUpdateFile  = errors.New("failed to create/update file")
+	ErrDecodeFile  = errors.New("failed to decode file")
 )
 
 func (f File) Equal(o File) bool {
@@ -39,12 +40,16 @@ func (f File) ContentURL() string {
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g *GitHub) GetFile(ctx context.Context, f *File) error {
-	if _, err := g.req(ctx,
+	if status, err := g.req(ctx,
 		http.MethodGet,
 		f.ContentURL(),
 		nil,
 		&f,
 	); err != nil {
+		if status == http.StatusNotFound {
+			return fmt.Errorf("%w: %w", ErrMissingFile, err)
+		}
+
 		return fmt.Errorf("%w: %w", ErrGetFile, err)
 	}
 
