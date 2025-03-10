@@ -28,24 +28,13 @@ func parseFile(rawFile any) (github.File, error) {
 func parseFileMap(rawFile map[string]any) (github.File, error) {
 	f := github.File{}
 
-	f.Repo = github.Repo{
-		Owner: github.User{
-			Login: getMapKey(rawFile, "owner"),
-		},
-		Repo: getMapKey(rawFile, "repo"),
-	}
+	f.Repo = parseRepoString(
+		getMapKey(rawFile, "owner"),
+		getMapKey(rawFile, "repo"),
+	)
+
 	f.Path = getMapKey(rawFile, "path")
 	f.Ref = getMapKey(rawFile, "ref")
-
-	if strings.Contains(f.Repo.Repo, "/") {
-		parts := strings.Split(f.Repo.Repo, "/")
-		if len(parts) != 2 { //nolint:all // TODO: log that the repo is badly formatted
-			// don't do anything
-		}
-
-		f.Repo.Owner.Login = parts[0]
-		f.Repo.Repo = parts[1]
-	}
 
 	return f, nil
 }
