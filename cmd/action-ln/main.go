@@ -33,5 +33,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	ln.Run(ctx, e, g)
+	if err := ln.Run(ctx, e, g); err != nil {
+		fmt.Fprintf(os.Stdout, "Error running action-ln\n%v\n", err)
+		os.Exit(1)
+	}
 }
