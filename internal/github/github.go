@@ -61,7 +61,7 @@ func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, o
 	// All the 2XX codes
 	success := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
 	if !success {
-		return res.StatusCode, fmt.Errorf("%w: %s", ErrRequestFailed, res.Status)
+		return res.StatusCode, fmt.Errorf("%w (%s %s): %s", ErrRequestFailed, method, path, res.Status)
 	}
 
 	if out != nil {
