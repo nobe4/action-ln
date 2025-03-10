@@ -7,6 +7,7 @@ import (
 
 	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/ln"
 )
 
 func main() {
@@ -14,7 +15,8 @@ func main() {
 
 	e, err := environment.Parse()
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stdout, "Error parsing environment\n%v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Fprintln(os.Stdout, "Environment:", e)
@@ -27,28 +29,9 @@ func main() {
 		e.App.PrivateKey,
 		e.App.InstallID,
 	); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stdout, "Error authenticating\n%v\n", err)
+		os.Exit(1)
 	}
 
-	f := github.File{
-		Repo: github.Repo{
-			Owner: github.User{Login: "frozen-fishsticks"},
-			Repo:  "action-ln-test-1",
-		},
-		Path: "README.md",
-	}
-
-	if err = g.GetFile(ctx, &f); err != nil {
-		panic(err)
-	}
-
-	f.Content += "sup\n"
-
-	f2, err := g.UpdateFile(ctx, f, "main", "test #125")
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Fprintf(os.Stdout, "File: %+v\n", f)
-	fmt.Fprintf(os.Stdout, "File2: %+v\n", f2)
+	ln.Run(ctx, e, g)
 }
