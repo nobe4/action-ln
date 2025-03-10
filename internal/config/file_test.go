@@ -77,13 +77,13 @@ func TestParseFileString(t *testing.T) {
 		want  github.File
 	}{
 		{
-			input: "https://github.com/owner/repo/blob/ref/a",
+			input: "https://github.com/owner/repo/blob/ref/path",
 			want: github.File{
 				Repo: github.Repo{
 					Owner: github.User{Login: "owner"},
 					Repo:  "repo",
 				},
-				Path: "a",
+				Path: "path",
 				Ref:  "ref",
 			},
 		},
@@ -100,13 +100,13 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "owner/repo/blob/ref/a",
+			input: "owner/repo/blob/ref/path",
 			want: github.File{
 				Repo: github.Repo{
 					Owner: github.User{Login: "owner"},
 					Repo:  "repo",
 				},
-				Path: "a",
+				Path: "path",
 				Ref:  "ref",
 			},
 		},
@@ -123,8 +123,31 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "a@ref",
-			want:  github.File{Path: "a", Ref: "ref"},
+			input: "owner/repo:path@ref",
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: "path",
+				Ref:  "ref",
+			},
+		},
+		{
+			input: "owner/repo:" + complexPath + "@ref",
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: complexPath,
+				Ref:  "ref",
+			},
+		},
+
+		{
+			input: "path@ref",
+			want:  github.File{Path: "path", Ref: "ref"},
 		},
 		{
 			input: complexPath + "@ref",
@@ -132,8 +155,8 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "a",
-			want:  github.File{Path: "a"},
+			input: "path",
+			want:  github.File{Path: "path"},
 		},
 		{
 			input: complexPath,
