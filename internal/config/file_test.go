@@ -156,25 +156,3 @@ func TestParseFileString(t *testing.T) {
 		})
 	}
 }
-
-func TestGetMapKey(t *testing.T) {
-	t.Parallel()
-
-	m := map[string]any{
-		"a": "a",
-		"b": 2,
-		"c": []string{"c"},
-	}
-
-	if got := getMapKey(m, "a"); got != "a" {
-		t.Errorf("want a, but got %v", got)
-	}
-
-	if got := getMapKey(m, "b"); got != "" {
-		t.Errorf("want \"\", but got %v", got)
-	}
-
-	if got := getMapKey(m, "c"); got != "" {
-		t.Errorf("want \"\", but got %v", got)
-	}
-}

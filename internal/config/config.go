@@ -59,3 +59,15 @@ func (c Config) String() string {
 
 	return string(out)
 }
+
+func getMapKey(m map[string]any, k string) string {
+	if v, ok := m[k]; ok {
+		if vs, ok := v.(string); ok {
+			return vs
+		} else { //nolint:all // TODO: log that the key is not a string
+		}
+	} else { //nolint:all // TODO: log that the key is not found
+	}
+
+	return ""
+}

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/nobe4/action-ln/internal/github"
 )
@@ -108,17 +107,5 @@ func parseFileString(s string) (github.File, error) {
 		return github.File{Path: m[1]}, nil
 	}
 
-	return github.File{}, fmt.Errorf("%w: %v", ErrInvalidFileFormat, s)
-}
-
-func getMapKey(m map[string]any, k string) string {
-	if v, ok := m[k]; ok {
-		if vs, ok := v.(string); ok {
-			return vs
-		} else { //nolint:all // TODO: log that the key is not a string
-		}
-	} else { //nolint:all // TODO: log that the key is not found
-	}
-
-	return ""
+	return github.File{}, fmt.Errorf("%w: '%v'", ErrInvalidFileFormat, s)
 }
