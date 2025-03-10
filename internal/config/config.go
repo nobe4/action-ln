@@ -23,8 +23,7 @@ type RawConfig struct {
 }
 
 type Config struct {
-	Links       []Link            `json:"links"         yaml:"links"`
-	LinksByRepo map[string][]Link `json:"links_by_repo"`
+	Links []Link `json:"links" yaml:"links"`
 }
 
 func Parse(r io.Reader) (Config, error) {
