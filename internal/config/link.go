@@ -24,6 +24,23 @@ type Link struct {
 	To   github.File `json:"to"   yaml:"to"`
 }
 
+// TODO: make all methods members of (c *Config) so they have access to the
+// defaults.
+func parseLinks(raw []RawLink) ([]Link, error) {
+	links := []Link{}
+
+	for _, l := range raw {
+		link, err := parseLink(l)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	return links, nil
+}
+
 func parseLink(raw RawLink) (Link, error) {
 	from, err := parseFile(raw.From)
 	if err != nil {
@@ -38,6 +55,7 @@ func parseLink(raw RawLink) (Link, error) {
 	return Link{From: from, To: to}, nil
 }
 
+// TODO: remove this once the defaults are set.
 func (l *Link) SetDefaults(repo github.Repo) {
 	if l.From.Repo.Empty() {
 		l.From.Repo = repo

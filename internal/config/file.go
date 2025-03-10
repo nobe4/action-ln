@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/nobe4/action-ln/internal/github"
 )
@@ -29,24 +28,13 @@ func parseFile(rawFile any) (github.File, error) {
 func parseFileMap(rawFile map[string]any) (github.File, error) {
 	f := github.File{}
 
-	f.Repo = github.Repo{
-		Owner: github.User{
-			Login: getMapKey(rawFile, "owner"),
-		},
-		Repo: getMapKey(rawFile, "repo"),
-	}
+	f.Repo = parseRepoString(
+		getMapKey(rawFile, "owner"),
+		getMapKey(rawFile, "repo"),
+	)
+
 	f.Path = getMapKey(rawFile, "path")
 	f.Ref = getMapKey(rawFile, "ref")
-
-	if strings.Contains(f.Repo.Repo, "/") {
-		parts := strings.Split(f.Repo.Repo, "/")
-		if len(parts) != 2 { //nolint:all // TODO: log that the repo is badly formatted
-			// don't do anything
-		}
-
-		f.Repo.Owner.Login = parts[0]
-		f.Repo.Repo = parts[1]
-	}
 
 	return f, nil
 }
@@ -89,8 +77,8 @@ func parseFileString(s string) (github.File, error) {
 				Owner: github.User{Login: m[1]},
 				Repo:  m[2],
 			},
-			Ref:  m[3],
-			Path: m[4],
+			Path: m[3],
+			Ref:  m[4],
 		}, nil
 	}
 
@@ -108,17 +96,5 @@ func parseFileString(s string) (github.File, error) {
 		return github.File{Path: m[1]}, nil
 	}
 
-	return github.File{}, fmt.Errorf("%w: %v", ErrInvalidFileFormat, s)
-}
-
-func getMapKey(m map[string]any, k string) string {
-	if v, ok := m[k]; ok {
-		if vs, ok := v.(string); ok {
-			return vs
-		} else { //nolint:all // TODO: log that the key is not a string
-		}
-	} else { //nolint:all // TODO: log that the key is not found
-	}
-
-	return ""
+	return github.File{}, fmt.Errorf("%w: '%v'", ErrInvalidFileFormat, s)
 }

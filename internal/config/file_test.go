@@ -77,13 +77,13 @@ func TestParseFileString(t *testing.T) {
 		want  github.File
 	}{
 		{
-			input: "https://github.com/owner/repo/blob/ref/a",
+			input: "https://github.com/owner/repo/blob/ref/path",
 			want: github.File{
 				Repo: github.Repo{
 					Owner: github.User{Login: "owner"},
 					Repo:  "repo",
 				},
-				Path: "a",
+				Path: "path",
 				Ref:  "ref",
 			},
 		},
@@ -100,13 +100,13 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "owner/repo/blob/ref/a",
+			input: "owner/repo/blob/ref/path",
 			want: github.File{
 				Repo: github.Repo{
 					Owner: github.User{Login: "owner"},
 					Repo:  "repo",
 				},
-				Path: "a",
+				Path: "path",
 				Ref:  "ref",
 			},
 		},
@@ -123,8 +123,31 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "a@ref",
-			want:  github.File{Path: "a", Ref: "ref"},
+			input: "owner/repo:path@ref",
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: "path",
+				Ref:  "ref",
+			},
+		},
+		{
+			input: "owner/repo:" + complexPath + "@ref",
+			want: github.File{
+				Repo: github.Repo{
+					Owner: github.User{Login: "owner"},
+					Repo:  "repo",
+				},
+				Path: complexPath,
+				Ref:  "ref",
+			},
+		},
+
+		{
+			input: "path@ref",
+			want:  github.File{Path: "path", Ref: "ref"},
 		},
 		{
 			input: complexPath + "@ref",
@@ -132,8 +155,8 @@ func TestParseFileString(t *testing.T) {
 		},
 
 		{
-			input: "a",
-			want:  github.File{Path: "a"},
+			input: "path",
+			want:  github.File{Path: "path"},
 		},
 		{
 			input: complexPath,
@@ -154,27 +177,5 @@ func TestParseFileString(t *testing.T) {
 				t.Errorf("want %+v, but got %+v", test.want, got)
 			}
 		})
-	}
-}
-
-func TestGetMapKey(t *testing.T) {
-	t.Parallel()
-
-	m := map[string]any{
-		"a": "a",
-		"b": 2,
-		"c": []string{"c"},
-	}
-
-	if got := getMapKey(m, "a"); got != "a" {
-		t.Errorf("want a, but got %v", got)
-	}
-
-	if got := getMapKey(m, "b"); got != "" {
-		t.Errorf("want \"\", but got %v", got)
-	}
-
-	if got := getMapKey(m, "c"); got != "" {
-		t.Errorf("want \"\", but got %v", got)
 	}
 }
