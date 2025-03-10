@@ -19,6 +19,19 @@ const (
 func TestGetFile(t *testing.T) {
 	t.Parallel()
 
+	t.Run("fails to get the file", func(t *testing.T) {
+		t.Parallel()
+
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		})
+
+		f := File{Repo: repo, Path: filePath}
+		if err := g.GetFile(t.Context(), &f); !errors.Is(err, ErrMissingFile) {
+			t.Fatalf("expected missing file error, got %v", err)
+		}
+	})
+
 	t.Run("fails to decode the content", func(t *testing.T) {
 		t.Parallel()
 
