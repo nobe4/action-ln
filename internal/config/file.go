@@ -77,8 +77,8 @@ func parseFileString(s string) (github.File, error) {
 				Owner: github.User{Login: m[1]},
 				Repo:  m[2],
 			},
-			Ref:  m[3],
-			Path: m[4],
+			Path: m[3],
+			Ref:  m[4],
 		}, nil
 	}
 
