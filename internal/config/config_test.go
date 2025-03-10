@@ -6,20 +6,20 @@ import (
 
 	"github.com/nobe4/dent.go"
 
+	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
 )
 
-func TestParse(t *testing.T) {
+func TestConfigParse(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		input string
+		env   environment.Environment
 		want  Config
 	}{
 		{
-			input: dent.DedentString(`
-links: []
-`),
+			input: `links: []`,
 			want: Config{
 				Links: []Link{},
 			},
@@ -70,6 +70,35 @@ links:
 		},
 
 		{
+			input: `links: []`,
+			env: environment.Environment{
+				Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+			},
+			want: Config{
+				Defaults: Defaults{
+					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+				},
+				Links: []Link{},
+			},
+		},
+
+		{
+			input: dent.DedentString(`
+defaults:
+  repo: a/b
+`),
+			env: environment.Environment{
+				Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"},
+			},
+			want: Config{
+				Defaults: Defaults{
+					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+				},
+				Links: []Link{},
+			},
+		},
+
+		{
 			input: dent.DedentString(`
 defaults:
   repo: a/b
@@ -101,7 +130,7 @@ defaults:
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
-			got, err := Parse(strings.NewReader(test.input))
+			got, err := Parse(strings.NewReader(test.input), test.env)
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}

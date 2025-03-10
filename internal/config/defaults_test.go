@@ -7,7 +7,7 @@ import (
 	"github.com/nobe4/action-ln/internal/github"
 )
 
-func TestParseDefaults(t *testing.T) {
+func TestDefaultsParse(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -51,11 +51,40 @@ func TestParseDefaults(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", test.input), func(t *testing.T) {
 			t.Parallel()
 
-			got := parseDefaults(test.input)
+			d := &Defaults{}
+			d.parse(test.input)
 
-			if !test.want.Equal(got) {
-				t.Errorf("want %+v, but got %+v", test.want, got)
+			if !test.want.Equal(d) {
+				t.Errorf("want %+v, but got %+v", test.want, d)
 			}
 		})
 	}
+
+	t.Run("overwite existing values", func(t *testing.T) {
+		t.Parallel()
+
+		input := map[string]any{
+			"repo": "a/b",
+		}
+
+		want := &Defaults{
+			Repo: github.Repo{
+				Owner: github.User{Login: "a"},
+				Repo:  "b",
+			},
+		}
+
+		d := &Defaults{
+			Repo: github.Repo{
+				Owner: github.User{Login: "x"},
+				Repo:  "y",
+			},
+		}
+
+		d.parse(input)
+
+		if !d.Equal(want) {
+			t.Errorf("want %+v, but got %+v", want, d)
+		}
+	})
 }

@@ -14,6 +14,8 @@ import (
 	"os"
 
 	"github.com/goccy/go-yaml"
+
+	"github.com/nobe4/action-ln/internal/environment"
 )
 
 var errInvalidYAML = errors.New("invalid YAML")
@@ -28,7 +30,7 @@ type Config struct {
 	Links    []Link   `json:"links"    yaml:"links"`
 }
 
-func Parse(r io.Reader) (Config, error) {
+func Parse(r io.Reader, e environment.Environment) (Config, error) {
 	rawC := RawConfig{}
 
 	if err := yaml.
@@ -41,7 +43,8 @@ func Parse(r io.Reader) (Config, error) {
 
 	var err error
 
-	c.Defaults = parseDefaults(rawC.Defaults)
+	c.Defaults.Repo = e.Repo
+	c.Defaults.parse(rawC.Defaults)
 
 	c.Links, err = parseLinks(rawC.Links)
 	if err != nil {
