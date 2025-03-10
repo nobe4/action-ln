@@ -34,15 +34,15 @@ func (f File) Equal(o File) bool {
 	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit
 }
 
-func (f File) ContentURL() string {
-	return fmt.Sprintf("/repos/%s/%s/contents/%s", f.Repo.Owner.Login, f.Repo.Repo, f.Path)
+func (f File) APIPath() string {
+	return fmt.Sprintf("/repos/%s/contents/%s", f.Repo, f.Path)
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g *GitHub) GetFile(ctx context.Context, f *File) error {
 	if status, err := g.req(ctx,
 		http.MethodGet,
-		f.ContentURL(),
+		f.APIPath(),
 		nil,
 		&f,
 	); err != nil {
@@ -93,7 +93,7 @@ func (g *GitHub) UpdateFile(ctx context.Context, f File, branch, message string)
 	if _, err := g.req(
 		ctx,
 		http.MethodPut,
-		f.ContentURL(),
+		f.APIPath(),
 		bytes.NewReader(body),
 		&out,
 	); err != nil {

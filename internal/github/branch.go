@@ -30,7 +30,7 @@ type Branch struct {
 func (g *GitHub) GetBranch(ctx context.Context, repo Repo, branch string) (Branch, error) {
 	b := Branch{}
 
-	path := fmt.Sprintf("/repos/%s/%s/branches/%s", repo.Owner.Login, repo.Repo, branch)
+	path := fmt.Sprintf("/repos/%s/branches/%s", repo, branch)
 
 	if status, err := g.req(ctx, http.MethodGet, path, nil, &b); err != nil {
 		if status == http.StatusNotFound {
@@ -54,7 +54,7 @@ func (g *GitHub) CreateBranch(ctx context.Context, repo Repo, branch, sha string
 		},
 	}
 
-	path := fmt.Sprintf("/repos/%s/%s/git/refs", repo.Owner.Login, repo.Repo)
+	path := fmt.Sprintf("/repos/%s/git/refs", repo)
 
 	body, err := json.Marshal(struct {
 		Ref string `json:"ref"`

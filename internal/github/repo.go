@@ -23,13 +23,19 @@ func (r Repo) Empty() bool {
 	return r.Repo == "" && r.Owner.Login == "" && r.DefaultBranch == ""
 }
 
-// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
-func (g *GitHub) GetDefaultBranch(ctx context.Context, repo Repo) (string, error) {
-	path := fmt.Sprintf("/repos/%s/%s", repo.Owner.Login, repo.Repo)
+func (r Repo) String() string {
+	return fmt.Sprintf("%s/%s", r.Owner.Login, r.Repo)
+}
 
-	if _, err := g.req(ctx, http.MethodGet, path, nil, &repo); err != nil {
+func (r Repo) APIPath() string {
+	return fmt.Sprintf("/repos/%s", r)
+}
+
+// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
+func (g *GitHub) GetDefaultBranch(ctx context.Context, r Repo) (string, error) {
+	if _, err := g.req(ctx, http.MethodGet, r.APIPath(), nil, &r); err != nil {
 		return "", fmt.Errorf("%w: %w", errGetRepo, err)
 	}
 
-	return repo.DefaultBranch, nil
+	return r.DefaultBranch, nil
 }
