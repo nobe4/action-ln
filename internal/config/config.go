@@ -19,11 +19,13 @@ import (
 var errInvalidYAML = errors.New("invalid YAML")
 
 type RawConfig struct {
-	Links []RawLink `yaml:"links"`
+	Defaults map[string]any `yaml:"defaults"`
+	Links    []RawLink      `yaml:"links"`
 }
 
 type Config struct {
-	Links []Link `json:"links" yaml:"links"`
+	Defaults Defaults `json:"defaults" yaml:"defaults"`
+	Links    []Link   `json:"links"    yaml:"links"`
 }
 
 func Parse(r io.Reader) (Config, error) {
@@ -37,13 +39,14 @@ func Parse(r io.Reader) (Config, error) {
 
 	c := Config{}
 
-	for _, l := range rawC.Links {
-		link, err := parseLink(l)
-		if err != nil {
-			return Config{}, err
-		}
+	var err error
 
-		c.Links = append(c.Links, link)
+	c.Defaults = parseDefaults(rawC.Defaults)
+
+	c.Links, err = parseLinks(rawC.Links)
+	if err != nil {
+		// TODO: add error
+		return Config{}, err
 	}
 
 	return c, nil
