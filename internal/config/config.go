@@ -43,7 +43,7 @@ func (c *Config) Parse(r io.Reader) error {
 
 	c.Defaults.parse(rawC.Defaults)
 
-	if c.Links, err = parseLinks(rawC.Links); err != nil {
+	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
 		// TODO: add error
 		return err
 	}
