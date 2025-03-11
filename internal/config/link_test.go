@@ -94,7 +94,7 @@ func TestPopulate(t *testing.T) {
 
 		l := &Link{}
 
-		if err := l.Populate(t.Context(), f); !errors.Is(err, errMissingFrom) {
+		if err := l.populate(t.Context(), f); !errors.Is(err, errMissingFrom) {
 			t.Fatalf("expected error %v, got %v", errMissingFrom, err)
 		}
 	})
@@ -116,7 +116,7 @@ func TestPopulate(t *testing.T) {
 			From: github.File{Path: "from"},
 		}
 
-		if err := l.Populate(t.Context(), f); !errors.Is(err, errMissingTo) {
+		if err := l.populate(t.Context(), f); !errors.Is(err, errMissingTo) {
 			t.Fatalf("expected error %v, got %v", errMissingTo, err)
 		}
 	})
@@ -141,7 +141,7 @@ func TestPopulate(t *testing.T) {
 			To:   github.File{Path: "to"},
 		}
 
-		if err := l.Populate(t.Context(), f); err != nil {
+		if err := l.populate(t.Context(), f); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
@@ -166,7 +166,7 @@ func TestPopulate(t *testing.T) {
 			To:   github.File{Path: "to"},
 		}
 
-		if err := l.Populate(t.Context(), f); err != nil {
+		if err := l.populate(t.Context(), f); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
