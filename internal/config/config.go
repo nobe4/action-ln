@@ -15,6 +15,7 @@ import (
 	"os"
 
 	"github.com/goccy/go-yaml"
+
 	"github.com/nobe4/action-ln/internal/github"
 )
 

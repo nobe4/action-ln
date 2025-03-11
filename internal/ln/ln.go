@@ -25,7 +25,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 	fmt.Fprintf(os.Stdout, "Configuration before: %s\n", c)
 
 	if err := c.Populate(ctx, g); err != nil {
-		return err
+		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
 	fmt.Fprintf(os.Stdout, "Configuration after: %s\n", c)
