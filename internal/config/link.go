@@ -40,23 +40,14 @@ func (c *Config) parseLinks(raw []RawLink) ([]Link, error) {
 }
 
 func (c *Config) parseLink(raw RawLink) (Link, error) {
-	from, err := parseFile(raw.From)
+	from, err := c.parseFile(raw.From)
 	if err != nil {
 		return Link{}, err
 	}
 
-	to, err := parseFile(raw.To)
+	to, err := c.parseFile(raw.To)
 	if err != nil {
 		return Link{}, err
-	}
-
-	// TODO: Move this into the file parsing
-	if from.Repo.Empty() {
-		from.Repo = c.Defaults.Repo
-	}
-
-	if to.Repo.Empty() {
-		to.Repo = c.Defaults.Repo
 	}
 
 	return Link{From: from, To: to}, nil
