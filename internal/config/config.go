@@ -7,6 +7,7 @@ configurations.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,9 +15,13 @@ import (
 	"os"
 
 	"github.com/goccy/go-yaml"
+	"github.com/nobe4/action-ln/internal/github"
 )
 
-var errInvalidYAML = errors.New("invalid YAML")
+var (
+	errInvalidYAML  = errors.New("invalid YAML")
+	errInvalidLinks = errors.New("invalid links")
+)
 
 type RawConfig struct {
 	Defaults map[string]any `yaml:"defaults"`
@@ -44,8 +49,19 @@ func (c *Config) Parse(r io.Reader) error {
 	c.Defaults.parse(rawC.Defaults)
 
 	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
-		// TODO: add error
-		return err
+		return fmt.Errorf("%w: %w", errInvalidLinks, err)
+	}
+
+	return nil
+}
+
+func (c *Config) Populate(ctx context.Context, g github.FileGetter) error {
+	for i, l := range c.Links {
+		if err := l.populate(ctx, g); err != nil {
+			return fmt.Errorf("failed to populate link %#v: %w", l, err)
+		}
+
+		c.Links[i] = l
 	}
 
 	return nil

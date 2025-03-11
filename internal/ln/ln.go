@@ -24,7 +24,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 
 	fmt.Fprintf(os.Stdout, "Configuration before: %s\n", c)
 
-	if err := populateConfig(ctx, c, g); err != nil {
+	if err := c.Populate(ctx, g); err != nil {
 		return err
 	}
 
@@ -48,17 +48,4 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	}
 
 	return c, nil
-}
-
-// TODO: it feels that this should move mostly in the config package.
-func populateConfig(ctx context.Context, c *config.Config, g *github.GitHub) error {
-	for i, l := range c.Links {
-		if err := l.Populate(ctx, g); err != nil {
-			return fmt.Errorf("failed to populate link %#v: %w", l, err)
-		}
-
-		c.Links[i] = l
-	}
-
-	return nil
 }
