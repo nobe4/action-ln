@@ -42,8 +42,9 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	}
 
 	c := config.New()
+	c.Defaults.Repo = e.Repo
 
-	if err := c.Parse(strings.NewReader(f.Content), e); err != nil {
+	if err := c.Parse(strings.NewReader(f.Content)); err != nil {
 		return nil, fmt.Errorf("failed to parse config %#v: %w", f, err)
 	}
 
