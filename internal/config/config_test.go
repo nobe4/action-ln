@@ -6,31 +6,35 @@ import (
 
 	"github.com/nobe4/dent.go"
 
-	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
 )
 
 func TestConfigParse(t *testing.T) {
 	t.Parallel()
 
+	repo := github.Repo{Owner: github.User{Login: "a"}, Repo: "b"}
+
 	tests := []struct {
-		input string
-		env   environment.Environment
-		want  Config
+		name   string
+		input  string
+		config *Config
+		want   Config
 	}{
 		{
-			input: `links: []`,
-			want: Config{
-				Links: []Link{},
-			},
+			name:   "empty",
+			input:  `links: []`,
+			config: &Config{},
+			want:   Config{Links: []Link{}},
 		},
 
 		{
+			name: "path-only link",
 			input: dent.DedentString(`
 links:
   - from: a
     to: b
 `),
+			config: &Config{},
 			want: Config{
 				Links: []Link{
 					{
@@ -42,103 +46,81 @@ links:
 		},
 
 		{
+			name: "complex link",
 			input: dent.DedentString(`
 links:
   - from: a/b:c@d
     to:
-      owner: e
-      repo: f
-      path: g
-      ref: h
+      owner: a
+      repo: b
+      path: c
+      ref: d
 `),
+			config: &Config{},
 			want: Config{
 				Links: []Link{
 					{
-						From: github.File{
-							Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
-							Path: "c",
-							Ref:  "d",
-						},
-						To: github.File{
-							Repo: github.Repo{Owner: github.User{Login: "e"}, Repo: "f"},
-							Path: "g",
-							Ref:  "h",
-						},
+						From: github.File{Repo: repo, Path: "c", Ref: "d"},
+						To:   github.File{Repo: repo, Path: "c", Ref: "d"},
 					},
 				},
 			},
 		},
 
 		{
+			name:  "uses defaults",
 			input: `links: []`,
-			env: environment.Environment{
-				Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+			config: &Config{
+				Defaults: Defaults{Repo: repo},
 			},
 			want: Config{
-				Defaults: Defaults{
-					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
-				},
-				Links: []Link{},
+				Defaults: Defaults{Repo: repo},
+				Links:    []Link{},
 			},
 		},
 
 		{
+			name: "keep defaults",
 			input: dent.DedentString(`
 defaults:
   repo: a/b
 `),
-			env: environment.Environment{
-				Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"},
+			config: &Config{
+				Defaults: Defaults{Repo: repo},
 			},
 			want: Config{
-				Defaults: Defaults{
-					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
-				},
-				Links: []Link{},
+				Defaults: Defaults{Repo: repo},
+				Links:    []Link{},
 			},
 		},
 
 		{
+			name: "update defaults",
 			input: dent.DedentString(`
 defaults:
-  repo: a/b
+  repo: x/y
 `),
-			want: Config{
-				Defaults: Defaults{
-					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
-				},
-				Links: []Link{},
+			config: &Config{
+				Defaults: Defaults{Repo: repo},
 			},
-		},
-
-		{
-			input: dent.DedentString(`
-defaults:
-  owner: a
-  repo: b
-`),
 			want: Config{
-				Defaults: Defaults{
-					Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
-				},
-				Links: []Link{},
+				Defaults: Defaults{Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"}},
+				Links:    []Link{},
 			},
 		},
 	}
 
 	for _, test := range tests {
-		t.Run("", func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := Config{}
-
-			err := c.Parse(strings.NewReader(test.input), test.env)
+			err := test.config.Parse(strings.NewReader(test.input))
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
 
-			if c.String() != test.want.String() {
-				t.Errorf("want %v, got %v", test.want, c)
+			if test.config.String() != test.want.String() {
+				t.Errorf("want %#v, got %#v", test.want, test.config)
 			}
 		})
 	}
