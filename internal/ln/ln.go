@@ -24,7 +24,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 
 	fmt.Fprintf(os.Stdout, "Configuration before: %s\n", c)
 
-	if err := populateConfig(ctx, c, g, e); err != nil {
+	if err := populateConfig(ctx, c, g); err != nil {
 		return err
 	}
 
@@ -33,7 +33,6 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 	return nil
 }
 
-// TODO: it feels that this should move mostly in the config package.
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
 	f := github.File{Repo: e.Repo, Path: e.Config}
 
@@ -52,10 +51,8 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 }
 
 // TODO: it feels that this should move mostly in the config package.
-func populateConfig(ctx context.Context, c *config.Config, g *github.GitHub, e environment.Environment) error {
+func populateConfig(ctx context.Context, c *config.Config, g *github.GitHub) error {
 	for i, l := range c.Links {
-		l.SetDefaults(e.Repo)
-
 		if err := l.Populate(ctx, g); err != nil {
 			return fmt.Errorf("failed to populate link %#v: %w", l, err)
 		}

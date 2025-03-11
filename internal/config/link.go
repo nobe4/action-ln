@@ -24,24 +24,22 @@ type Link struct {
 	To   github.File `json:"to"   yaml:"to"`
 }
 
-// TODO: make all methods members of (c *Config) so they have access to the
-// defaults.
-func parseLinks(raw []RawLink) ([]Link, error) {
+func (c *Config) parseLinks(raw []RawLink) ([]Link, error) {
 	links := []Link{}
 
-	for _, l := range raw {
-		link, err := parseLink(l)
+	for _, rl := range raw {
+		l, err := c.parseLink(rl)
 		if err != nil {
 			return nil, err
 		}
 
-		links = append(links, link)
+		links = append(links, l)
 	}
 
 	return links, nil
 }
 
-func parseLink(raw RawLink) (Link, error) {
+func (c *Config) parseLink(raw RawLink) (Link, error) {
 	from, err := parseFile(raw.From)
 	if err != nil {
 		return Link{}, err
@@ -52,18 +50,16 @@ func parseLink(raw RawLink) (Link, error) {
 		return Link{}, err
 	}
 
+	// TODO: Move this into the file parsing
+	if from.Repo.Empty() {
+		from.Repo = c.Defaults.Repo
+	}
+
+	if to.Repo.Empty() {
+		to.Repo = c.Defaults.Repo
+	}
+
 	return Link{From: from, To: to}, nil
-}
-
-// TODO: remove this once the defaults are set.
-func (l *Link) SetDefaults(repo github.Repo) {
-	if l.From.Repo.Empty() {
-		l.From.Repo = repo
-	}
-
-	if l.To.Repo.Empty() {
-		l.To.Repo = repo
-	}
 }
 
 func (l *Link) Populate(ctx context.Context, g github.FileGetter) error {
