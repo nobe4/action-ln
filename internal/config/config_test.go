@@ -130,13 +130,15 @@ defaults:
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
-			got, err := Parse(strings.NewReader(test.input), test.env)
+			c := Config{}
+
+			err := c.Parse(strings.NewReader(test.input), test.env)
 			if err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
 
-			if got.String() != test.want.String() {
-				t.Errorf("want %v, got %v", test.want, got)
+			if c.String() != test.want.String() {
+				t.Errorf("want %v, got %v", test.want, c)
 			}
 		})
 	}

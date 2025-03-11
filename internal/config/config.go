@@ -30,16 +30,16 @@ type Config struct {
 	Links    []Link   `json:"links"    yaml:"links"`
 }
 
-func Parse(r io.Reader, e environment.Environment) (Config, error) {
+func New() *Config { return &Config{} }
+
+func (c *Config) Parse(r io.Reader, e environment.Environment) error {
 	rawC := RawConfig{}
 
 	if err := yaml.
 		NewDecoder(r, yaml.Strict()).
 		Decode(&rawC); err != nil {
-		return Config{}, fmt.Errorf("%w: %w", errInvalidYAML, err)
+		return fmt.Errorf("%w: %w", errInvalidYAML, err)
 	}
-
-	c := Config{}
 
 	var err error
 
@@ -49,13 +49,13 @@ func Parse(r io.Reader, e environment.Environment) (Config, error) {
 	c.Links, err = parseLinks(rawC.Links)
 	if err != nil {
 		// TODO: add error
-		return Config{}, err
+		return err
 	}
 
-	return c, nil
+	return nil
 }
 
-func (c Config) String() string {
+func (c *Config) String() string {
 	out, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
 		fmt.Fprintln(os.Stdout, "Error marshaling config:", err)

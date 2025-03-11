@@ -24,7 +24,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 
 	fmt.Fprintf(os.Stdout, "Configuration before: %s\n", c)
 
-	if err := populateConfig(ctx, &c, g, e); err != nil {
+	if err := populateConfig(ctx, c, g, e); err != nil {
 		return err
 	}
 
@@ -34,16 +34,17 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 }
 
 // TODO: it feels that this should move mostly in the config package.
-func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (config.Config, error) {
+func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
 	f := github.File{Repo: e.Repo, Path: e.Config}
 
 	if err := g.GetFile(ctx, &f); err != nil {
-		return config.Config{}, fmt.Errorf("failed to get config %#v: %w", f, err)
+		return nil, fmt.Errorf("failed to get config %#v: %w", f, err)
 	}
 
-	c, err := config.Parse(strings.NewReader(f.Content), e)
-	if err != nil {
-		return config.Config{}, fmt.Errorf("failed to parse config %#v: %w", f, err)
+	c := config.New()
+
+	if err := c.Parse(strings.NewReader(f.Content), e); err != nil {
+		return nil, fmt.Errorf("failed to parse config %#v: %w", f, err)
 	}
 
 	return c, nil
