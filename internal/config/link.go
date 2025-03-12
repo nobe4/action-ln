@@ -26,8 +26,10 @@ type Link struct {
 	To   github.File `json:"to"   yaml:"to"`
 }
 
+type Links []Link
+
 func (c *Config) parseLinks(raw []RawLink) ([]Link, error) {
-	links := []Link{}
+	links := Links{}
 
 	for _, rl := range raw {
 		l, err := c.parseLink(rl)
@@ -70,4 +72,14 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 	}
 
 	return nil
+}
+
+func (l Links) Groups() map[string]Links {
+	g := make(map[string]Links)
+
+	for _, link := range l {
+		g[link.To.Repo.String()] = append(g[link.To.Repo.String()], link)
+	}
+
+	return g
 }
