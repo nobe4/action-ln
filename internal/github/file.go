@@ -30,6 +30,10 @@ var (
 	ErrDecodeFile  = errors.New("failed to decode file")
 )
 
+func (f File) String() string {
+	return fmt.Sprintf("%s:%s@%s", f.Repo, f.Path, f.Ref)
+}
+
 func (f File) Equal(o File) bool {
 	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit
 }
