@@ -28,7 +28,7 @@ type Link struct {
 
 type Links []Link
 
-func (c *Config) parseLinks(raw []RawLink) ([]Link, error) {
+func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	links := Links{}
 
 	for _, rl := range raw {

@@ -31,7 +31,7 @@ type RawConfig struct {
 
 type Config struct {
 	Defaults Defaults `json:"defaults" yaml:"defaults"`
-	Links    []Link   `json:"links"    yaml:"links"`
+	Links    Links    `json:"links"    yaml:"links"`
 }
 
 func New() *Config { return &Config{} }
