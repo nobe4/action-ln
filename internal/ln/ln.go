@@ -8,7 +8,6 @@ package ln
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/nobe4/action-ln/internal/config"
@@ -26,13 +25,8 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	for id, group := range c.Links.Groups() {
-		fmt.Fprintf(os.Stderr, "group: %s\n", id)
-
-		for _, link := range group {
-			fmt.Fprintf(os.Stderr, "  link: %s\n", link)
-			fmt.Fprintf(os.Stderr, "    Need Update: %v\n", link.NeedsUpdate())
-		}
+	if err := processGroups(ctx, g, c.Links.Groups()); err != nil {
+		return fmt.Errorf("failed to process the groups: %w", err)
 	}
 
 	return nil

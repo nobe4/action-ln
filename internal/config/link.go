@@ -52,8 +52,10 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 
 type Links []*Link
 
-func (l Links) Groups() map[string]Links {
-	g := make(map[string]Links)
+type Groups map[string]Links
+
+func (l Links) Groups() Groups {
+	g := make(Groups)
 
 	for _, link := range l {
 		g[link.To.Repo.String()] = append(g[link.To.Repo.String()], link)

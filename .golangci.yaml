@@ -11,6 +11,7 @@ linters:
     - depguard # Using go.mod is enough
     - tenv # deprecated
     - lll # using revive's line-length-limit
+    - nonamedreturns # using revive's confusing-results and bare-return
 
 issues:
   exclude-rules:
@@ -79,6 +80,7 @@ linters-settings:
           - "nolint"
 
       - name: import-alias-naming
+        # TODO: remove, it's the default
         arguments:
           - "^[a-z][A-Za-z0-9]{0,}$"
 
