@@ -181,6 +181,8 @@ func TestPopulate(t *testing.T) {
 }
 
 func TestGroups(t *testing.T) {
+	t.Parallel()
+
 	links := Links{
 		Link{
 			To: github.File{
