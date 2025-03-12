@@ -26,9 +26,14 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	groups := c.Links.Groups()
+	for id, group := range c.Links.Groups() {
+		fmt.Fprintf(os.Stderr, "group: %s\n", id)
 
-	fmt.Fprintf(os.Stdout, "groups: %v\n", groups)
+		for _, link := range group {
+			fmt.Fprintf(os.Stderr, "  link: %s\n", link)
+			fmt.Fprintf(os.Stderr, "    Need Update: %v\n", link.NeedsUpdate())
+		}
+	}
 
 	return nil
 }
