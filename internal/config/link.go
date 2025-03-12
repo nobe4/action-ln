@@ -16,45 +16,21 @@ var (
 	errInvalidTo   = errors.New("to is invalid")
 )
 
-type RawLink struct {
-	From any `yaml:"from"`
-	To   any `yaml:"to"`
-}
-
 type Link struct {
 	From github.File `json:"from" yaml:"from"`
 	To   github.File `json:"to"   yaml:"to"`
 }
 
-type Links []Link
-
-func (c *Config) parseLinks(raw []RawLink) (Links, error) {
-	links := Links{}
-
-	for _, rl := range raw {
-		l, err := c.parseLink(rl)
-		if err != nil {
-			return nil, err
-		}
-
-		links = append(links, l)
-	}
-
-	return links, nil
+func (l *Link) String() string {
+	return fmt.Sprintf("%s -> %s", l.From, l.To)
 }
 
-func (c *Config) parseLink(raw RawLink) (Link, error) {
-	from, err := c.parseFile(raw.From)
-	if err != nil {
-		return Link{}, fmt.Errorf("%w: %w", errInvalidFrom, err)
-	}
+func (l *Link) Equal(other *Link) bool {
+	return l.From.Equal(other.From) && l.To.Equal(other.To)
+}
 
-	to, err := c.parseFile(raw.To)
-	if err != nil {
-		return Link{}, fmt.Errorf("%w: %w", errInvalidTo, err)
-	}
-
-	return Link{From: from, To: to}, nil
+func (l *Link) NeedsUpdate() bool {
+	return l.From.Content != l.To.Content
 }
 
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
@@ -74,6 +50,8 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 	return nil
 }
 
+type Links []*Link
+
 func (l Links) Groups() map[string]Links {
 	g := make(map[string]Links)
 
@@ -82,4 +60,38 @@ func (l Links) Groups() map[string]Links {
 	}
 
 	return g
+}
+
+type RawLink struct {
+	From any `yaml:"from"`
+	To   any `yaml:"to"`
+}
+
+func (c *Config) parseLinks(raw []RawLink) (Links, error) {
+	links := Links{}
+
+	for _, rl := range raw {
+		l, err := c.parseLink(rl)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, l)
+	}
+
+	return links, nil
+}
+
+func (c *Config) parseLink(raw RawLink) (*Link, error) {
+	from, err := c.parseFile(raw.From)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
+	}
+
+	to, err := c.parseFile(raw.To)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidTo, err)
+	}
+
+	return &Link{From: from, To: to}, nil
 }
