@@ -24,7 +24,7 @@ func TestConfigParse(t *testing.T) {
 			name:   "empty",
 			input:  `links: []`,
 			config: &Config{},
-			want:   Config{Links: []Link{}},
+			want:   Config{Links: Links{}},
 		},
 
 		{
@@ -36,7 +36,7 @@ links:
 `),
 			config: &Config{},
 			want: Config{
-				Links: []Link{
+				Links: Links{
 					{
 						From: github.File{Path: "a"},
 						To:   github.File{Path: "b"},
@@ -58,7 +58,7 @@ links:
 `),
 			config: &Config{},
 			want: Config{
-				Links: []Link{
+				Links: Links{
 					{
 						From: github.File{Repo: repo, Path: "c", Ref: "d"},
 						To:   github.File{Repo: repo, Path: "c", Ref: "d"},
@@ -75,7 +75,7 @@ links:
 			},
 			want: Config{
 				Defaults: Defaults{Repo: repo},
-				Links:    []Link{},
+				Links:    Links{},
 			},
 		},
 
@@ -90,7 +90,7 @@ defaults:
 			},
 			want: Config{
 				Defaults: Defaults{Repo: repo},
-				Links:    []Link{},
+				Links:    Links{},
 			},
 		},
 
@@ -105,7 +105,7 @@ defaults:
 			},
 			want: Config{
 				Defaults: Defaults{Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"}},
-				Links:    []Link{},
+				Links:    Links{},
 			},
 		},
 	}
