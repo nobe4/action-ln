@@ -22,13 +22,13 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return err
 	}
 
-	fmt.Fprintf(os.Stdout, "Configuration before: %s\n", c)
-
 	if err := c.Populate(ctx, g); err != nil {
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	fmt.Fprintf(os.Stdout, "Configuration after: %s\n", c)
+	groups := c.Links.Groups()
+
+	fmt.Fprintf(os.Stdout, "groups: %v\n", groups)
 
 	return nil
 }
