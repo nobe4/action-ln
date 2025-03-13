@@ -29,8 +29,34 @@ func (l *Link) Equal(other *Link) bool {
 	return l.From.Equal(other.From) && l.To.Equal(other.To)
 }
 
-func (l *Link) NeedsUpdate() bool {
-	return l.From.Content != l.To.Content
+func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.Branch) (bool, error) {
+	if head.New {
+		return true, nil
+	}
+
+	if l.From.Content == l.To.Content {
+		return false, nil
+	}
+
+	headTo := &github.File{
+		Repo: l.To.Repo,
+		Path: l.To.Path,
+		Ref:  head.Name,
+	}
+
+	if err := g.GetFile(ctx, headTo); err != nil {
+		if errors.Is(err, github.ErrMissingFile) {
+			fmt.Fprintln(os.Stdout, "    headTo: MISSING")
+
+			return true, nil
+		}
+
+		return false, fmt.Errorf("failed to get file on branch: %w", err)
+	}
+
+	fmt.Fprintf(os.Stderr, "    headTo: %s\n", headTo)
+
+	return l.From.Content != headTo.Content, nil
 }
 
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {

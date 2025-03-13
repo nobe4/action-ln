@@ -84,6 +84,142 @@ func TestParseLink(t *testing.T) {
 	}
 }
 
+func TestLinkNeedUpdate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("head is new", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
+		head := github.Branch{New: true}
+		l := &Link{}
+
+		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !needUpdate {
+			t.Fatalf("expected true, got %v", needUpdate)
+		}
+	})
+
+	t.Run("content is the same on base branch", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
+		head := github.Branch{New: false}
+		l := &Link{
+			From: github.File{Content: "content"},
+			To:   github.File{Content: "content"},
+		}
+
+		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if needUpdate {
+			t.Fatalf("expected false, got %v", needUpdate)
+		}
+	})
+
+	t.Run("to is missing", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetter{
+			Handler: func(_ *github.File) error { return github.ErrMissingFile },
+		}
+		head := github.Branch{New: false}
+		l := &Link{
+			From: github.File{Content: "content"},
+			To:   github.File{Content: "content2"},
+		}
+
+		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !needUpdate {
+			t.Fatalf("expected true, got %v", needUpdate)
+		}
+	})
+
+	t.Run("can't get the to file", func(t *testing.T) {
+		t.Parallel()
+
+		//nolint:err113 // This is just for this test.
+		errWant := errors.New("test")
+
+		g := mock.FileGetter{
+			Handler: func(_ *github.File) error { return errWant },
+		}
+		head := github.Branch{New: false}
+		l := &Link{
+			From: github.File{Content: "content"},
+			To:   github.File{Content: "content2"},
+		}
+
+		_, err := l.NeedUpdate(t.Context(), g, head)
+		if !errors.Is(err, errWant) {
+			t.Fatalf("want error %v, got %v", errWant, err)
+		}
+	})
+
+	t.Run("content is the same on head branch", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetter{
+			Handler: func(f *github.File) error {
+				f.Content = "content"
+
+				return nil
+			},
+		}
+		head := github.Branch{New: false}
+		l := &Link{
+			From: github.File{Content: "content"},
+			To:   github.File{Content: "content2"},
+		}
+
+		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if needUpdate {
+			t.Fatalf("expected false, got %v", needUpdate)
+		}
+	})
+
+	t.Run("content is different on head branch", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetter{
+			Handler: func(f *github.File) error {
+				f.Content = "content2"
+
+				return nil
+			},
+		}
+		head := github.Branch{New: false}
+		l := &Link{
+			From: github.File{Content: "content"},
+			To:   github.File{Content: "content2"},
+		}
+
+		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !needUpdate {
+			t.Fatalf("expected true, got %v", needUpdate)
+		}
+	})
+}
+
 func TestPopulate(t *testing.T) {
 	t.Parallel()
 
