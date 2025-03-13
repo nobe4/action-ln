@@ -149,6 +149,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("can't get the to file", func(t *testing.T) {
 		t.Parallel()
 
+		//nolint:err113 // This is just for this test.
 		errWant := errors.New("test")
 
 		g := mock.FileGetter{
