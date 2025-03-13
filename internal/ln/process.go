@@ -22,17 +22,23 @@ func processGroups(ctx context.Context, g *github.GitHub, groups config.Groups) 
 }
 
 func processGroup(ctx context.Context, g *github.GitHub, group config.Links) error {
-	headBranch, baseBranch, err := prepareBranches(ctx, g, group[0].To.Repo)
+	head, base, err := prepareBranches(ctx, g, group[0].To.Repo)
 	if err != nil {
 		return fmt.Errorf("failed to prepare branches: %w", err)
 	}
 
-	fmt.Fprintf(os.Stderr, "  base branch: %v\n", baseBranch)
-	fmt.Fprintf(os.Stderr, "  head branch: %v\n", headBranch)
+	fmt.Fprintf(os.Stderr, "  base branch: %v\n", base)
+	fmt.Fprintf(os.Stderr, "  head branch: %v\n", head)
 
 	for _, link := range group {
 		fmt.Fprintf(os.Stderr, "  link: %s\n", link)
-		fmt.Fprintf(os.Stderr, "    Need Update: %v\n", link.NeedsUpdate())
+
+		needUpdate, err := link.NeedUpdate(ctx, g, head)
+		if err != nil {
+			return fmt.Errorf("failed to check if link needs update: %w", err)
+		}
+
+		fmt.Fprintf(os.Stderr, "    Need Update: %v\n", needUpdate)
 	}
 
 	return nil
