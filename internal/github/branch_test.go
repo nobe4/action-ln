@@ -115,18 +115,20 @@ func TestGetOrCreateBranch(t *testing.T) {
 	t.Run("creates branch if it does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		reqIndex := 0
+		i := 0
 		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
-			switch reqIndex {
+			switch i {
 			case 0:
 				assertReq(t, r, http.MethodGet, branchAPIPath, nil)
 				w.WriteHeader(http.StatusNotFound)
 			case 1:
 				assertReq(t, r, http.MethodPost, refAPIPath, nil)
 				w.WriteHeader(http.StatusOK)
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
 			}
 
-			reqIndex++
+			i++
 		})
 
 		got, err := g.GetOrCreateBranch(t.Context(), repo, branch, sha)

@@ -141,10 +141,9 @@ func TestGetOrCreatePull(t *testing.T) {
 	t.Run("creates pull if it does not exist", func(t *testing.T) {
 		t.Parallel()
 
-		reqIndex := 0
-
+		i := 0
 		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
-			switch reqIndex {
+			switch i {
 			case 0:
 				assertReq(t, r, http.MethodGet, pullAPIPath, nil)
 				w.WriteHeader(http.StatusOK)
@@ -153,9 +152,11 @@ func TestGetOrCreatePull(t *testing.T) {
 				assertReq(t, r, http.MethodPost, pullAPIPath, nil)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprintf(w, `{"number": %d}\n`, number)
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
 			}
 
-			reqIndex++
+			i++
 		})
 
 		got, err := g.GetOrCreatePull(t.Context(), repo, base, head, title, body)
