@@ -85,11 +85,11 @@ func (g *GitHub) UpdateFile(ctx context.Context, f File, branch, message string)
 	}
 
 	// NOTE: Non-trivial update.
-	// The response for this call will update the file directly. It's fine
-	// because we want the new `SHA`. The `Name`, and `Path` won't change
+	// The response for this call will update the parameter file directly. It's
+	// fine because we want the new `SHA`. The `Name`, and `Path` won't change
 	// because we only update the content of the file. Also, since we're passing
-	// a file value, the original file won't get changed; we are creating a new
-	// file.
+	// a file value (not pointer), the original file won't get changed; we are
+	// creating a new file. See tests.
 	out := struct {
 		File File `json:"content"`
 	}{File: f}
