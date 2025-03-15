@@ -22,7 +22,7 @@ func processGroups(ctx context.Context, g *github.GitHub, groups config.Groups) 
 }
 
 func processGroup(ctx context.Context, g *github.GitHub, group config.Links) error {
-	head, base, err := prepareBranches(ctx, g, group[0].To.Repo)
+	head, base, err := g.GetBaseAndHeadBranches(ctx, group[0].To.Repo, "test")
 	if err != nil {
 		return fmt.Errorf("failed to prepare branches: %w", err)
 	}
@@ -42,28 +42,4 @@ func processGroup(ctx context.Context, g *github.GitHub, group config.Links) err
 	}
 
 	return nil
-}
-
-func prepareBranches(
-	ctx context.Context,
-	g *github.GitHub,
-	r github.Repo,
-) (base github.Branch, head github.Branch, err error) {
-	// TODO: see if this can come with the Repo
-	defaultBranchName, err := g.GetDefaultBranch(ctx, r)
-	if err != nil {
-		return base, head, fmt.Errorf("failed to get default branch name: %w", err)
-	}
-
-	base, err = g.GetBranch(ctx, r, defaultBranchName)
-	if err != nil {
-		return base, head, fmt.Errorf("failed to get default branch: %w", err)
-	}
-
-	head, err = g.GetOrCreateBranch(ctx, r, "test", base.Commit.SHA)
-	if err != nil {
-		return base, head, fmt.Errorf("failed to get default branch: %w", err)
-	}
-
-	return base, head, nil
 }

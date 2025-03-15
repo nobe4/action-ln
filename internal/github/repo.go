@@ -32,10 +32,39 @@ func (r Repo) APIPath() string {
 }
 
 // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
-func (g *GitHub) GetDefaultBranch(ctx context.Context, r Repo) (string, error) {
+func (g *GitHub) GetDefaultBranchName(ctx context.Context, r Repo) (string, error) {
 	if _, err := g.req(ctx, http.MethodGet, r.APIPath(), nil, &r); err != nil {
 		return "", fmt.Errorf("%w: %w", errGetRepo, err)
 	}
 
 	return r.DefaultBranch, nil
+}
+
+func (g *GitHub) GetDefaultBranch(ctx context.Context, r Repo) (Branch, error) {
+	name, err := g.GetDefaultBranchName(ctx, r)
+	if err != nil {
+		return Branch{}, err
+	}
+
+	b, err := g.GetBranch(ctx, r, name)
+	if err != nil {
+		return Branch{}, err
+	}
+
+	return b, nil
+}
+
+func (g *GitHub) GetBaseAndHeadBranches(ctx context.Context, r Repo, headName string) (
+	base Branch, head Branch,
+	err error,
+) {
+	if base, err = g.GetDefaultBranch(ctx, r); err != nil {
+		return base, head, err
+	}
+
+	if head, err = g.GetOrCreateBranch(ctx, r, headName, base.Commit.SHA); err != nil {
+		return base, head, err
+	}
+
+	return base, head, nil
 }
