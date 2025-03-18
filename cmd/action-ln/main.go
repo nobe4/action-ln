@@ -6,16 +6,25 @@ import (
 	"time"
 
 	"github.com/nobe4/action-ln/internal/log"
+	"github.com/nobe4/action-ln/internal/log/plain"
 )
 
 func main() {
 	debug := true
 
-	handler := log.NewGitHubHandler(os.Stdout, debug)
+	o := log.Options{
+		Level: slog.LevelInfo,
+	}
+	if debug {
+		o.Level = slog.LevelDebug
+	}
+
+	handler := plain.New(os.Stdout, o)
+	// handler := github.New(os.Stdout, o)
 	slog.SetDefault(slog.New(handler))
 
 	log.Group("test")
-	log.Info("message", "a", 1)
+	log.Info("message", "a", 1, "b", "c")
 	log.Debug("message")
 	log.Error("message", "a", []string{"x", "y", "z"})
 	log.Warn("message")
