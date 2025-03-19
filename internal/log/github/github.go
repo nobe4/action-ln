@@ -52,12 +52,27 @@ func (h *Handler) write(p []byte) error {
 	return fmt.Errorf("%w: %w", log.ErrCannotWrite, err)
 }
 
-// Format
-// [::command key=value[,key=value]::]message.
 func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	command := ""
 
 	switch r.Level {
+	// Info can be handled directly
+	case log.LevelInfo:
+		return h.write(
+			[]byte(
+				r.Message +
+					" " +
+					h.formatAttrs(r) +
+					"\n",
+			),
+		)
+
+	// Groups can be handled directly
+	case log.LevelGroup:
+		return h.write([]byte("::group::" + r.Message + "\n"))
+	case log.LevelGroupEnd:
+		return h.write([]byte("::groupend::\n"))
+
 	case log.LevelDebug:
 		command = "debug"
 	case log.LevelWarn:
@@ -66,16 +81,6 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 		command = "error"
 	case log.LevelNotice:
 		command = "notice"
-
-	// Info only prints the data, and doesn't add any context.
-	case log.LevelInfo:
-		return h.write([]byte(r.Message + "\n"))
-
-	// Groups can be handled directly
-	case log.LevelGroup:
-		return h.write([]byte("::group::" + r.Message + "\n"))
-	case log.LevelGroupEnd:
-		return h.write([]byte("::groupend::\n"))
 	}
 
 	buf := make([]byte, 0, buflen)

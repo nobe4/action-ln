@@ -83,7 +83,7 @@ func (*Handler) formatAttrs(r slog.Record) string {
 	attrs := []string{}
 
 	r.Attrs(func(a slog.Attr) bool {
-		attrs = append(attrs, fmt.Sprintf("%s=%q", a.Key, a.Value))
+		attrs = append(attrs, fmt.Sprintf("%s=%s", a.Key, a.Value))
 
 		return true
 	})

@@ -183,3 +183,29 @@ func TestParseOnAction(t *testing.T) {
 		t.Fatalf("want true but got false")
 	}
 }
+
+func TestParseDebug(t *testing.T) {
+	t.Setenv("RUNNER_DEBUG", "")
+
+	if parseDebug() {
+		t.Fatalf("want false but got true")
+	}
+
+	t.Setenv("RUNNER_DEBUG", "1")
+
+	if !parseDebug() {
+		t.Fatalf("want true but got false")
+	}
+}
+
+func TestMissingOrRedacted(t *testing.T) {
+	t.Parallel()
+
+	if missingOrRedacted("token") != redacted {
+		t.Fatalf("want redacted but got something else")
+	}
+
+	if missingOrRedacted("") != missing {
+		t.Fatalf("want missingd but got something else")
+	}
+}
