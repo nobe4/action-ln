@@ -37,7 +37,7 @@ func main() {
 
 	slog.SetDefault(slog.New(h))
 
-	log.Debug("Environment", "parsed", e)
+	log.Info("Environment", "parsed", e)
 
 	g := github.New(e.Endpoint)
 
