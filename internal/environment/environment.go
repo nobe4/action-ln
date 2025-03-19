@@ -43,6 +43,7 @@ type Environment struct {
 	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
 	Config   string      `json:"config"`   // INPUT_CONFIG
 	App      App         `json:"app"`
+	OnAction bool        `json:"on_action"`
 }
 
 //nolint:revive // No, I don't want to leak secrets.
@@ -88,6 +89,7 @@ func Parse() (Environment, error) {
 	e.Endpoint = parseEndpoint()
 	e.Config = parseConfig()
 	e.App = parseApp()
+	e.OnAction = parseOnAction()
 
 	return e, nil
 }
@@ -148,4 +150,8 @@ func parseApp() App {
 		PrivateKey: os.Getenv("INPUT_APP_PRIVATE_KEY"),
 		InstallID:  os.Getenv("INPUT_APP_INSTALL_ID"),
 	}
+}
+
+func parseOnAction() bool {
+	return os.Getenv("GITHUB_RUN_ID") != ""
 }
