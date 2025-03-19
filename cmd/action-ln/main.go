@@ -23,11 +23,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO: use environment variable to set debug mode
-	debug := true
-
 	o := log.Options{Level: slog.LevelInfo}
-	if debug {
+	if e.Debug {
 		o.Level = slog.LevelDebug
 	}
 
@@ -40,7 +37,7 @@ func main() {
 
 	slog.SetDefault(slog.New(h))
 
-	fmt.Fprintln(os.Stdout, "Environment:", e)
+	log.Debug("Environment", "parsed", e)
 
 	g := github.New(e.Endpoint)
 
