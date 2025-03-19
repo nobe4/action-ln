@@ -44,7 +44,7 @@ type Environment struct {
 	Config   string      `json:"config"`   // INPUT_CONFIG
 	App      App         `json:"app"`
 	OnAction bool        `json:"on_action"`
-	Debug    bool        `json:"debug"` // ACTION_DEBUG
+	Debug    bool        `json:"debug"` // RUNNER_DEBUG
 }
 
 //nolint:revive // No, I don't want to leak secrets.
@@ -159,5 +159,5 @@ func parseOnAction() bool {
 }
 
 func parseDebug() bool {
-	return os.Getenv("ACTION_DEBUG") == "true"
+	return os.Getenv("RUNNER_DEBUG") == "1"
 }
