@@ -169,3 +169,17 @@ func TestParseApp(t *testing.T) {
 		t.Fatalf("want %v but got %v", want, got)
 	}
 }
+
+func TestParseOnAction(t *testing.T) {
+	t.Setenv("GITHUB_RUN_ID", "")
+
+	if parseOnAction() {
+		t.Fatalf("want false but got true")
+	}
+
+	t.Setenv("GITHUB_RUN_ID", "1234")
+
+	if !parseOnAction() {
+		t.Fatalf("want true but got false")
+	}
+}
