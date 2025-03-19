@@ -44,6 +44,7 @@ type Environment struct {
 	Config   string      `json:"config"`   // INPUT_CONFIG
 	App      App         `json:"app"`
 	OnAction bool        `json:"on_action"`
+	Debug    bool        `json:"debug"` // ACTION_DEBUG
 }
 
 //nolint:revive // No, I don't want to leak secrets.
@@ -90,6 +91,7 @@ func Parse() (Environment, error) {
 	e.Config = parseConfig()
 	e.App = parseApp()
 	e.OnAction = parseOnAction()
+	e.Debug = parseDebug()
 
 	return e, nil
 }
@@ -154,4 +156,8 @@ func parseApp() App {
 
 func parseOnAction() bool {
 	return os.Getenv("GITHUB_RUN_ID") != ""
+}
+
+func parseDebug() bool {
+	return os.Getenv("ACTION_DEBUG") == "true"
 }
