@@ -28,6 +28,7 @@ const (
 	defaultEndpoint = "https://api.github.com"
 	defaultConfig   = ".github/ln-config.yaml"
 	redacted        = "[redacted]"
+	missing         = "[missing]"
 )
 
 type App struct {
@@ -49,10 +50,10 @@ type Environment struct {
 
 //nolint:revive // No, I don't want to leak secrets.
 func (e Environment) String() string {
-	e.Token = redacted
-	e.App.ID = redacted
-	e.App.PrivateKey = redacted
-	e.App.InstallID = redacted
+	e.Token = missingOrRedacted(e.Token)
+	e.App.ID = missingOrRedacted(e.App.ID)
+	e.App.PrivateKey = missingOrRedacted(e.App.PrivateKey)
+	e.App.InstallID = missingOrRedacted(e.App.InstallID)
 
 	out, err := json.MarshalIndent(e, "", "  ")
 	if err != nil {
@@ -160,4 +161,12 @@ func parseOnAction() bool {
 
 func parseDebug() bool {
 	return os.Getenv("RUNNER_DEBUG") == "1"
+}
+
+func missingOrRedacted(s string) string {
+	if s == "" {
+		return missing
+	}
+
+	return redacted
 }
