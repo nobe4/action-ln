@@ -10,7 +10,6 @@ import (
 	"github.com/nobe4/action-ln/internal/ln"
 	"github.com/nobe4/action-ln/internal/log"
 	glog "github.com/nobe4/action-ln/internal/log/github"
-	"github.com/nobe4/action-ln/internal/log/plain"
 )
 
 func main() {
@@ -22,19 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	o := log.Options{Level: slog.LevelInfo}
-	if e.Debug {
-		o.Level = slog.LevelDebug
-	}
-
-	var h slog.Handler
-	if e.OnAction {
-		h = glog.New(os.Stdout, o)
-	} else {
-		h = plain.New(os.Stdout, o)
-	}
-
-	slog.SetDefault(slog.New(h))
+	setLogger(e.Debug, e.OnAction)
 
 	log.Info("Environment", "parsed", e)
 
@@ -54,4 +41,21 @@ func main() {
 		log.Error("Running action-ln failed", "reason", err)
 		os.Exit(1)
 	}
+}
+
+//nolint:revive // debug here is expected.
+func setLogger(debug, onAction bool) {
+	o := log.Options{Level: slog.LevelInfo}
+	if debug {
+		o.Level = slog.LevelDebug
+	}
+
+	var h slog.Handler
+	// if onAction {
+	h = glog.New(os.Stdout, o)
+	// } else {
+	// 	h = plain.New(os.Stdout, o)
+	// }
+
+	slog.SetDefault(slog.New(h))
 }
