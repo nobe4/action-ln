@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -19,23 +18,11 @@ func main() {
 
 	e, err := environment.Parse()
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "Error parsing environment\n%v\n", err)
+		log.Error("Environment parsing failed", "reason", err)
 		os.Exit(1)
 	}
 
-	o := log.Options{Level: slog.LevelInfo}
-	if e.Debug {
-		o.Level = slog.LevelDebug
-	}
-
-	var h slog.Handler
-	if e.OnAction {
-		h = glog.New(os.Stdout, o)
-	} else {
-		h = plain.New(os.Stdout, o)
-	}
-
-	slog.SetDefault(slog.New(h))
+	setLogger(e.Debug, e.OnAction)
 
 	log.Info("Environment", "parsed", e)
 
@@ -47,12 +34,29 @@ func main() {
 		e.App.PrivateKey,
 		e.App.InstallID,
 	); err != nil {
-		fmt.Fprintf(os.Stdout, "Error authenticating\n%v\n", err)
+		log.Error("Authentication failed", "reason", err)
 		os.Exit(1)
 	}
 
 	if err := ln.Run(ctx, e, g); err != nil {
-		fmt.Fprintf(os.Stdout, "Error running action-ln\n%v\n", err)
+		log.Error("Running action-ln failed", "reason", err)
 		os.Exit(1)
 	}
+}
+
+//nolint:revive // debug here is expected.
+func setLogger(debug, onAction bool) {
+	o := log.Options{Level: slog.LevelInfo}
+	if debug {
+		o.Level = slog.LevelDebug
+	}
+
+	var h slog.Handler
+	if onAction {
+		h = glog.New(os.Stdout, o)
+	} else {
+		h = plain.New(os.Stdout, o)
+	}
+
+	slog.SetDefault(slog.New(h))
 }

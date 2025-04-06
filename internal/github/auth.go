@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/nobe4/action-ln/internal/jwt"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 type AppToken struct {
@@ -20,9 +21,13 @@ var (
 )
 
 func (g *GitHub) Auth(ctx context.Context, token, appID, appPrivateKey, appInstallID string) error {
+	log.Group("Authentication")
+
 	g.Token = token
 
 	if appID != "" && appPrivateKey != "" && appInstallID != "" {
+		log.Info("Using app authentication")
+
 		var jwtToken string
 
 		jwtToken, err := jwt.New(time.Now().Unix(), appID, appPrivateKey)
@@ -33,7 +38,11 @@ func (g *GitHub) Auth(ctx context.Context, token, appID, appPrivateKey, appInsta
 		if g.Token, err = g.GetAppToken(ctx, appInstallID, jwtToken); err != nil {
 			return err
 		}
+	} else {
+		log.Info("Using token authentication")
 	}
+
+	log.GroupEnd()
 
 	return nil
 }

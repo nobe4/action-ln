@@ -58,14 +58,7 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	switch r.Level {
 	// Info can be handled directly
 	case log.LevelInfo:
-		return h.write(
-			[]byte(
-				r.Message +
-					" " +
-					h.formatAttrs(r) +
-					"\n",
-			),
-		)
+		return h.write([]byte(r.Message + h.formatAttrs(r) + "\n"))
 
 	// Groups can be handled directly
 	case log.LevelGroup:

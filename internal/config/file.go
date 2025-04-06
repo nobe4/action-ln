@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -14,6 +15,8 @@ var (
 )
 
 func (c *Config) parseFile(rawFile any) (github.File, error) {
+	log.Debug("Parse file", "raw", rawFile)
+
 	switch v := rawFile.(type) {
 	case map[string]any:
 		return c.parseFileMap(v)
