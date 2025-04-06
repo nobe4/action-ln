@@ -13,6 +13,7 @@ import (
 	"github.com/nobe4/action-ln/internal/config"
 	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error {
@@ -33,18 +34,30 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 }
 
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
+	log.Group("Get config")
+
 	f := github.File{Repo: e.Repo, Path: e.Config}
+
+	log.Debug("Get config file", "file", f)
 
 	if err := g.GetFile(ctx, &f); err != nil {
 		return nil, fmt.Errorf("failed to get config %#v: %w", f, err)
 	}
 
+	log.Debug("Create config object", "default.repo", e.Repo)
+
 	c := config.New()
 	c.Defaults.Repo = e.Repo
+
+	log.Debug("Parse config file", "sha", f.Commit)
 
 	if err := c.Parse(strings.NewReader(f.Content)); err != nil {
 		return nil, fmt.Errorf("failed to parse config %#v: %w", f, err)
 	}
+
+	log.Debug("Parsed config", "config", c)
+
+	log.GroupEnd()
 
 	return c, nil
 }

@@ -12,6 +12,7 @@ linters:
     - tenv # deprecated
     - lll # using revive's line-length-limit
     - nonamedreturns # using revive's confusing-results and bare-return
+    - contextcheck # I will revisit that later, with the `slog.Log` wrapper it's difficult.
 
 issues:
   exclude-rules:

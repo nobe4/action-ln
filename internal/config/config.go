@@ -12,11 +12,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/goccy/go-yaml"
 
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -45,10 +45,13 @@ func (c *Config) Parse(r io.Reader) error {
 		return fmt.Errorf("%w: %w", errInvalidYAML, err)
 	}
 
-	var err error
+	log.Debug("Parse defaults", "raw", rawC.Defaults)
 
 	c.Defaults.parse(rawC.Defaults)
 
+	log.Debug("Parse links", "raw", rawC.Links)
+
+	var err error
 	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
 		return fmt.Errorf("%w: %w", errInvalidLinks, err)
 	}
@@ -71,7 +74,7 @@ func (c *Config) Populate(ctx context.Context, g github.FileGetter) error {
 func (c *Config) String() string {
 	out, err := json.MarshalIndent(c, "", "  ")
 	if err != nil {
-		fmt.Fprintln(os.Stdout, "Error marshaling config:", err)
+		log.Warn("Error marshaling config", "err", err)
 
 		return fmt.Sprintf("%#v", c)
 	}
@@ -83,9 +86,11 @@ func getMapKey(m map[string]any, k string) string {
 	if v, ok := m[k]; ok {
 		if vs, ok := v.(string); ok {
 			return vs
-		} else { //nolint:all // TODO: log that the key is not a string
 		}
-	} else { //nolint:all // TODO: log that the key is not found
+
+		log.Warn("Value is not a string", "key", k, "value", v)
+	} else {
+		log.Warn("Value not found", "key", k)
 	}
 
 	return ""
