@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -31,10 +31,14 @@ func (l *Link) Equal(other *Link) bool {
 
 func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.Branch) (bool, error) {
 	if head.New {
+		log.Debug("Head is new, update is needed")
+
 		return true, nil
 	}
 
 	if l.From.Content == l.To.Content {
+		log.Debug("Content is equal, update is not needed")
+
 		return false, nil
 	}
 
@@ -46,7 +50,7 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 
 	if err := g.GetFile(ctx, headTo); err != nil {
 		if errors.Is(err, github.ErrMissingFile) {
-			fmt.Fprintln(os.Stdout, "    headTo: MISSING")
+			log.Warn("Head to file is missing, update is needed", "headTo", headTo)
 
 			return true, nil
 		}
@@ -54,7 +58,7 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 		return false, fmt.Errorf("failed to get file on branch: %w", err)
 	}
 
-	fmt.Fprintf(os.Stderr, "    headTo: %s\n", headTo)
+	log.Debug("Head to file", "headTo", headTo)
 
 	return l.From.Content != headTo.Content, nil
 }
@@ -69,8 +73,7 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 			return fmt.Errorf("%w %#v: %w", errMissingTo, l.To, err)
 		}
 
-		// TODO: make this a debug statement
-		fmt.Fprintf(os.Stdout, "File %#v does not exist\n", l.To)
+		log.Debug("file does not exist", "file", l.To)
 	}
 
 	return nil
@@ -98,7 +101,9 @@ type RawLink struct {
 func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	links := Links{}
 
-	for _, rl := range raw {
+	for i, rl := range raw {
+		log.Debug("Parse link", "index", i, "raw", rl)
+
 		l, err := c.parseLink(rl)
 		if err != nil {
 			return nil, err

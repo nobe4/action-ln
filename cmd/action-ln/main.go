@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -19,7 +18,7 @@ func main() {
 
 	e, err := environment.Parse()
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "Error parsing environment\n%v\n", err)
+		log.Error("Environment parsing failed", "reason", err)
 		os.Exit(1)
 	}
 
@@ -47,12 +46,12 @@ func main() {
 		e.App.PrivateKey,
 		e.App.InstallID,
 	); err != nil {
-		fmt.Fprintf(os.Stdout, "Error authenticating\n%v\n", err)
+		log.Error("Authentication failed", "reason", err)
 		os.Exit(1)
 	}
 
 	if err := ln.Run(ctx, e, g); err != nil {
-		fmt.Fprintf(os.Stdout, "Error running action-ln\n%v\n", err)
+		log.Error("Running action-ln failed", "reason", err)
 		os.Exit(1)
 	}
 }

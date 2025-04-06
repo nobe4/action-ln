@@ -21,13 +21,17 @@ type Handler struct {
 	opts log.Options
 	mu   *sync.Mutex
 	out  io.Writer
+
+	indent int
+	group  string
 }
 
 func New(out io.Writer, o log.Options) *Handler {
 	h := &Handler{
-		out:  out,
-		opts: o,
-		mu:   &sync.Mutex{},
+		out:    out,
+		opts:   o,
+		mu:     &sync.Mutex{},
+		indent: 0,
 	}
 
 	return h
@@ -62,19 +66,28 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 		level = "INFO"
 
 	case log.LevelGroup:
-		return nil
+		level = "GROUP"
+		h.group = r.Message
 	case log.LevelGroupEnd:
-		return nil
+		h.indent = 0
+		level = "GROUPEND"
+		r.Message = h.group
 	}
 
 	buf := make([]byte, 0, buflen)
 
 	buf = fmt.Appendf(buf,
-		"%s %s %s\n",
+		"%*s%s %s %s\n",
+		h.indent,
+		"",
 		level,
 		r.Message,
 		h.formatAttrs(r),
 	)
+
+	if r.Level == log.LevelGroup {
+		h.indent = 2
+	}
 
 	return h.write(buf)
 }
