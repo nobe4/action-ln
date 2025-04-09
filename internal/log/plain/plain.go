@@ -71,7 +71,7 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	case log.LevelGroupEnd:
 		h.indent = 0
 		level = "GROUPEND"
-		r.Message = h.group
+		r.Message = h.group + "\n"
 	}
 
 	buf := make([]byte, 0, buflen)

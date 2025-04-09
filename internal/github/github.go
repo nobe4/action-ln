@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 type FileGetter interface {
@@ -47,6 +49,8 @@ type User struct {
 
 func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) (int, error) {
 	path = g.endpoint + path
+
+	log.Debug("Request", "method", method, "path", path)
 
 	req, err := http.NewRequestWithContext(ctx, method, path, body)
 	if err != nil {
