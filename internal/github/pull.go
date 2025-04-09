@@ -19,6 +19,7 @@ var (
 
 type Pull struct {
 	Number int `json:"number"`
+	New    bool
 }
 
 // https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
@@ -71,7 +72,7 @@ func (g *GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, p
 
 	path := fmt.Sprintf("/repos/%s/pulls", repo)
 
-	pull := Pull{}
+	pull := Pull{New: true}
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), &pull); err != nil {
 		if status == http.StatusUnprocessableEntity {
 			return Pull{}, ErrPullExists

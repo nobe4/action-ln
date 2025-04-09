@@ -42,6 +42,10 @@ func TestGetPull(t *testing.T) {
 		if got.Number != number {
 			t.Fatalf("expected number to be %d but got %d", number, got.Number)
 		}
+
+		if got.New {
+			t.Fatalf("expected pull to be not new, but it is")
+		}
 	})
 
 	t.Run("finds no pull", func(t *testing.T) {
@@ -97,13 +101,17 @@ func TestCreatePull(t *testing.T) {
 		if got.Number != number {
 			t.Fatalf("expected number to be %d but got %d", number, got.Number)
 		}
+
+		if !got.New {
+			t.Fatalf("expected pull to be new, but it is not")
+		}
 	})
 }
 
 func TestGetOrCreatePull(t *testing.T) {
 	t.Parallel()
 
-	t.Run("finds existing pull", func(t *testing.T) {
+	t.Run("find existing pull", func(t *testing.T) {
 		t.Parallel()
 
 		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +130,10 @@ func TestGetOrCreatePull(t *testing.T) {
 
 		if got.Number != number {
 			t.Fatalf("want number %d, but got %d", number, got.Number)
+		}
+
+		if got.New {
+			t.Fatalf("expected pull to be not new, but it is")
 		}
 	})
 
@@ -166,6 +178,10 @@ func TestGetOrCreatePull(t *testing.T) {
 
 		if got.Number != number {
 			t.Fatalf("expected number to be %d but got %d", number, got.Number)
+		}
+
+		if !got.New {
+			t.Fatalf("expected pull to be new, but it is not")
 		}
 	})
 }
