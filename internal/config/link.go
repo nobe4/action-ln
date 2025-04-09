@@ -30,14 +30,15 @@ func (l *Link) Equal(other *Link) bool {
 }
 
 func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.Branch) (bool, error) {
+	// TODO: if the content is equal, this is not needed.
 	if head.New {
-		log.Debug("Head is new, update is needed")
+		log.Debug("Head is new", "head", head)
 
 		return true, nil
 	}
 
 	if l.From.Content == l.To.Content {
-		log.Debug("Content is equal, update is not needed")
+		log.Debug("Content is the same", "from", l.From, "to", l.To)
 
 		return false, nil
 	}
@@ -48,19 +49,27 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 		Ref:  head.Name,
 	}
 
+	log.Debug("Checking head content", "from", l.From, "to@head", headTo)
+
 	if err := g.GetFile(ctx, headTo); err != nil {
 		if errors.Is(err, github.ErrMissingFile) {
-			log.Warn("Head to file is missing, update is needed", "headTo", headTo)
+			log.Warn("File is missing", "to@head", headTo)
 
 			return true, nil
 		}
 
-		return false, fmt.Errorf("failed to get file on branch: %w", err)
+		return false, fmt.Errorf("failed to get to@head %s: %w", headTo, err)
 	}
 
-	log.Debug("Head to file", "headTo", headTo)
+	if l.From.Content == headTo.Content {
+		log.Debug("Content is the same", "from", l.From, "to@head", headTo)
 
-	return l.From.Content != headTo.Content, nil
+		return false, nil
+	}
+
+	log.Debug("Content differs", "from", l.From, "to@head", headTo)
+
+	return true, nil
 }
 
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
