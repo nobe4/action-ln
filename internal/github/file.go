@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 type File struct {
@@ -39,17 +41,21 @@ func (f File) Equal(o File) bool {
 }
 
 func (f File) APIPath() string {
-	return fmt.Sprintf("/repos/%s/contents/%s", f.Repo, f.Path)
+	return fmt.Sprintf("/repos/%s/contents/%s?ref=%s", f.Repo, f.Path, f.Ref)
 }
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g *GitHub) GetFile(ctx context.Context, f *File) error {
-	if status, err := g.req(ctx,
+	status, err := g.req(ctx,
 		http.MethodGet,
 		f.APIPath(),
 		nil,
 		&f,
-	); err != nil {
+	)
+
+	log.Debug("Get", "file", f, "status", status, "err", err)
+
+	if err != nil {
 		if status == http.StatusNotFound {
 			return fmt.Errorf("%w: %w", ErrMissingFile, err)
 		}
@@ -69,6 +75,8 @@ func (g *GitHub) GetFile(ctx context.Context, f *File) error {
 
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#create-or-update-file-contents
 func (g *GitHub) UpdateFile(ctx context.Context, f File, branch, message string) (File, error) {
+	log.Debug("Update file", "file", f, "branch", branch, "message", message)
+
 	body, err := json.Marshal(struct {
 		Message string `json:"message"`
 		Content string `json:"content"`

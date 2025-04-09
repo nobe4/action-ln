@@ -51,11 +51,15 @@ func TestGetFile(t *testing.T) {
 		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
 			assertReq(t, r, http.MethodGet, contentPath, nil)
 
+			ref := r.URL.Query().Get("ref")
+			if ref != branch {
+				t.Fatalf("expected ref to be '%s' but got '%s'", branch, ref)
+			}
+
 			fmt.Fprintf(w, `{"content": "%s"}`, base64Content)
 		})
 
-		f := File{Repo: repo, Path: filePath}
-
+		f := File{Repo: repo, Path: filePath, Ref: branch}
 		if err := g.GetFile(t.Context(), &f); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
