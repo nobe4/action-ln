@@ -36,10 +36,17 @@ func processGroup(ctx context.Context, g *github.GitHub, group config.Links) err
 	log.Debug("Parsed branches", "head", head, "base", base)
 
 	for _, link := range group {
-		if err := processLink(ctx, g, link, head); err != nil {
+		if err = processLink(ctx, g, link, head); err != nil {
 			return fmt.Errorf("failed to process link: %w", err)
 		}
 	}
+
+	pull, err := g.GetOrCreatePull(ctx, group[0].To.Repo, base.Name, head.Name, "title", "body")
+	if err != nil {
+		return fmt.Errorf("failed to get pull request: %w", err)
+	}
+
+	log.Info("Created pull request", "pull", pull)
 
 	return nil
 }
