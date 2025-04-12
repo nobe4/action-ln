@@ -26,6 +26,7 @@ var (
 
 const (
 	defaultEndpoint = "https://api.github.com"
+	defaultServer   = "https://github.com"
 	defaultConfig   = ".github/ln-config.yaml"
 	redacted        = "[redacted]"
 	missing         = "[missing]"
@@ -41,6 +42,7 @@ type Environment struct {
 	Noop     bool        `json:"noop"`     // INPUT_NOOP
 	Token    string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
 	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
+	Server   string      `json:"server"`   // GITHUB_SERVER_URL
 	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
 	Config   string      `json:"config"`   // INPUT_CONFIG
 	App      App         `json:"app"`
@@ -89,6 +91,7 @@ func Parse() (Environment, error) {
 
 	e.Noop = parseNoop()
 	e.Endpoint = parseEndpoint()
+	e.Server = parseServer()
 	e.Config = parseConfig()
 	e.App = parseApp()
 	e.OnAction = parseOnAction()
@@ -137,6 +140,14 @@ func parseEndpoint() string {
 	}
 
 	return defaultEndpoint
+}
+
+func parseServer() string {
+	if server := os.Getenv("GITHUB_SERVER_URL"); server != "" {
+		return server
+	}
+
+	return defaultServer
 }
 
 func parseConfig() string {
