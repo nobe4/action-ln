@@ -28,6 +28,7 @@ const (
 	defaultEndpoint = "https://api.github.com"
 	defaultServer   = "https://github.com"
 	defaultConfig   = ".github/ln-config.yaml"
+	defaultRunID    = ""
 	redacted        = "[redacted]"
 	missing         = "[missing]"
 )
@@ -44,9 +45,11 @@ type Environment struct {
 	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
 	Server   string      `json:"server"`   // GITHUB_SERVER_URL
 	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
+	RunID    string      `json:"run_id"`   // GITHUB_RUN_ID
 	Config   string      `json:"config"`   // INPUT_CONFIG
 	App      App         `json:"app"`
 	OnAction bool        `json:"on_action"`
+	ExecURL  string      `json:"exec_url"`
 	Debug    bool        `json:"debug"` // RUNNER_DEBUG
 }
 
@@ -92,10 +95,13 @@ func Parse() (Environment, error) {
 	e.Noop = parseNoop()
 	e.Endpoint = parseEndpoint()
 	e.Server = parseServer()
+	e.RunID = parseRunID()
 	e.Config = parseConfig()
 	e.App = parseApp()
 	e.OnAction = parseOnAction()
 	e.Debug = parseDebug()
+
+	e.ExecURL = fmt.Sprintf("%s/%s/actions/runs/%s", e.Server, e.Repo, e.RunID)
 
 	return e, nil
 }
@@ -148,6 +154,14 @@ func parseServer() string {
 	}
 
 	return defaultServer
+}
+
+func parseRunID() string {
+	if runID := os.Getenv("GITHUB_RUN_ID"); runID != "" {
+		return runID
+	}
+
+	return defaultRunID
 }
 
 func parseConfig() string {

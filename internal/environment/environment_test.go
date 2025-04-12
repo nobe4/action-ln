@@ -149,6 +149,28 @@ func TestParseServer(t *testing.T) {
 	})
 }
 
+func TestParseRunID(t *testing.T) {
+	t.Run("gets the default", func(t *testing.T) {
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("GITHUB_RUN_ID", "")
+
+		got := parseRunID()
+		if defaultRunID != got {
+			t.Fatalf("want %v but got %v", defaultRunID, got)
+		}
+	})
+
+	t.Run("gets the set runID", func(t *testing.T) {
+		want := "runID"
+		t.Setenv("GITHUB_RUN_ID", want)
+
+		got := parseRunID()
+		if want != got {
+			t.Fatalf("want %v but got %v", want, got)
+		}
+	})
+}
+
 func TestParseConfig(t *testing.T) {
 	t.Run("gets the default", func(t *testing.T) {
 		// Need to force an empty value to not conflict with GitHub Action's Env
@@ -160,7 +182,7 @@ func TestParseConfig(t *testing.T) {
 		}
 	})
 
-	t.Run("gets the set endpoint", func(t *testing.T) {
+	t.Run("gets the set config", func(t *testing.T) {
 		want := "path/to/config"
 		t.Setenv("INPUT_CONFIG", want)
 
