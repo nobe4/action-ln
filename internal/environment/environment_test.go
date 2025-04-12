@@ -120,9 +120,31 @@ func TestParseEndpoint(t *testing.T) {
 		want := "https://example.com"
 		t.Setenv("GITHUB_API_URL", want)
 
-		endpoint := parseEndpoint()
-		if want != endpoint {
-			t.Fatalf("want %v but got %v", want, endpoint)
+		got := parseEndpoint()
+		if want != got {
+			t.Fatalf("want %v but got %v", want, got)
+		}
+	})
+}
+
+func TestParseServer(t *testing.T) {
+	t.Run("gets the default", func(t *testing.T) {
+		// Need to force an empty value to not conflict with GitHub Action's Env
+		t.Setenv("GITHUB_SERVER_URL", "")
+
+		got := parseServer()
+		if defaultServer != got {
+			t.Fatalf("want %v but got %v", defaultServer, got)
+		}
+	})
+
+	t.Run("gets the set server", func(t *testing.T) {
+		want := "https://example.com"
+		t.Setenv("GITHUB_SERVER_URL", want)
+
+		got := parseServer()
+		if want != got {
+			t.Fatalf("want %v but got %v", want, got)
 		}
 	})
 }
