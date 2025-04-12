@@ -44,6 +44,10 @@ func (f File) APIPath() string {
 	return fmt.Sprintf("/repos/%s/contents/%s?ref=%s", f.Repo, f.Path, f.Ref)
 }
 
+func (f File) HTMLPath() string {
+	return fmt.Sprintf("/%s/blob/%s/%s", f.Repo, f.Commit, f.Path)
+}
+
 // https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28#get-repository-content
 func (g *GitHub) GetFile(ctx context.Context, f *File) error {
 	status, err := g.req(ctx,
