@@ -36,7 +36,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
 	log.Group("Get config")
 
-	log.Group("Get config commit")
+	log.Debug("Get config commit", "repo", e.Repo)
 
 	b, err := g.GetDefaultBranch(ctx, e.Repo)
 	if err != nil {
