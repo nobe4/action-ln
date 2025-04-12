@@ -30,8 +30,9 @@ type RawConfig struct {
 }
 
 type Config struct {
-	Defaults Defaults `json:"defaults" yaml:"defaults"`
-	Links    Links    `json:"links"    yaml:"links"`
+	Source   github.File `json:"source"   yaml:"source"`
+	Defaults Defaults    `json:"defaults" yaml:"defaults"`
+	Links    Links       `json:"links"    yaml:"links"`
 }
 
 func New() *Config { return &Config{} }

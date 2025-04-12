@@ -36,7 +36,14 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
 	log.Group("Get config")
 
-	f := github.File{Repo: e.Repo, Path: e.Config}
+	log.Debug("Get config commit", "repo", e.Repo)
+
+	b, err := g.GetDefaultBranch(ctx, e.Repo)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default branch: %w", err)
+	}
+
+	f := github.File{Repo: e.Repo, Path: e.Config, Commit: b.Commit.SHA, Ref: b.Name}
 
 	log.Debug("Get config file", "file", f)
 
@@ -48,6 +55,7 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 
 	c := config.New()
 	c.Defaults.Repo = e.Repo
+	c.Source = f
 
 	log.Debug("Parse config file", "sha", f.Commit)
 
