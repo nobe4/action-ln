@@ -2,5 +2,5 @@
 
 set -e
 
-go test -race -count 10 -cover ./... -coverprofile=coverage ./... | column -t -s '	'
+go test -race -count 10 -cover ./... -coverprofile=coverage ./...
 go tool cover -html=coverage -o coverage.html
