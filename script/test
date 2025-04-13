@@ -2,5 +2,12 @@
 
 set -e
 
-go test -race -count 10 -cover ./... -coverprofile=coverage ./...
+tmp=$(mktemp)
+
+if go test -race -count 10 -cover -coverprofile=coverage ./... > "${tmp}"; then
+	column -t -s $'\t' "${tmp}"
+else
+	cat "${tmp}"
+fi
+
 go tool cover -html=coverage -o coverage.html
