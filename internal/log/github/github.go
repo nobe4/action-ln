@@ -43,15 +43,6 @@ func (h *Handler) Enabled(_ context.Context, l slog.Level) bool {
 	return l >= h.opts.Level.Level()
 }
 
-func (h *Handler) write(p []byte) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	_, err := h.out.Write(p)
-
-	return fmt.Errorf("%w: %w", log.ErrCannotWrite, err)
-}
-
 func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	command := ""
 
@@ -85,6 +76,25 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	return h.write(buf)
 }
 
+func (h *Handler) WithAttrs(_ []slog.Attr) slog.Handler {
+	// TODO: implement?
+	return h
+}
+
+func (h *Handler) WithGroup(_ string) slog.Handler {
+	// TODO: implement?
+	return h
+}
+
+func (h *Handler) write(p []byte) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	_, err := h.out.Write(p)
+
+	return fmt.Errorf("%w: %w", log.ErrCannotWrite, err)
+}
+
 func (*Handler) formatAttrs(r slog.Record) string {
 	attrs := []string{}
 
@@ -99,14 +109,4 @@ func (*Handler) formatAttrs(r slog.Record) string {
 	}
 
 	return ""
-}
-
-func (h *Handler) WithAttrs(_ []slog.Attr) slog.Handler {
-	// TODO: implement?
-	return h
-}
-
-func (h *Handler) WithGroup(_ string) slog.Handler {
-	// TODO: implement?
-	return h
 }
