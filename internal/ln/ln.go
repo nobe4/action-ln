@@ -26,7 +26,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	if err := processGroups(ctx, g, c.Links.Groups()); err != nil {
+	if err := processGroups(ctx, g, e, c); err != nil {
 		return fmt.Errorf("failed to process the groups: %w", err)
 	}
 
