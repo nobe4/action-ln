@@ -5,19 +5,16 @@ import (
 	"fmt"
 
 	"github.com/nobe4/action-ln/internal/config"
+	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
 )
 
-const (
-	branchName = "test"
-)
-
-func processGroups(ctx context.Context, g *github.GitHub, groups config.Groups) error {
-	for id, group := range groups {
+func processGroups(ctx context.Context, g *github.GitHub, e environment.Environment, c *config.Config) error {
+	for id, l := range c.Links.Groups() {
 		log.Group("Processing group " + id)
 
-		if err := processGroup(ctx, g, group); err != nil {
+		if err := processLinks(ctx, g, c, e, l); err != nil {
 			return err
 		}
 
@@ -27,21 +24,34 @@ func processGroups(ctx context.Context, g *github.GitHub, groups config.Groups) 
 	return nil
 }
 
-func processGroup(ctx context.Context, g *github.GitHub, group config.Links) error {
-	base, head, err := g.GetBaseAndHeadBranches(ctx, group[0].To.Repo, branchName)
+func processLinks(
+	ctx context.Context,
+	g *github.GitHub,
+	c *config.Config,
+	e environment.Environment,
+	l config.Links,
+) error {
+	toRepo := l[0].To.Repo
+
+	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, branchName)
 	if err != nil {
 		return fmt.Errorf("failed to prepare branches: %w", err)
 	}
 
 	log.Debug("Parsed branches", "head", head, "base", base)
 
-	for _, link := range group {
+	for _, link := range l {
 		if err = processLink(ctx, g, link, head); err != nil {
 			return fmt.Errorf("failed to process link: %w", err)
 		}
 	}
 
-	pull, err := g.GetOrCreatePull(ctx, group[0].To.Repo, base.Name, head.Name, "title", "body")
+	pullBody, err := pullRequestBody(l, c, e)
+	if err != nil {
+		return fmt.Errorf("failed to create pull request body: %w", err)
+	}
+
+	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, pullTitle, pullBody)
 	if err != nil {
 		return fmt.Errorf("failed to get pull request: %w", err)
 	}
@@ -52,7 +62,7 @@ func processGroup(ctx context.Context, g *github.GitHub, group config.Links) err
 }
 
 func processLink(ctx context.Context, g *github.GitHub, link *config.Link, head github.Branch) error {
-	log.Debug("Processing link", "link", link)
+	log.Info("Processing link", "link", link)
 
 	needUpdate, err := link.NeedUpdate(ctx, g, head)
 	if err != nil {
