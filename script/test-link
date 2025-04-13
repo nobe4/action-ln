@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e
+
+GITHUB_TOKEN=$(gh auth token) \
+	INPUT_CONFIG=ln-config.yaml \
+	GITHUB_REPOSITORY=frozen-fishsticks/action-ln-test-0 \
+	RUNNER_DEBUG=1 \
+	go run cmd/action-ln/main.go
