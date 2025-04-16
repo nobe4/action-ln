@@ -13,8 +13,9 @@ const (
 	branchName   = "auto-action-ln"
 	pullTitle    = "auto(ln): update links"
 	bodyTemplate = `
+{{/* This defines a backtick character to use in the markdown. */}}
+{{- $b := "` + "`" + `" -}}
 This automated PR updates the following files:
-{{ $b := "` + "`" + `" }}
 
 | From | To  |
 | ---  | --- |
@@ -24,7 +25,7 @@ This automated PR updates the following files:
 
 ---
 
-| Quick links | [execution]({{ .Environment.ExecURL }}) | [configuration]({{.Environment.Server}}{{ .Config.Source.HTMLPath }}) | [action-ln](https://github.com/nobe4/action-ln) |
+| Quick links | [execution]({{ .Environment.ExecURL }}) | [configuration]({{ .Environment.Server }}{{ .Config.Source.HTMLPath }}) | [action-ln](https://github.com/nobe4/action-ln) |
 | --- | --- | --- | --- |
 `
 )

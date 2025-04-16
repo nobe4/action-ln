@@ -46,22 +46,22 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 
 	switch r.Level {
 	case log.LevelDebug:
-		level = "DEBUG"
+		level = "[D]"
 	case log.LevelWarn:
-		level = "WARN"
+		level = "[W]"
 	case log.LevelError:
-		level = "ERROR"
+		level = "[E]"
 	case log.LevelNotice:
-		level = "NOTICE"
+		level = "[N]"
 	case log.LevelInfo:
-		level = "INFO"
+		level = "[I]"
 
 	case log.LevelGroup:
-		level = "GROUP"
+		level = "[G]"
 		h.group = r.Message
 	case log.LevelGroupEnd:
 		h.indent = 0
-		level = "GROUPEND"
+		level = "[/G]"
 		r.Message = h.group + "\n"
 	}
 
