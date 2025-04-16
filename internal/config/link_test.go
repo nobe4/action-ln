@@ -10,80 +10,6 @@ import (
 
 var errTest = errors.New("test")
 
-func TestParseLink(t *testing.T) {
-	t.Parallel()
-
-	repo := github.Repo{Owner: github.User{Login: "owner"}, Repo: "repo"}
-	repo2 := github.Repo{Owner: github.User{Login: "owner2"}, Repo: "repo2"}
-
-	tests := []struct {
-		defaults Defaults
-		rl       RawLink
-		want     *Link
-	}{
-		{
-			rl: RawLink{
-				From: "from",
-				To:   "to",
-			},
-			want: &Link{
-				From: github.File{Path: "from"},
-				To:   github.File{Path: "to"},
-			},
-		},
-
-		{
-			defaults: Defaults{Repo: repo},
-			rl:       RawLink{From: "from", To: "to"},
-			want: &Link{
-				From: github.File{Path: "from", Repo: repo},
-				To:   github.File{Path: "to", Repo: repo},
-			},
-		},
-
-		{
-			rl: RawLink{
-				From: map[string]any{"path": "from", "repo": "repo2"},
-				To:   "to",
-			},
-			want: &Link{
-				From: github.File{Path: "from", Repo: github.Repo{Repo: "repo2"}},
-				To:   github.File{Path: "to"},
-			},
-		},
-
-		{
-			defaults: Defaults{Repo: repo},
-			rl: RawLink{
-				From: map[string]any{"path": "from", "repo": "repo2", "owner": "owner2"},
-				To:   "to",
-			},
-			want: &Link{
-				From: github.File{Path: "from", Repo: repo2},
-				To:   github.File{Path: "to", Repo: repo},
-			},
-		},
-	}
-
-	for _, test := range tests {
-		t.Run("", func(t *testing.T) {
-			t.Parallel()
-
-			c := New()
-			c.Defaults = test.defaults
-
-			got, err := c.parseLink(test.rl)
-			if err != nil {
-				t.Fatalf("expected no error, got %v", err)
-			}
-
-			if !test.want.Equal(got) {
-				t.Fatalf("expected\n%#v\ngot\n%#v", test.want, got)
-			}
-		})
-	}
-}
-
 func TestLinkNeedUpdate(t *testing.T) {
 	t.Parallel()
 
@@ -316,50 +242,131 @@ func TestPopulate(t *testing.T) {
 	})
 }
 
-func TestGroups(t *testing.T) {
+func TestLinkUpdate(t *testing.T) {
 	t.Parallel()
 
-	links := Links{
-		&Link{
-			To: github.File{
-				Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+	head := github.Branch{Name: "head"}
+
+	t.Run("fail to update", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileUpdater{
+			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
+				return github.File{}, errTest
+			},
+		}
+
+		l := &Link{
+			To:   github.File{Content: "to"},
+			From: github.File{Content: "from"},
+		}
+
+		err := l.Update(t.Context(), g, head)
+
+		if !errors.Is(err, errTest) {
+			t.Fatalf("want error %v, got %v", errTest, err)
+		}
+
+		if l.To.Content != l.From.Content {
+			t.Fatal("want link content to be updated but isn't")
+		}
+	})
+
+	t.Run("update", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileUpdater{
+			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
+				// NOTE: the returned file is currently not used.
+				return github.File{}, nil
+			},
+		}
+
+		l := &Link{
+			To:   github.File{Content: "to"},
+			From: github.File{Content: "from"},
+		}
+
+		if err := l.Update(t.Context(), g, head); err != nil {
+			t.Fatalf("want no error, got %v", err)
+		}
+
+		if l.To.Content != l.From.Content {
+			t.Fatal("want link content to be updated but isn't")
+		}
+	})
+}
+
+func TestParseLink(t *testing.T) {
+	t.Parallel()
+
+	repo := github.Repo{Owner: github.User{Login: "owner"}, Repo: "repo"}
+	repo2 := github.Repo{Owner: github.User{Login: "owner2"}, Repo: "repo2"}
+
+	tests := []struct {
+		defaults Defaults
+		rl       RawLink
+		want     *Link
+	}{
+		{
+			rl: RawLink{
+				From: "from",
+				To:   "to",
+			},
+			want: &Link{
+				From: github.File{Path: "from"},
+				To:   github.File{Path: "to"},
 			},
 		},
 
-		&Link{
-			To: github.File{
-				Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "b"},
+		{
+			defaults: Defaults{Repo: repo},
+			rl:       RawLink{From: "from", To: "to"},
+			want: &Link{
+				From: github.File{Path: "from", Repo: repo},
+				To:   github.File{Path: "to", Repo: repo},
 			},
 		},
 
-		&Link{
-			To: github.File{
-				Repo: github.Repo{Owner: github.User{Login: "a"}, Repo: "c"},
+		{
+			rl: RawLink{
+				From: map[string]any{"path": "from", "repo": "repo2"},
+				To:   "to",
+			},
+			want: &Link{
+				From: github.File{Path: "from", Repo: github.Repo{Repo: "repo2"}},
+				To:   github.File{Path: "to"},
 			},
 		},
 
-		&Link{
-			To: github.File{
-				Repo: github.Repo{Owner: github.User{Login: "d"}, Repo: "e"},
+		{
+			defaults: Defaults{Repo: repo},
+			rl: RawLink{
+				From: map[string]any{"path": "from", "repo": "repo2", "owner": "owner2"},
+				To:   "to",
+			},
+			want: &Link{
+				From: github.File{Path: "from", Repo: repo2},
+				To:   github.File{Path: "to", Repo: repo},
 			},
 		},
 	}
 
-	got := links.Groups()
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
 
-	if got["a/b"][0] != links[0] {
-		t.Fatalf("expected %v, got %v", links[0], got["a/b"][0])
-	}
+			c := New()
+			c.Defaults = test.defaults
 
-	if got["a/b"][1] != links[1] {
-		t.Fatalf("expected %v, got %v", links[1], got["a/b"][1])
-	}
+			got, err := c.parseLink(test.rl)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
-	if got["a/c"][0] != links[2] {
-		t.Fatalf("expected %v, got %v", links[2], got["a/c"][0])
-	}
-
-	if got["d/e"][0] != links[3] {
-		t.Fatalf("expected %v, got %v", links[3], got["d/e"][0])
+			if !test.want.Equal(got) {
+				t.Fatalf("expected\n%#v\ngot\n%#v", test.want, got)
+			}
+		})
 	}
 }

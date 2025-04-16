@@ -1,0 +1,64 @@
+package config
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
+)
+
+type Links []*Link
+
+func (c *Config) parseLinks(raw []RawLink) (Links, error) {
+	links := Links{}
+
+	for i, rl := range raw {
+		log.Debug("Parse link", "index", i, "raw", rl)
+
+		l, err := c.parseLink(rl)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, l)
+	}
+
+	return links, nil
+}
+
+func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) (bool, error) {
+	updated := false
+
+	for _, link := range *l {
+		if needUpdate, err := link.NeedUpdate(ctx, g, head); err != nil {
+			return updated, fmt.Errorf("failed to check if link %q needs update: %w", link, err)
+		} else if !needUpdate {
+			log.Debug("Update not needed", "link", link)
+
+			continue
+		}
+
+		log.Debug("Update needed", "link", link)
+
+		if err := link.Update(ctx, g, head); err != nil {
+			return updated, fmt.Errorf("failed to process link %q: %w", l, err)
+		}
+
+		updated = true
+	}
+
+	return updated, nil
+}
+
+type Groups map[string]Links
+
+func (l *Links) Groups() Groups {
+	g := make(Groups)
+
+	for _, link := range *l {
+		g[link.To.Repo.String()] = append(g[link.To.Repo.String()], link)
+	}
+
+	return g
+}
