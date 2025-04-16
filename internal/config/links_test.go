@@ -120,6 +120,55 @@ func TestLinksUpdate(t *testing.T) {
 			t.Fatal("want to be updated")
 		}
 	})
+
+	t.Run("multiple links", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetterUpdater{
+			GetHandler: func(f *github.File) error {
+				f.Content = "got"
+
+				return nil
+			},
+			UpdateHandler: func(f github.File, _ string, _ string) (github.File, error) {
+				if f.Content == "error" {
+					return github.File{}, errTest
+				}
+
+				return github.File{}, nil
+			},
+		}
+
+		l := &Links{
+			// Needs no update
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "from"},
+			},
+
+			// Updates correctly
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "to"},
+			},
+
+			// Fails to update
+			{
+				From: github.File{Content: "error"},
+				To:   github.File{Content: "to"},
+			},
+		}
+
+		updated, err := l.Update(t.Context(), g, head)
+		if !errors.Is(err, errTest) {
+			t.Fatalf("want error %v, got %v", errTest, err)
+		}
+
+		// The function failed but we had a valid update.
+		if !updated {
+			t.Fatal("want to be updated")
+		}
+	})
 }
 
 func TestGroups(t *testing.T) {
