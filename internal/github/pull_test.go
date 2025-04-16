@@ -43,6 +43,10 @@ func TestGetPull(t *testing.T) {
 			t.Fatalf("expected number to be %d but got %d", number, got.Number)
 		}
 
+		if got.Repo != repo {
+			t.Fatalf("expected repo to be %v but got %v", repo, got.Repo)
+		}
+
 		if got.New {
 			t.Fatalf("expected pull to be not new, but it is")
 		}
@@ -100,6 +104,10 @@ func TestCreatePull(t *testing.T) {
 
 		if got.Number != number {
 			t.Fatalf("expected number to be %d but got %d", number, got.Number)
+		}
+
+		if got.Repo != repo {
+			t.Fatalf("expected repo to be %v but got %v", repo, got.Repo)
 		}
 
 		if !got.New {
