@@ -242,7 +242,7 @@ func TestPopulate(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T) {
+func TestLinkUpdate(t *testing.T) {
 	t.Parallel()
 
 	head := github.Branch{Name: "head"}
