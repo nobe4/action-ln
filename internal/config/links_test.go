@@ -13,6 +13,8 @@ func TestLinksUpdate(t *testing.T) {
 
 	head := github.Branch{New: false}
 
+	const got = "got"
+
 	t.Run("fail to check if the link needs an update", func(t *testing.T) {
 		t.Parallel()
 
@@ -64,7 +66,7 @@ func TestLinksUpdate(t *testing.T) {
 
 		g := mock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
-				f.Content = "got"
+				f.Content = got
 
 				return nil
 			},
@@ -95,7 +97,7 @@ func TestLinksUpdate(t *testing.T) {
 
 		g := mock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
-				f.Content = "got"
+				f.Content = got
 
 				return nil
 			},
@@ -126,7 +128,7 @@ func TestLinksUpdate(t *testing.T) {
 
 		g := mock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
-				f.Content = "got"
+				f.Content = got
 
 				return nil
 			},
