@@ -21,6 +21,12 @@ type Link struct {
 	To   github.File `json:"to"   yaml:"to"`
 }
 
+// The parsing can be done from a couple of various format, see ParseFile.
+type RawLink struct {
+	From any `yaml:"from"`
+	To   any `yaml:"to"`
+}
+
 func (l *Link) String() string {
 	return fmt.Sprintf("%s -> %s", l.From, l.To)
 }
@@ -72,58 +78,6 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 	return true, nil
 }
 
-func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
-	if err := g.GetFile(ctx, &l.From); err != nil {
-		return fmt.Errorf("%w %#v: %w", errMissingFrom, l.From, err)
-	}
-
-	if err := g.GetFile(ctx, &l.To); err != nil {
-		if !errors.Is(err, github.ErrMissingFile) {
-			return fmt.Errorf("%w %#v: %w", errMissingTo, l.To, err)
-		}
-
-		log.Debug("file does not exist", "file", l.To)
-	}
-
-	return nil
-}
-
-type Links []*Link
-
-type Groups map[string]Links
-
-func (l Links) Groups() Groups {
-	g := make(Groups)
-
-	for _, link := range l {
-		g[link.To.Repo.String()] = append(g[link.To.Repo.String()], link)
-	}
-
-	return g
-}
-
-type RawLink struct {
-	From any `yaml:"from"`
-	To   any `yaml:"to"`
-}
-
-func (c *Config) parseLinks(raw []RawLink) (Links, error) {
-	links := Links{}
-
-	for i, rl := range raw {
-		log.Debug("Parse link", "index", i, "raw", rl)
-
-		l, err := c.parseLink(rl)
-		if err != nil {
-			return nil, err
-		}
-
-		links = append(links, l)
-	}
-
-	return links, nil
-}
-
 func (c *Config) parseLink(raw RawLink) (*Link, error) {
 	from, err := c.parseFile(raw.From)
 	if err != nil {
@@ -138,30 +92,33 @@ func (c *Config) parseLink(raw RawLink) (*Link, error) {
 	return &Link{From: from, To: to}, nil
 }
 
-func (l *Link) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) (bool, error) {
+func (l *Link) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) error {
 	log.Info("Processing link", "link", l)
-
-	needUpdate, err := l.NeedUpdate(ctx, g, head)
-	if err != nil {
-		return false, fmt.Errorf("failed to check if link needs update: %w", err)
-	}
-
-	if !needUpdate {
-		log.Debug("Update not needed")
-
-		return false, nil
-	}
-
-	log.Debug("Update needed")
 
 	l.To.Content = l.From.Content
 
 	newTo, err := g.UpdateFile(ctx, l.To, head.Name, "test updating")
 	if err != nil {
-		return false, fmt.Errorf("failed to update file: %w", err)
+		return fmt.Errorf("failed to update file: %w", err)
 	}
 
 	log.Info("Updated file", "new to", newTo)
 
-	return true, nil
+	return nil
+}
+
+func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
+	if err := g.GetFile(ctx, &l.From); err != nil {
+		return fmt.Errorf("%w %#v: %w", errMissingFrom, l.From, err)
+	}
+
+	if err := g.GetFile(ctx, &l.To); err != nil {
+		if !errors.Is(err, github.ErrMissingFile) {
+			return fmt.Errorf("%w %#v: %w", errMissingTo, l.To, err)
+		}
+
+		log.Debug("file does not exist", "file", l.To)
+	}
+
+	return nil
 }

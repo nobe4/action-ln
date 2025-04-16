@@ -40,21 +40,15 @@ func processLinks(
 
 	log.Debug("Parsed branches", "head", head, "base", base)
 
-	updated := false
-
-	for _, link := range l {
-		linkUpdated, err := link.Update(ctx, g, head)
-		if err != nil {
-			return fmt.Errorf("failed to process link: %w", err)
-		}
-
-		updated = updated || linkUpdated
+	updated, err := l.Update(ctx, g, head)
+	if err != nil {
+		return fmt.Errorf("failed to update the links: %w", err)
 	}
 
-	// TODO
-	// if !updated {
-	// 	log.Debug("No link was updated, cleaning up...")
-	// }
+	if !updated {
+		// TODO don't create the PR, remove the branch.
+		log.Debug("No link was updated, cleaning up...")
+	}
 
 	pullBody, err := pullRequestBody(l, c, e)
 	if err != nil {
