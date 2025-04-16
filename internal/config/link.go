@@ -137,3 +137,31 @@ func (c *Config) parseLink(raw RawLink) (*Link, error) {
 
 	return &Link{From: from, To: to}, nil
 }
+
+func (l *Link) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) (bool, error) {
+	log.Info("Processing link", "link", l)
+
+	needUpdate, err := l.NeedUpdate(ctx, g, head)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if link needs update: %w", err)
+	}
+
+	if !needUpdate {
+		log.Debug("Update not needed")
+
+		return false, nil
+	}
+
+	log.Debug("Update needed")
+
+	l.To.Content = l.From.Content
+
+	newTo, err := g.UpdateFile(ctx, l.To, head.Name, "test updating")
+	if err != nil {
+		return false, fmt.Errorf("failed to update file: %w", err)
+	}
+
+	log.Info("Updated file", "new to", newTo)
+
+	return true, nil
+}

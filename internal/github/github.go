@@ -18,7 +18,16 @@ import (
 )
 
 type FileGetter interface {
-	GetFile(ctx context.Context, file *File) error
+	GetFile(ctx context.Context, f *File) error
+}
+
+type FileUpdater interface {
+	UpdateFile(ctx context.Context, f File, head string, msg string) (File, error)
+}
+
+type FileGetterUpdater interface {
+	FileGetter
+	FileUpdater
 }
 
 var (

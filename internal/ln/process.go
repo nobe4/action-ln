@@ -43,7 +43,7 @@ func processLinks(
 	updated := false
 
 	for _, link := range l {
-		linkUpdated, err := processLink(ctx, g, link, head)
+		linkUpdated, err := link.Update(ctx, g, head)
 		if err != nil {
 			return fmt.Errorf("failed to process link: %w", err)
 		}
@@ -69,32 +69,4 @@ func processLinks(
 	log.Info("Created pull request", "pull", pull)
 
 	return nil
-}
-
-func processLink(ctx context.Context, g *github.GitHub, link *config.Link, head github.Branch) (bool, error) {
-	log.Info("Processing link", "link", link)
-
-	needUpdate, err := link.NeedUpdate(ctx, g, head)
-	if err != nil {
-		return false, fmt.Errorf("failed to check if link needs update: %w", err)
-	}
-
-	if !needUpdate {
-		log.Debug("Update not needed")
-
-		return false, nil
-	}
-
-	log.Debug("Update needed")
-
-	link.To.Content = link.From.Content
-
-	newTo, err := g.UpdateFile(ctx, link.To, head.Name, "test updating")
-	if err != nil {
-		return false, fmt.Errorf("failed to update file: %w", err)
-	}
-
-	log.Info("Updated file", "new to", newTo)
-
-	return true, nil
 }
