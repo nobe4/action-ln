@@ -78,6 +78,23 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 	return true, nil
 }
 
+func (l *Link) Update(ctx context.Context, g github.FileUpdater, head github.Branch) error {
+	log.Info("Processing link", "link", l)
+
+	l.To.Content = l.From.Content
+
+	// TODO: make `msg` dynamic, or fixed in a constant.
+	// TODO: should we do anything with newTo?
+	newTo, err := g.UpdateFile(ctx, l.To, head.Name, "test updating")
+	if err != nil {
+		return fmt.Errorf("failed to update file: %w", err)
+	}
+
+	log.Info("Updated file", "new to", newTo)
+
+	return nil
+}
+
 func (c *Config) parseLink(raw RawLink) (*Link, error) {
 	from, err := c.parseFile(raw.From)
 	if err != nil {
@@ -90,21 +107,6 @@ func (c *Config) parseLink(raw RawLink) (*Link, error) {
 	}
 
 	return &Link{From: from, To: to}, nil
-}
-
-func (l *Link) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) error {
-	log.Info("Processing link", "link", l)
-
-	l.To.Content = l.From.Content
-
-	newTo, err := g.UpdateFile(ctx, l.To, head.Name, "test updating")
-	if err != nil {
-		return fmt.Errorf("failed to update file: %w", err)
-	}
-
-	log.Info("Updated file", "new to", newTo)
-
-	return nil
 }
 
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
