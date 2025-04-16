@@ -1,10 +1,104 @@
 package config
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/github/mock"
 )
+
+func TestLinksUpdate(t *testing.T) {
+	t.Parallel()
+
+	head := github.Branch{New: false}
+
+	t.Run("fail to check if the first link needs an update", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetterUpdater{
+			GetHandler: func(*github.File) error { return errTest },
+		}
+
+		l := &Links{
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "to"},
+			},
+		}
+
+		updated, err := l.Update(t.Context(), g, head)
+		if !errors.Is(err, errTest) {
+			t.Fatalf("want error %v, got %v", errTest, err)
+		}
+
+		if updated {
+			t.Fatal("want to not be updated")
+		}
+	})
+
+	t.Run("fail to update the first link", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetterUpdater{
+			GetHandler: func(f *github.File) error {
+				f.Content = "got"
+
+				return nil
+			},
+			UpdateHandler: func(github.File, string, string) (github.File, error) {
+				return github.File{}, errTest
+			},
+		}
+
+		l := &Links{
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "to"},
+			},
+		}
+
+		updated, err := l.Update(t.Context(), g, head)
+		if !errors.Is(err, errTest) {
+			t.Fatalf("want error %v, got %v", errTest, err)
+		}
+
+		if updated {
+			t.Fatal("want to not be updated")
+		}
+	})
+
+	t.Run("update the first link", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetterUpdater{
+			GetHandler: func(f *github.File) error {
+				f.Content = "got"
+
+				return nil
+			},
+			UpdateHandler: func(github.File, string, string) (github.File, error) {
+				return github.File{}, nil
+			},
+		}
+
+		l := &Links{
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "to"},
+			},
+		}
+
+		updated, err := l.Update(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("want no error, got %v", err)
+		}
+
+		if !updated {
+			t.Fatal("want to be updated")
+		}
+	})
+}
 
 func TestGroups(t *testing.T) {
 	t.Parallel()
