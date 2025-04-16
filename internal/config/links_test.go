@@ -13,7 +13,7 @@ func TestLinksUpdate(t *testing.T) {
 
 	head := github.Branch{New: false}
 
-	t.Run("fail to check if the first link needs an update", func(t *testing.T) {
+	t.Run("fail to check if the link needs an update", func(t *testing.T) {
 		t.Parallel()
 
 		g := mock.FileGetterUpdater{
@@ -37,7 +37,29 @@ func TestLinksUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("fail to update the first link", func(t *testing.T) {
+	t.Run("do not update the link", func(t *testing.T) {
+		t.Parallel()
+
+		g := mock.FileGetterUpdater{}
+
+		l := &Links{
+			{
+				From: github.File{Content: "from"},
+				To:   github.File{Content: "from"},
+			},
+		}
+
+		updated, err := l.Update(t.Context(), g, head)
+		if err != nil {
+			t.Fatalf("want no error, got %v", err)
+		}
+
+		if updated {
+			t.Fatal("want to not be updated")
+		}
+	})
+
+	t.Run("fail to update the link", func(t *testing.T) {
 		t.Parallel()
 
 		g := mock.FileGetterUpdater{
@@ -68,7 +90,7 @@ func TestLinksUpdate(t *testing.T) {
 		}
 	})
 
-	t.Run("update the first link", func(t *testing.T) {
+	t.Run("update the link", func(t *testing.T) {
 		t.Parallel()
 
 		g := mock.FileGetterUpdater{
