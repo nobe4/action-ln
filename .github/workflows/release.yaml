@@ -19,7 +19,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: ./script/check-bin-existence.sh "${{ github.ref_name }}"
+      - run: ./script/check-bin-existence "${{ github.ref_name }}"
 
       # TODO: delete all but the dist folder
 
