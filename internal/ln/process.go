@@ -40,11 +40,21 @@ func processLinks(
 
 	log.Debug("Parsed branches", "head", head, "base", base)
 
+	updated := false
+
 	for _, link := range l {
-		if err = processLink(ctx, g, link, head); err != nil {
+		linkUpdated, err := processLink(ctx, g, link, head)
+		if err != nil {
 			return fmt.Errorf("failed to process link: %w", err)
 		}
+
+		updated = updated || linkUpdated
 	}
+
+	// TODO
+	// if !updated {
+	// 	log.Debug("No link was updated, cleaning up...")
+	// }
 
 	pullBody, err := pullRequestBody(l, c, e)
 	if err != nil {
@@ -61,18 +71,18 @@ func processLinks(
 	return nil
 }
 
-func processLink(ctx context.Context, g *github.GitHub, link *config.Link, head github.Branch) error {
+func processLink(ctx context.Context, g *github.GitHub, link *config.Link, head github.Branch) (bool, error) {
 	log.Info("Processing link", "link", link)
 
 	needUpdate, err := link.NeedUpdate(ctx, g, head)
 	if err != nil {
-		return fmt.Errorf("failed to check if link needs update: %w", err)
+		return false, fmt.Errorf("failed to check if link needs update: %w", err)
 	}
 
 	if !needUpdate {
 		log.Debug("Update not needed")
 
-		return nil
+		return false, nil
 	}
 
 	log.Debug("Update needed")
@@ -81,10 +91,10 @@ func processLink(ctx context.Context, g *github.GitHub, link *config.Link, head 
 
 	newTo, err := g.UpdateFile(ctx, link.To, head.Name, "test updating")
 	if err != nil {
-		return fmt.Errorf("failed to update file: %w", err)
+		return false, fmt.Errorf("failed to update file: %w", err)
 	}
 
 	log.Info("Updated file", "new to", newTo)
 
-	return nil
+	return true, nil
 }
