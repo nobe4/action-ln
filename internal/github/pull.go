@@ -19,7 +19,13 @@ var (
 
 type Pull struct {
 	Number int `json:"number"`
-	New    bool
+
+	Repo Repo
+	New  bool
+}
+
+func (p Pull) String() string {
+	return fmt.Sprintf("https://github.com/%s/pull/%d", p.Repo, p.Number)
 }
 
 // https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
@@ -50,7 +56,10 @@ func (g *GitHub) GetPull(ctx context.Context, repo Repo, base, head string) (Pul
 		return Pull{}, ErrNoPull
 	}
 
-	return pulls[0], nil
+	pull := pulls[0]
+	pull.Repo = repo
+
+	return pull, nil
 }
 
 // https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request
@@ -72,7 +81,7 @@ func (g *GitHub) CreatePull(ctx context.Context, repo Repo, base, head, title, p
 
 	path := fmt.Sprintf("/repos/%s/pulls", repo)
 
-	pull := Pull{New: true}
+	pull := Pull{Repo: repo, New: true}
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), &pull); err != nil {
 		if status == http.StatusUnprocessableEntity {
 			return Pull{}, ErrPullExists
