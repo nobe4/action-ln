@@ -75,9 +75,8 @@ func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, o
 	}
 	defer res.Body.Close()
 
-	// All the 2XX codes
-	success := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
-	if !success {
+	code2XX := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
+	if !code2XX {
 		return res.StatusCode, fmt.Errorf("%w (%s %s): %s", ErrRequestFailed, method, path, res.Status)
 	}
 
