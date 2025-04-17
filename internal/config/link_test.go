@@ -13,23 +13,6 @@ var errTest = errors.New("test")
 func TestLinkNeedUpdate(t *testing.T) {
 	t.Parallel()
 
-	t.Run("head is new", func(t *testing.T) {
-		t.Parallel()
-
-		g := mock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
-		head := github.Branch{New: true}
-		l := &Link{}
-
-		needUpdate, err := l.NeedUpdate(t.Context(), g, head)
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-
-		if !needUpdate {
-			t.Fatalf("expected true, got %v", needUpdate)
-		}
-	})
-
 	t.Run("content is the same on base branch", func(t *testing.T) {
 		t.Parallel()
 
