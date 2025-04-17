@@ -14,8 +14,6 @@ const (
 	refAPIPath    = "/repos/owner/repo/git/refs"
 )
 
-var errTest = errors.New("test")
-
 func TestGetBranch(t *testing.T) {
 	t.Parallel()
 
