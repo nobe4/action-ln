@@ -1,4 +1,4 @@
-package ln
+package format
 
 import (
 	"fmt"
@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	branchName   = "auto-action-ln"
-	pullTitle    = "auto(ln): update links"
+	HeadBranch   = "auto-action-ln"
+	PullTitle    = "auto(ln): update links"
 	bodyTemplate = `
 {{/* This defines a backtick character to use in the markdown. */}}
 {{- $b := "` + "`" + `" -}}
@@ -30,7 +30,19 @@ This automated PR updates the following files:
 `
 )
 
-func pullRequestBody(l config.Links, c *config.Config, e environment.Environment) (string, error) {
+type Formatter struct {
+	config      *config.Config
+	environment environment.Environment
+}
+
+func New(c *config.Config, e environment.Environment) Formatter {
+	return Formatter{
+		config:      c,
+		environment: e,
+	}
+}
+
+func (f Formatter) PullBody(l config.Links) (string, error) {
 	t, err := template.New("Pull Body").Parse(bodyTemplate)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
@@ -43,8 +55,8 @@ func pullRequestBody(l config.Links, c *config.Config, e environment.Environment
 		Environment environment.Environment
 	}{
 		Links:       l,
-		Config:      c,
-		Environment: e,
+		Config:      f.config,
+		Environment: f.environment,
 	}
 
 	if err := t.Execute(&out, data); err != nil {

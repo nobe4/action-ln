@@ -5,16 +5,16 @@ import (
 	"fmt"
 
 	"github.com/nobe4/action-ln/internal/config"
-	"github.com/nobe4/action-ln/internal/environment"
+	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
 )
 
-func processGroups(ctx context.Context, g *github.GitHub, e environment.Environment, c *config.Config) error {
-	for id, l := range c.Links.Groups() {
+func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, groups config.Groups) error {
+	for id, l := range groups {
 		log.Group("Processing group " + id)
 
-		if err := processLinks(ctx, g, c, e, l); err != nil {
+		if err := processLinks(ctx, g, f, l); err != nil {
 			return err
 		}
 
@@ -24,16 +24,10 @@ func processGroups(ctx context.Context, g *github.GitHub, e environment.Environm
 	return nil
 }
 
-func processLinks(
-	ctx context.Context,
-	g *github.GitHub,
-	c *config.Config,
-	e environment.Environment,
-	l config.Links,
-) error {
+func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l config.Links) error {
 	toRepo := l[0].To.Repo
 
-	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, branchName)
+	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, format.HeadBranch)
 	if err != nil {
 		return fmt.Errorf("failed to prepare branches: %w", err)
 	}
@@ -50,12 +44,12 @@ func processLinks(
 		log.Debug("No link was updated, cleaning up...")
 	}
 
-	pullBody, err := pullRequestBody(l, c, e)
+	pullBody, err := f.PullBody(l)
 	if err != nil {
 		return fmt.Errorf("failed to create pull request body: %w", err)
 	}
 
-	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, pullTitle, pullBody)
+	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, format.PullTitle, pullBody)
 	if err != nil {
 		return fmt.Errorf("failed to get pull request: %w", err)
 	}
