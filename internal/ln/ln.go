@@ -12,6 +12,7 @@ import (
 
 	"github.com/nobe4/action-ln/internal/config"
 	"github.com/nobe4/action-ln/internal/environment"
+	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
 )
@@ -22,11 +23,15 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return err
 	}
 
+	f := format.New(c, e)
+
 	if err := c.Populate(ctx, g); err != nil {
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	if err := processGroups(ctx, g, e, c); err != nil {
+	groups := c.Links.Groups()
+
+	if err := processGroups(ctx, g, f, groups); err != nil {
 		return fmt.Errorf("failed to process the groups: %w", err)
 	}
 
