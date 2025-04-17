@@ -23,11 +23,11 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return err
 	}
 
-	f := format.New(c, e)
-
 	if err := c.Populate(ctx, g); err != nil {
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
+
+	f := format.New(c, e)
 
 	groups := c.Links.Groups()
 

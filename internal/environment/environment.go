@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -68,18 +69,20 @@ func (e Environment) String() string {
 	return string(out)
 }
 
-func debug() {
-	fmt.Fprintln(os.Stdout, "Environment variables:")
+func (e Environment) PrintDebug() {
+	log.Info("Environment", "parsed", e)
+
+	log.Group("Environment keys")
 
 	for _, env := range os.Environ() {
 		parts := strings.Split(env, "=")
-		fmt.Fprintln(os.Stdout, parts[0])
+		log.Debug(parts[0])
 	}
+
+	log.GroupEnd()
 }
 
 func Parse() (Environment, error) {
-	debug()
-
 	e := Environment{}
 
 	var err error

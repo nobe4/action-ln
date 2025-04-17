@@ -24,7 +24,7 @@ func main() {
 
 	setLogger(e.Debug, e.OnAction)
 
-	log.Info("Environment", "parsed", e)
+	e.PrintDebug()
 
 	g := github.New(e.Endpoint)
 
