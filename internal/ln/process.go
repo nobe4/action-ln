@@ -40,8 +40,9 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 	}
 
 	if !updated {
-		// TODO don't create the PR, remove the branch.
+		// TODO don't create the PR, remove the branch if it's new.
 		log.Debug("No link was updated, cleaning up...")
+		log.Debug("head branch", "new", head.New)
 	}
 
 	pullBody, err := f.PullBody(l)

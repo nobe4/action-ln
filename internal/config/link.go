@@ -36,13 +36,6 @@ func (l *Link) Equal(other *Link) bool {
 }
 
 func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.Branch) (bool, error) {
-	// TODO: if the content is equal, this is not needed.
-	if head.New {
-		log.Debug("Head is new", "head", head)
-
-		return true, nil
-	}
-
 	if l.From.Content == l.To.Content {
 		log.Debug("Content is the same", "from", l.From, "to", l.To)
 
