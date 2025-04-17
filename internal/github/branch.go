@@ -14,6 +14,7 @@ var (
 	ErrGetBranch    = errors.New("failed to get branch")
 	ErrCreateBranch = errors.New("failed to create branch")
 	ErrBranchExists = errors.New("branch already exist")
+	ErrDeleteBranch = errors.New("failed to delete branch")
 )
 
 type Commit struct {
@@ -34,10 +35,10 @@ func (g *GitHub) GetBranch(ctx context.Context, r Repo, name string) (Branch, er
 
 	if status, err := g.req(ctx, http.MethodGet, path, nil, &b); err != nil {
 		if status == http.StatusNotFound {
-			return b, ErrNoBranch
+			return Branch{}, ErrNoBranch
 		}
 
-		return b, fmt.Errorf("%w: %w", ErrGetBranch, err)
+		return Branch{}, fmt.Errorf("%w: %w", ErrGetBranch, err)
 	}
 
 	b.New = false
@@ -64,20 +65,31 @@ func (g *GitHub) CreateBranch(ctx context.Context, r Repo, branch, sha string) (
 		SHA: sha,
 	})
 	if err != nil {
-		return b, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
+		return Branch{}, fmt.Errorf("%w: %w", ErrMarshalRequest, err)
 	}
 
 	if status, err := g.req(ctx, http.MethodPost, path, bytes.NewReader(body), nil); err != nil {
 		if status == http.StatusUnprocessableEntity {
-			return b, ErrBranchExists
+			return Branch{}, ErrBranchExists
 		}
 
-		return b, fmt.Errorf("%w: %w", ErrCreateBranch, err)
+		return Branch{}, fmt.Errorf("%w: %w", ErrCreateBranch, err)
 	}
 
 	b.New = true
 
 	return b, nil
+}
+
+// https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#delete-a-reference
+func (g *GitHub) DeleteBranch(ctx context.Context, r Repo, name string) error {
+	path := fmt.Sprintf("/repos/%s/git/refs/heads/%s", r, name)
+
+	if _, err := g.req(ctx, http.MethodDelete, path, nil, nil); err != nil {
+		return fmt.Errorf("%w: %w", ErrDeleteBranch, err)
+	}
+
+	return nil
 }
 
 func (g *GitHub) GetOrCreateBranch(ctx context.Context, r Repo, name, sha string) (Branch, error) {

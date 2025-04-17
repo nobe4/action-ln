@@ -1,6 +1,7 @@
 package github
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -16,40 +17,84 @@ const (
 func TestGetBranch(t *testing.T) {
 	t.Parallel()
 
-	g := setup(t, func(w http.ResponseWriter, r *http.Request) {
-		assertReq(t, r, http.MethodGet, branchAPIPath, nil)
+	t.Run("missing branch", func(t *testing.T) {
+		t.Parallel()
 
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, `{"name": "%s", "commit": { "sha": "%s" } }`, branch, sha)
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodGet, branchAPIPath, nil)
+			w.WriteHeader(http.StatusNotFound)
+		})
+
+		_, err := g.GetBranch(t.Context(), repo, branch)
+		if !errors.Is(err, ErrNoBranch) {
+			t.Fatalf("expected error %v, got %v", ErrNoBranch, err)
+		}
 	})
 
-	got, err := g.GetBranch(t.Context(), repo, branch)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
+	t.Run("server error", func(t *testing.T) {
+		t.Parallel()
 
-	if got.Name != branch {
-		t.Fatalf("expected branch name to be '%s' but got '%s'", branch, got.Name)
-	}
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodGet, branchAPIPath, nil)
+			w.WriteHeader(http.StatusInternalServerError)
+		})
 
-	if got.Commit.SHA != sha {
-		t.Fatalf("expected commit SHA to be '%s' but got '%s'", sha, got.Commit.SHA)
-	}
+		_, err := g.GetBranch(t.Context(), repo, branch)
+		if !errors.Is(err, ErrGetBranch) {
+			t.Fatalf("expected error %v, got %v", ErrNoBranch, err)
+		}
+	})
+
+	t.Run("succeeds", func(t *testing.T) {
+		t.Parallel()
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodGet, branchAPIPath, nil)
+
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintf(w, `{"name": "%s", "commit": { "sha": "%s" } }`, branch, sha)
+		})
+
+		got, err := g.GetBranch(t.Context(), repo, branch)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if got.Name != branch {
+			t.Fatalf("expected branch name to be '%s' but got '%s'", branch, got.Name)
+		}
+
+		if got.Commit.SHA != sha {
+			t.Fatalf("expected commit SHA to be '%s' but got '%s'", sha, got.Commit.SHA)
+		}
+	})
 }
 
 func TestCreateBranch(t *testing.T) {
 	t.Parallel()
 
-	t.Run("fails to create a new branch", func(t *testing.T) {
+	t.Run("branch exists", func(t *testing.T) {
 		t.Parallel()
 
 		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
-			w.WriteHeader(http.StatusNotImplemented)
+			w.WriteHeader(http.StatusUnprocessableEntity)
 		})
 
 		_, err := g.CreateBranch(t.Context(), repo, branch, sha)
-		if err == nil {
-			t.Fatalf("expected no error, got %v", err)
+		if !errors.Is(err, ErrBranchExists) {
+			t.Fatalf("expected error %v, got %v", ErrCreateBranch, err)
+		}
+	})
+
+	t.Run("server error", func(t *testing.T) {
+		t.Parallel()
+
+		g := setup(t, func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		})
+
+		_, err := g.CreateBranch(t.Context(), repo, branch, sha)
+		if !errors.Is(err, ErrCreateBranch) {
+			t.Fatalf("expected error %v, got %v", ErrCreateBranch, err)
 		}
 	})
 
@@ -73,6 +118,40 @@ func TestCreateBranch(t *testing.T) {
 
 		if got.Name != branch || got.Commit.SHA != sha {
 			t.Fatalf("want '%v', but got %v", branch, got)
+		}
+	})
+}
+
+func TestDeleteBranch(t *testing.T) {
+	t.Parallel()
+
+	refPath := refAPIPath + "/heads/" + branch
+
+	t.Run("server error", func(t *testing.T) {
+		t.Parallel()
+
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodDelete, refPath, nil)
+			w.WriteHeader(http.StatusInternalServerError)
+		})
+
+		err := g.DeleteBranch(t.Context(), repo, branch)
+		if !errors.Is(err, ErrDeleteBranch) {
+			t.Fatalf("expected error %v, got %v", ErrNoBranch, err)
+		}
+	})
+
+	t.Run("succeeds", func(t *testing.T) {
+		t.Parallel()
+		g := setup(t, func(w http.ResponseWriter, r *http.Request) {
+			assertReq(t, r, http.MethodDelete, refPath, nil)
+
+			w.WriteHeader(http.StatusOK)
+		})
+
+		err := g.DeleteBranch(t.Context(), repo, branch)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 }
