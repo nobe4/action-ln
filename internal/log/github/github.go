@@ -47,32 +47,27 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	command := ""
 
 	switch r.Level {
-	// Special cases:
 	case log.LevelInfo:
-		return h.write([]byte(r.Message + h.formatAttrs(r) + "\n"))
 	case log.LevelDebug:
-		return h.write([]byte("::debug::" + r.Message + h.formatAttrs(r) + "\n"))
-
-	case log.LevelGroup:
-		return h.write([]byte("::group::" + r.Message + "\n"))
-	case log.LevelGroupEnd:
-		return h.write([]byte("::groupend::\n"))
-
+		command = "::debug::"
 	case log.LevelWarn:
-		command = "warning"
+		command = "::warning::"
 	case log.LevelError:
-		command = "error"
+		command = "::error::"
 	case log.LevelNotice:
-		command = "notice"
+		command = "::notice::"
+	case log.LevelGroup:
+		command = "::group::"
+	case log.LevelGroupEnd:
+		command = "::groupend::"
 	}
 
-	buf := make([]byte, 0, buflen)
-
-	buf = fmt.Appendf(buf, "::%s", command)
-	buf = fmt.Appendf(buf, "%s", h.formatAttrs(r))
-	buf = fmt.Appendf(buf, "::%s\n", r.Message)
-
-	return h.write(buf)
+	// This is not ideal, but will work for now.
+	// I misunderstood how the attributes handling worked and thought it could
+	// be arbitrary key-value pairs. But only a selection actually are used, the
+	// others are discarded. In the futur I might add the message-bound
+	// attributes back.
+	return h.write([]byte(command + r.Message + h.formatAttrs(r) + "\n"))
 }
 
 func (h *Handler) WithAttrs(_ []slog.Attr) slog.Handler {
