@@ -59,7 +59,7 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 		return fmt.Errorf("failed to get pull request: %w", err)
 	}
 
-	log.Info("Created pull request", "pull", pull)
+	log.Info("Result pull request", "pull", pull, "new", pull.New)
 
 	return nil
 }
