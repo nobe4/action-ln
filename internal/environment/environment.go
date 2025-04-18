@@ -73,13 +73,12 @@ func (e Environment) PrintDebug() {
 	log.Info("Environment", "parsed", e)
 
 	log.Group("Environment keys")
+	defer log.GroupEnd()
 
 	for _, env := range os.Environ() {
 		parts := strings.Split(env, "=")
 		log.Debug(parts[0])
 	}
-
-	log.GroupEnd()
 }
 
 func Parse() (Environment, error) {

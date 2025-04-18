@@ -11,14 +11,10 @@ import (
 )
 
 func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, groups config.Groups) error {
-	for id, l := range groups {
-		log.Group("Processing group " + id)
-
+	for _, l := range groups {
 		if err := processLinks(ctx, g, f, l); err != nil {
 			return err
 		}
-
-		log.GroupEnd()
 	}
 
 	return nil
@@ -27,6 +23,9 @@ func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, gr
 //nolint:revive // Will try to refactor that later
 func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l config.Links) error {
 	toRepo := l[0].To.Repo
+
+	log.Group("Processing links " + toRepo.String())
+	defer log.GroupEnd()
 
 	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, format.HeadBranch)
 	if err != nil {
@@ -41,7 +40,7 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 	}
 
 	if !updated && head.New {
-		log.Debug("No link was updated, cleaning up...")
+		log.Info("No link was updated, cleaning up.", "repo", toRepo, "branch", head.Name)
 
 		if err := g.DeleteBranch(ctx, toRepo, head.Name); err != nil {
 			return fmt.Errorf("failed to delete un-updated branch: %w", err)

@@ -22,6 +22,7 @@ var (
 
 func (g *GitHub) Auth(ctx context.Context, token, appID, appPrivateKey, appInstallID string) error {
 	log.Group("Authentication")
+	defer log.GroupEnd()
 
 	g.Token = token
 
@@ -32,17 +33,19 @@ func (g *GitHub) Auth(ctx context.Context, token, appID, appPrivateKey, appInsta
 
 		jwtToken, err := jwt.New(time.Now().Unix(), appID, appPrivateKey)
 		if err != nil {
+			log.Error("Failed to create a JWT", "err", err)
+
 			return fmt.Errorf("%w: %w", errGetJWT, err)
 		}
 
 		if g.Token, err = g.GetAppToken(ctx, appInstallID, jwtToken); err != nil {
+			log.Error("Failed to get app token", "err", err)
+
 			return err
 		}
 	} else {
 		log.Info("Using token authentication")
 	}
-
-	log.GroupEnd()
 
 	return nil
 }

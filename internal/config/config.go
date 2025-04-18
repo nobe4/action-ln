@@ -38,9 +38,11 @@ type Config struct {
 func New() *Config { return &Config{} }
 
 func (c *Config) Parse(r io.Reader) error {
+	var err error
+
 	rawC := RawConfig{}
 
-	if err := yaml.
+	if err = yaml.
 		NewDecoder(r, yaml.Strict()).
 		Decode(&rawC); err != nil {
 		return fmt.Errorf("%w: %w", errInvalidYAML, err)
@@ -52,7 +54,6 @@ func (c *Config) Parse(r io.Reader) error {
 
 	log.Debug("Parse links", "raw", rawC.Links)
 
-	var err error
 	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
 		return fmt.Errorf("%w: %w", errInvalidLinks, err)
 	}
@@ -91,7 +92,7 @@ func getMapKey(m map[string]any, k string) string {
 
 		log.Warn("Value is not a string", "key", k, "value", v)
 	} else {
-		log.Warn("Value not found", "key", k)
+		log.Warn("Key not found", "key", k)
 	}
 
 	return ""

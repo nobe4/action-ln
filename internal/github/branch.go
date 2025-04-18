@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -29,6 +31,8 @@ type Branch struct {
 
 // https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#get-a-branch
 func (g *GitHub) GetBranch(ctx context.Context, r Repo, name string) (Branch, error) {
+	log.Debug("Get default name", "repo", r, "name", name)
+
 	b := Branch{}
 
 	path := fmt.Sprintf("/repos/%s/branches/%s", r, name)
@@ -47,9 +51,11 @@ func (g *GitHub) GetBranch(ctx context.Context, r Repo, name string) (Branch, er
 }
 
 // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#create-a-reference
-func (g *GitHub) CreateBranch(ctx context.Context, r Repo, branch, sha string) (Branch, error) {
+func (g *GitHub) CreateBranch(ctx context.Context, r Repo, name, sha string) (Branch, error) {
+	log.Debug("Create branch", "repo", r, "name", name, "sha", sha)
+
 	b := Branch{
-		Name: branch,
+		Name: name,
 		Commit: Commit{
 			SHA: sha,
 		},
@@ -61,7 +67,7 @@ func (g *GitHub) CreateBranch(ctx context.Context, r Repo, branch, sha string) (
 		Ref string `json:"ref"`
 		SHA string `json:"sha"`
 	}{
-		Ref: "refs/heads/" + branch,
+		Ref: "refs/heads/" + name,
 		SHA: sha,
 	})
 	if err != nil {

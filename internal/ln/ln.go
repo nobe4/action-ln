@@ -40,6 +40,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
 	log.Group("Get config")
+	defer log.GroupEnd()
 
 	log.Debug("Get config commit", "repo", e.Repo)
 
@@ -69,8 +70,6 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	}
 
 	log.Debug("Parsed config", "config", c)
-
-	log.GroupEnd()
 
 	return c, nil
 }
