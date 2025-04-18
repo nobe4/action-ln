@@ -34,12 +34,12 @@ func main() {
 		e.App.PrivateKey,
 		e.App.InstallID,
 	); err != nil {
-		log.Error("Authentication failed", "reason", err)
+		log.Error("Authentication failed", "err", err)
 		os.Exit(1)
 	}
 
 	if err := ln.Run(ctx, e, g); err != nil {
-		log.Error("Running action-ln failed", "reason", err)
+		log.Error("Running action-ln failed", "err", err)
 		os.Exit(1)
 	}
 }

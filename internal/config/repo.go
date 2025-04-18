@@ -23,9 +23,9 @@ func parseRepoString(owner, repo string) github.Repo {
 
 		r.Owner.Login = parts[0]
 		r.Repo = parts[1]
-
-		log.Debug("Parsed repo string", "repo", r)
 	}
+
+	log.Debug("Parse repo", "owner", owner, "repo", repo, "parsed", r)
 
 	return r
 }

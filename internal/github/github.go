@@ -57,12 +57,12 @@ type User struct {
 }
 
 func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, out any) (int, error) {
-	path = g.endpoint + path
+	url := g.endpoint + path
 
-	log.Debug("Request", "method", method, "path", path)
-
-	req, err := http.NewRequestWithContext(ctx, method, path, body)
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
+		log.Debug("Request", "method", method, "url", url, "status", "failed to create", "err", err)
+
 		return http.StatusInternalServerError, fmt.Errorf("failed to create request: %w", err)
 	}
 
@@ -71,13 +71,17 @@ func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, o
 
 	res, err := g.client.Do(req)
 	if err != nil {
+		log.Debug("Request", "method", method, "url", url, "err", err, "status", res.StatusCode)
+
 		return res.StatusCode, fmt.Errorf("%w: %w", ErrRequestFailed, err)
 	}
 	defer res.Body.Close()
 
+	log.Debug("Request", "method", method, "url", url, "status", res.StatusCode)
+
 	code2XX := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
 	if !code2XX {
-		return res.StatusCode, fmt.Errorf("%w (%s %s): %s", ErrRequestFailed, method, path, res.Status)
+		return res.StatusCode, fmt.Errorf("%w (%s %s): %s", ErrRequestFailed, method, url, res.Status)
 	}
 
 	if out != nil {

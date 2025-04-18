@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 type Repo struct {
@@ -33,6 +35,8 @@ func (r Repo) APIPath() string {
 
 // https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g *GitHub) GetDefaultBranchName(ctx context.Context, r Repo) (string, error) {
+	log.Debug("Get default branch name", "repo", r)
+
 	if _, err := g.req(ctx, http.MethodGet, r.APIPath(), nil, &r); err != nil {
 		return "", fmt.Errorf("%w: %w", errGetRepo, err)
 	}
@@ -41,6 +45,8 @@ func (g *GitHub) GetDefaultBranchName(ctx context.Context, r Repo) (string, erro
 }
 
 func (g *GitHub) GetDefaultBranch(ctx context.Context, r Repo) (Branch, error) {
+	log.Debug("Get default branch", "repo", r)
+
 	name, err := g.GetDefaultBranchName(ctx, r)
 	if err != nil {
 		return Branch{}, err
