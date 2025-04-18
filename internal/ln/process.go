@@ -24,6 +24,7 @@ func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, gr
 	return nil
 }
 
+//nolint:revive // Will try to refactor that later
 func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l config.Links) error {
 	toRepo := l[0].To.Repo
 
@@ -39,10 +40,14 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 		return fmt.Errorf("failed to update the links: %w", err)
 	}
 
-	if !updated {
-		// TODO don't create the PR, remove the branch if it's new.
+	if !updated && head.New {
 		log.Debug("No link was updated, cleaning up...")
-		log.Debug("head branch", "new", head.New)
+
+		if err := g.DeleteBranch(ctx, toRepo, head.Name); err != nil {
+			return fmt.Errorf("failed to delete un-updated branch: %w", err)
+		}
+
+		return nil
 	}
 
 	pullBody, err := f.PullBody(l)
