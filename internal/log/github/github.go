@@ -47,18 +47,17 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 	command := ""
 
 	switch r.Level {
-	// Info can be handled directly
+	// Special cases:
 	case log.LevelInfo:
 		return h.write([]byte(r.Message + h.formatAttrs(r) + "\n"))
+	case log.LevelDebug:
+		return h.write([]byte("::debug::" + r.Message + h.formatAttrs(r)))
 
-	// Groups can be handled directly
 	case log.LevelGroup:
 		return h.write([]byte("::group::" + r.Message + "\n"))
 	case log.LevelGroupEnd:
 		return h.write([]byte("::groupend::\n"))
 
-	case log.LevelDebug:
-		command = "debug"
 	case log.LevelWarn:
 		command = "warning"
 	case log.LevelError:
