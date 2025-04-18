@@ -34,12 +34,10 @@ func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, head git
 		if needUpdate, err := link.NeedUpdate(ctx, g, head); err != nil {
 			return updated, fmt.Errorf("failed to check if link %q needs update: %w", link, err)
 		} else if !needUpdate {
-			log.Debug("Update not needed", "link", link)
+			log.Info("Update not needed", "link", link)
 
 			continue
 		}
-
-		log.Debug("Update needed", "link", link)
 
 		if err := link.Update(ctx, g, head); err != nil {
 			return updated, fmt.Errorf("failed to process link %q: %w", l, err)
