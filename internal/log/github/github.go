@@ -21,8 +21,6 @@ import (
 	"github.com/nobe4/action-ln/internal/log"
 )
 
-const buflen = 1024
-
 type Handler struct {
 	opts log.Options
 	mu   *sync.Mutex
