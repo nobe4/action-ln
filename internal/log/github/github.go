@@ -97,7 +97,7 @@ func (*Handler) formatAttrs(r slog.Record) string {
 	})
 
 	if len(attrs) > 0 {
-		return " " + strings.Join(attrs, ",")
+		return " " + strings.Join(attrs, " ")
 	}
 
 	return ""
