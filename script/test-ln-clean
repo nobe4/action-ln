@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Only @nobe4 can run this.
+
+set +e # allow any deletion to fail
+
+for i in $(seq 0 2); do
+	repo="frozen-fishsticks/action-ln-test-${i}"
+	echo "Cleaning up ${repo}"
+
+	gh pr list --repo "${repo}" \
+		--json url \
+		-q '.[].url' \
+		| xargs --no-run-if-empty -n1 gh pr close --delete-branch
+
+	gh api -X DELETE \
+		"/repos/${repo}/git/refs/heads/test"
+
+	gh api -X DELETE \
+		"/repos/${repo}/git/refs/heads/auto-action-ln"
+done

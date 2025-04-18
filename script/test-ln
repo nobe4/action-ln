@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Only @nobe4 can run this.
 
 set -e
 
