@@ -90,9 +90,9 @@ func getMapKey(m map[string]any, k string) string {
 			return vs
 		}
 
-		log.Warn("Value is not a string", "key", k, "value", v)
+		log.Debug("Value is not a string", "key", k, "value", v)
 	} else {
-		log.Warn("Key not found", "key", k)
+		log.Debug("Key not found", "key", k)
 	}
 
 	return ""
