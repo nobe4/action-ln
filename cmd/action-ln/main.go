@@ -14,18 +14,6 @@ import (
 )
 
 func main() {
-	setLogger(true, true)
-
-	log.Info("Info", "attr1", "val1", "attr2", "val2")
-	log.Debug("Debug", "attr1", "val1", "attr2", "val2")
-	log.Group("a")
-	log.Warn("Warn", "attr1", "val1", "attr2", "val2")
-	log.Notice("Notice", "attr1", "val1", "attr2", "val2")
-	log.Error("Error", "attr1", "val1", "attr2", "val2")
-	log.GroupEnd()
-}
-
-func main2() {
 	ctx := context.TODO()
 
 	e, err := environment.Parse()
