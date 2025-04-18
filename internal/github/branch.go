@@ -31,7 +31,7 @@ type Branch struct {
 
 // https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#get-a-branch
 func (g *GitHub) GetBranch(ctx context.Context, r Repo, name string) (Branch, error) {
-	log.Debug("Get default name", "repo", r, "name", name)
+	log.Debug("Get branch", "repo", r, "name", name)
 
 	b := Branch{}
 
