@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
+	fmock "github.com/nobe4/action-ln/internal/format/mock"
 	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/github/mock"
+	gmock "github.com/nobe4/action-ln/internal/github/mock"
 )
 
 var errTest = errors.New("test")
@@ -16,7 +17,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is the same on base branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
+		g := gmock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
 		head := github.Branch{New: false}
 		l := &Link{
 			From: github.File{Content: "content"},
@@ -36,7 +37,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("to is missing", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetter{
+		g := gmock.FileGetter{
 			Handler: func(_ *github.File) error { return github.ErrMissingFile },
 		}
 		head := github.Branch{New: false}
@@ -61,7 +62,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 		//nolint:err113 // This is just for this test.
 		errWant := errors.New("test")
 
-		g := mock.FileGetter{
+		g := gmock.FileGetter{
 			Handler: func(_ *github.File) error { return errWant },
 		}
 		head := github.Branch{New: false}
@@ -79,7 +80,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is the same on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetter{
+		g := gmock.FileGetter{
 			Handler: func(f *github.File) error {
 				f.Content = "content"
 
@@ -105,7 +106,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is different on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetter{
+		g := gmock.FileGetter{
 			Handler: func(f *github.File) error {
 				f.Content = "content2"
 
@@ -135,7 +136,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("fails to get from", func(t *testing.T) {
 		t.Parallel()
 
-		f := mock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
+		f := gmock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
 
 		l := &Link{}
 
@@ -147,7 +148,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("fails to get to", func(t *testing.T) {
 		t.Parallel()
 
-		f := mock.FileGetter{
+		f := gmock.FileGetter{
 			Handler: func(f *github.File) error {
 				if f.Path == "from" {
 					return nil
@@ -169,7 +170,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("succeeds with a missing to", func(t *testing.T) {
 		t.Parallel()
 
-		f := mock.FileGetter{
+		f := gmock.FileGetter{
 			Handler: func(f *github.File) error {
 				if f.Path == "from" {
 					f.Content = "got"
@@ -198,7 +199,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		t.Parallel()
 
-		f := mock.FileGetter{
+		f := gmock.FileGetter{
 			Handler: func(f *github.File) error {
 				f.Content = "got " + f.Path
 
@@ -233,7 +234,7 @@ func TestLinkUpdate(t *testing.T) {
 	t.Run("fail to update", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileUpdater{
+		g := gmock.FileUpdater{
 			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
 				return github.File{}, errTest
 			},
@@ -244,7 +245,7 @@ func TestLinkUpdate(t *testing.T) {
 			From: github.File{Content: "from"},
 		}
 
-		err := l.Update(t.Context(), g, head)
+		err := l.Update(t.Context(), g, fmock.New(), head)
 
 		if !errors.Is(err, errTest) {
 			t.Fatalf("want error %v, got %v", errTest, err)
@@ -258,7 +259,7 @@ func TestLinkUpdate(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileUpdater{
+		g := gmock.FileUpdater{
 			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
 				// NOTE: the returned file is currently not used.
 				return github.File{}, nil
@@ -270,7 +271,7 @@ func TestLinkUpdate(t *testing.T) {
 			From: github.File{Content: "from"},
 		}
 
-		if err := l.Update(t.Context(), g, head); err != nil {
+		if err := l.Update(t.Context(), g, fmock.New(), head); err != nil {
 			t.Fatalf("want no error, got %v", err)
 		}
 

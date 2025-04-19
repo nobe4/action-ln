@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
 )
@@ -27,7 +28,7 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	return links, nil
 }
 
-func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, head github.Branch) (bool, error) {
+func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, f format.Formatter, head github.Branch) (bool, error) {
 	updated := false
 
 	for _, link := range *l {
@@ -39,7 +40,7 @@ func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, head git
 			continue
 		}
 
-		if err := link.Update(ctx, g, head); err != nil {
+		if err := link.Update(ctx, g, f, head); err != nil {
 			return updated, fmt.Errorf("failed to process link %q: %w", l, err)
 		}
 

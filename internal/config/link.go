@@ -5,8 +5,16 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
+)
+
+const (
+	commitMsgTemplate = `auto(ln): update {{ .Data.To.Path }}
+
+Source: {{ .Environment.Server }}{{ .Data.From.HTMLPath }}
+`
 )
 
 var (
@@ -71,14 +79,17 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 	return true, nil
 }
 
-func (l *Link) Update(ctx context.Context, g github.FileUpdater, head github.Branch) error {
+func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Formatter, head github.Branch) error {
 	log.Info("Processing link", "link", l)
 
 	l.To.Content = l.From.Content
 
-	// TODO: make `msg` dynamic, or fixed in a constant.
-	// TODO: should we do anything with newTo?
-	newTo, err := g.UpdateFile(ctx, l.To, head.Name, "test updating")
+	msg, err := f.Format(commitMsgTemplate, l)
+	if err != nil {
+		return fmt.Errorf("failed to format the commit message: %w", err)
+	}
+
+	newTo, err := g.UpdateFile(ctx, l.To, head.Name, msg)
 	if err != nil {
 		return fmt.Errorf("failed to update file: %w", err)
 	}

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
+	fmock "github.com/nobe4/action-ln/internal/format/mock"
 	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/github/mock"
+	gmock "github.com/nobe4/action-ln/internal/github/mock"
 )
 
 func TestLinksUpdate(t *testing.T) {
@@ -18,7 +19,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("fail to check if the link needs an update", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetterUpdater{
+		g := gmock.FileGetterUpdater{
 			GetHandler: func(*github.File) error { return errTest },
 		}
 
@@ -29,7 +30,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, head)
+		updated, err := l.Update(t.Context(), g, fmock.New(), head)
 		if !errors.Is(err, errTest) {
 			t.Fatalf("want error %v, got %v", errTest, err)
 		}
@@ -42,7 +43,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("do not update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetterUpdater{}
+		g := gmock.FileGetterUpdater{}
 
 		l := &Links{
 			{
@@ -51,7 +52,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, head)
+		updated, err := l.Update(t.Context(), g, fmock.New(), head)
 		if err != nil {
 			t.Fatalf("want no error, got %v", err)
 		}
@@ -64,7 +65,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("fail to update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetterUpdater{
+		g := gmock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
 				f.Content = got
 
@@ -82,7 +83,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, head)
+		updated, err := l.Update(t.Context(), g, fmock.New(), head)
 		if !errors.Is(err, errTest) {
 			t.Fatalf("want error %v, got %v", errTest, err)
 		}
@@ -95,7 +96,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetterUpdater{
+		g := gmock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
 				f.Content = got
 
@@ -113,7 +114,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, head)
+		updated, err := l.Update(t.Context(), g, fmock.New(), head)
 		if err != nil {
 			t.Fatalf("want no error, got %v", err)
 		}
@@ -126,7 +127,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("multiple links", func(t *testing.T) {
 		t.Parallel()
 
-		g := mock.FileGetterUpdater{
+		g := gmock.FileGetterUpdater{
 			GetHandler: func(f *github.File) error {
 				f.Content = got
 
@@ -161,7 +162,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, head)
+		updated, err := l.Update(t.Context(), g, fmock.New(), head)
 		if !errors.Is(err, errTest) {
 			t.Fatalf("want error %v, got %v", errTest, err)
 		}

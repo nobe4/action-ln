@@ -10,6 +10,27 @@ import (
 	"github.com/nobe4/action-ln/internal/log"
 )
 
+const (
+	headName         = "auto-action-ln"
+	pullTitle        = "auto(ln): update links"
+	pullBodyTemplate = `
+{{/* This defines a backtick character to use in the markdown. */}}
+{{- $b := "` + "`" + `" -}}
+This automated PR updates the following files:
+
+| From | To  |
+| ---  | --- |
+{{ range .Data -}}
+| {{ $b }}{{ .From }}{{ $b }} | {{ $b }}{{ .To }}{{ $b }} |
+{{ end }}
+
+---
+
+| Quick links | [execution]({{ .Environment.ExecURL }}) | [configuration]({{ .Environment.Server }}{{ .Config.Source.HTMLPath }}) | [action-ln](https://github.com/nobe4/action-ln) |
+| --- | --- | --- | --- |
+`
+)
+
 func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, groups config.Groups) error {
 	for _, l := range groups {
 		if err := processLinks(ctx, g, f, l); err != nil {
@@ -27,14 +48,14 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 	log.Group("Processing links " + toRepo.String())
 	defer log.GroupEnd()
 
-	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, format.HeadBranch)
+	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, headName)
 	if err != nil {
 		return fmt.Errorf("failed to prepare branches: %w", err)
 	}
 
 	log.Debug("Parsed branches", "head", head, "base", base)
 
-	updated, err := l.Update(ctx, g, head)
+	updated, err := l.Update(ctx, g, f, head)
 	if err != nil {
 		return fmt.Errorf("failed to update the links: %w", err)
 	}
@@ -49,12 +70,12 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 		return nil
 	}
 
-	pullBody, err := f.PullBody(l)
+	pullBody, err := f.Format(pullBodyTemplate, l)
 	if err != nil {
 		return fmt.Errorf("failed to create pull request body: %w", err)
 	}
 
-	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, format.PullTitle, pullBody)
+	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, pullTitle, pullBody)
 	if err != nil {
 		return fmt.Errorf("failed to get pull request: %w", err)
 	}
