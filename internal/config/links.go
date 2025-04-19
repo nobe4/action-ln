@@ -28,7 +28,12 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	return links, nil
 }
 
-func (l *Links) Update(ctx context.Context, g github.FileGetterUpdater, f format.Formatter, head github.Branch) (bool, error) {
+func (l *Links) Update(
+	ctx context.Context,
+	g github.FileGetterUpdater,
+	f format.Formatter,
+	head github.Branch,
+) (bool, error) {
 	updated := false
 
 	for _, link := range *l {
