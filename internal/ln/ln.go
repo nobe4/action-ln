@@ -12,7 +12,7 @@ import (
 
 	"github.com/nobe4/action-ln/internal/config"
 	"github.com/nobe4/action-ln/internal/environment"
-	"github.com/nobe4/action-ln/internal/format"
+	contextfmt "github.com/nobe4/action-ln/internal/format/context"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
 )
@@ -27,7 +27,7 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return fmt.Errorf("failed to populate config: %w", err)
 	}
 
-	f := format.New(c, e)
+	f := contextfmt.New(c, e)
 
 	groups := c.Links.Groups()
 
