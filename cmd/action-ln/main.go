@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 
+	"github.com/nobe4/action-ln/internal/client"
+	"github.com/nobe4/action-ln/internal/client/noop"
 	"github.com/nobe4/action-ln/internal/environment"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/ln"
@@ -26,7 +29,12 @@ func main() {
 
 	e.PrintDebug()
 
-	g := github.New(e.Endpoint)
+	var c client.Doer = &http.Client{}
+	if e.Noop {
+		c = noop.New()
+	}
+
+	g := github.New(c, e.Endpoint)
 
 	if err = g.Auth(ctx,
 		e.Token,

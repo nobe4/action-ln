@@ -46,7 +46,9 @@ func setup(t *testing.T, f func(w http.ResponseWriter, r *http.Request)) *GitHub
 
 	ts := httptest.NewServer(http.HandlerFunc(f))
 
-	g := New(ts.URL)
+	// NOTE: using http.DefaultClient here is expected, as we mock the server
+	// with ts.
+	g := New(http.DefaultClient, ts.URL)
 	g.Token = token
 
 	return g
