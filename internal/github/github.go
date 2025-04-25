@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/nobe4/action-ln/internal/client"
 	"github.com/nobe4/action-ln/internal/log"
 )
 
@@ -40,14 +41,14 @@ const (
 )
 
 type GitHub struct {
-	client   http.Client
+	client   client.Doer
 	Token    string
 	endpoint string
 }
 
-func New(endpoint string) *GitHub {
+func New(c client.Doer, endpoint string) *GitHub {
 	return &GitHub{
-		client:   http.Client{},
+		client:   c,
 		endpoint: endpoint,
 	}
 }
