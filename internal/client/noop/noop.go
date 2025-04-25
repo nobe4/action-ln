@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/nobe4/action-ln/internal/log"
 )
 
 type Client struct {
@@ -23,17 +25,18 @@ func (c Client) Do(req *http.Request) (*http.Response, error) {
 		return c.fallback.Do(req)
 	}
 
-	return c.noop(req)
+	return c.noopPost(req)
 }
 
-func (c Client) noop(req *http.Request) (*http.Response, error) {
-	switch {
-	// github.Auth
-	case req.Method == http.MethodPost &&
-		regexp.MustCompile("/app/installations/[^/]+/access_token").MatchString(req.URL.Path):
-		//nolint:wrapcheck // Authentication must be transparent.
+func (c Client) noopPost(req *http.Request) (*http.Response, error) {
+	if regexp.MustCompile("/app/installations/[^/]+/access_token").MatchString(req.URL.Path) {
+		//nolint:wrapcheck // github.Auth must be transparent.
 		return c.fallback.Do(req)
+	}
 
+	log.Notice("NOOP POST request", "path", req.URL.Path)
+
+	switch {
 	// github.CreateBranch
 	case req.Method == http.MethodPost &&
 		regexp.MustCompile("/repos/[^/]+/[^/]+/git/refs").MatchString(req.URL.Path):
