@@ -109,7 +109,7 @@ func Parse() (Environment, error) {
 }
 
 func parseNoop() bool {
-	return os.Getenv("INPUT_NOOP") == "true"
+	return truthy(os.Getenv("INPUT_NOOP"))
 }
 
 func parseToken() (string, error) {
@@ -187,7 +187,16 @@ func parseOnAction() bool {
 }
 
 func parseDebug() bool {
-	return os.Getenv("RUNNER_DEBUG") == "1"
+	return truthy(os.Getenv("RUNNER_DEBUG"))
+}
+
+func truthy(s string) bool {
+	switch strings.ToLower(s) {
+	case "1", "true", "yes":
+		return true
+	}
+
+	return false
 }
 
 func missingOrRedacted(s string) string {
