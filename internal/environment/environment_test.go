@@ -6,28 +6,16 @@ import (
 )
 
 func TestParseNoop(t *testing.T) {
-	tests := []struct {
-		noop string
-		want bool
-	}{
-		{noop: "", want: false},
-		{noop: "no", want: false},
-		{noop: "false", want: false},
-		{noop: "0", want: false},
-		{noop: "yes", want: false},
-		{noop: "1", want: false},
-		{noop: "true", want: true},
+	t.Setenv("INPUT_NOOP", "")
+
+	if parseNoop() {
+		t.Fatalf("want false but got true")
 	}
 
-	for _, test := range tests {
-		t.Run(test.noop, func(t *testing.T) {
-			t.Setenv("INPUT_NOOP", test.noop)
+	t.Setenv("INPUT_NOOP", "1")
 
-			got := parseNoop()
-			if got != test.want {
-				t.Fatalf("want %v but got %v", test.want, got)
-			}
-		})
+	if !parseNoop() {
+		t.Fatalf("want true but got false")
 	}
 }
 
@@ -239,6 +227,35 @@ func TestParseDebug(t *testing.T) {
 
 	if !parseDebug() {
 		t.Fatalf("want true but got false")
+	}
+}
+
+func TestTruthy(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		s    string
+		want bool
+	}{
+		{s: "", want: false},
+		{s: "1", want: true},
+		{s: "123", want: false},
+		{s: "true", want: true},
+		{s: "True", want: true},
+		{s: "TRUE", want: true},
+		{s: "yes", want: true},
+		{s: "Yes", want: true},
+		{s: "YES", want: true},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			if truthy(test.s) != test.want {
+				t.Fatalf("want %v but got %v", test.want, truthy(test.s))
+			}
+		})
 	}
 }
 
