@@ -20,6 +20,12 @@ list of supported cases in a YAML format.
 > This document will be refactored as part of
 > https://github.com/nobe4/action-ln/issues/66.
 
+> [!NOTE]
+> A file is usually printed by the following string:
+> `owner/repo:path/to/file@ref`
+> A link is usually printed by the following string:
+> `from -> to`
+
 ## Link
 
 A link is composed of two parts:
