@@ -24,12 +24,20 @@ func TestConfigParseAll(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
+	for i, l := range c.Links {
+		t.Logf("LINK[%d] %s", i, l.String())
+	}
+
 	wants := []string{}
 
 	for _, want := range regexp.
-		MustCompile(`# want: (.+)`).
+		MustCompile(`(?m)^\s+# want: (.+)$`).
 		FindAllStringSubmatch(allCases, -1) {
 		wants = append(wants, want[1])
+	}
+
+	for i, want := range wants {
+		t.Logf("WANT[%d] %s", i, want)
 	}
 
 	if ll, lw := len(c.Links), len(wants); ll != lw {
