@@ -1,0 +1,26 @@
+# This file is a valid configuration file augmented for testing purpose.
+# It aims at demonstrating all the possible configuration case while being part
+# of the test suite. See config.TestConfigParseAll.
+
+# The default is fixed to avoid embiguity.
+defaults:
+  owner: owner
+  repo: repo
+
+links:
+  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  - from: a.txt
+    to: a.txt
+
+  # want: owner/repo:path/to/a.txt@main -> owner/repo:a.txt@
+  - from:
+      path: path/to/a.txt
+      ref: main
+    to: a.txt
+
+  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  # want: owner/repo:b.txt@ -> owner/repo:a.txt@
+  - from:
+      - a.txt
+      - b.txt
+    to: a.txt
