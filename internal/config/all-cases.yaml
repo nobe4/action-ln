@@ -1,6 +1,10 @@
 # This file is a valid configuration file augmented for testing purpose.
-# It aims at demonstrating all the possible configuration case while being part
-# of the test suite. See config.TestConfigParseAll.
+#
+# It demonstrats all the possible configuration cases while being part of the
+# test suite. See config.TestConfigParseAll.
+
+# In most cases, only `from` if fully specified, since both `from` and `to` are
+# parsed _exactly_ the same way.
 
 # The default is fixed to avoid embiguity.
 defaults:
@@ -8,19 +12,79 @@ defaults:
   repo: repo
 
 links:
-  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  # wants nothing
+  -
+
+  # TODO: this is not yet supported
+  # # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  # - from: a.txt
+
+  # want: owner/repo:a.txt@ -> owner/repo:b.txt@
   - from: a.txt
-    to: a.txt
+    to: b.txt
 
-  # want: owner/repo:path/to/a.txt@main -> owner/repo:a.txt@
+  # want: owner/repo:a.txt@ref -> owner/repo:b.txt@
+  - from: a.txt@ref
+    to: b.txt
+
+  # want: own/rep:a.txt@ref -> owner/repo:b.txt@
+  - from: own/rep:a.txt@ref
+    to: b.txt
+
+  # want: own/rep:a.txt@ref -> owner/repo:b.txt@
+  - from: https://github.com/own/rep/blob/ref/a.txt
+    to: b.txt
+
+  # want: own/rep:a.txt@ref -> owner/repo:b.txt@
+  - from: own/rep/blob/ref/a.txt
+    to: b.txt
+
+  # TODO: this is not yet supported
+  # # want: owner/repo:a.txt@ -> own/rep:a.txt@
+  # - from: a.txt
+  #   to:
+  #     repo: own/rep
+
+  # want: owner/repo:a.txt@main -> owner/repo:b.txt@
   - from:
-      path: path/to/a.txt
+      path: a.txt
       ref: main
-    to: a.txt
+    to: b.txt
 
-  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
-  # want: owner/repo:b.txt@ -> owner/repo:a.txt@
+  # want: own/rep:a.txt@main -> owner/repo:b.txt@
+  - from:
+      repo: own/rep
+      path: a.txt
+      ref: main
+    to: b.txt
+
+  # want: own/rep:a.txt@main -> owner/repo:b.txt@
+  - from:
+      owner: own
+      repo: rep
+      path: a.txt
+      ref: main
+    to: b.txt
+
+  # TODO: not yet supported
+  # # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  # # want: own/rep:b.txt@ -> owner/repo:b.txt@
+  # - from:
+  #     - a.txt
+  #     - path: b.txt
+  #       repo: own/rep
+  #   to:
+  #     repo: own/rep
+
+  # want: owner/repo:a.txt@ -> owner/repo:c.txt@
+  # want: own/rep:b.txt@ -> owner/repo:c.txt@
   - from:
       - a.txt
-      - b.txt
-    to: a.txt
+      - path: b.txt
+        repo: own/rep
+    to: c.txt
+
+  # TODO: this is not yet supported
+  # # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  # # want: owner/repo:b.txt@ -> owner/repo:b.txt@
+  # - from: *.txt
