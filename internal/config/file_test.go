@@ -7,6 +7,7 @@ import (
 	"github.com/nobe4/action-ln/internal/github"
 )
 
+//nolint:maintidx // This is just a big list of tests.
 func TestParseFile(t *testing.T) {
 	t.Parallel()
 
@@ -22,6 +23,40 @@ func TestParseFile(t *testing.T) {
 	}{
 		// nil
 		{},
+
+		// Slice
+		{
+			input: []any{nil},
+			want:  []github.File{},
+		},
+
+		{
+			input: []any{nil, nil, nil},
+			want:  []github.File{},
+		},
+
+		{
+			input: []any{
+				map[string]any{"path": "path"},
+				"path2",
+			},
+			want: []github.File{
+				{Path: "path"},
+				{Path: "path2"},
+			},
+		},
+
+		{
+			defaults: defaults,
+			input: []any{
+				map[string]any{"path": "path"},
+				"path2",
+			},
+			want: []github.File{
+				{Path: "path", Repo: repo},
+				{Path: "path2", Repo: repo},
+			},
+		},
 
 		// Map
 		{

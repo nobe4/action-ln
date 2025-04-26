@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/log"
 )
 
 var (
@@ -15,24 +14,40 @@ var (
 )
 
 func (c *Config) parseFile(rawFile any) ([]github.File, error) {
-	log.Debug("Parse file", "raw", rawFile)
-
 	switch v := rawFile.(type) {
 	case nil:
 		return []github.File{}, nil
 
+	case []any:
+		return c.parseSlice(v)
+
 	case map[string]any:
-		return c.parseFileMap(v)
+		return c.parseMap(v)
 
 	case string:
-		return c.parseFileString(v)
+		return c.parseString(v)
 
 	default:
 		return []github.File{}, fmt.Errorf("%w: %v (%T)", ErrInvalidFileType, rawFile, rawFile)
 	}
 }
 
-func (c *Config) parseFileMap(rawFile map[string]any) ([]github.File, error) {
+func (c *Config) parseSlice(rawFiles []any) ([]github.File, error) {
+	files := []github.File{}
+
+	for _, rf := range rawFiles {
+		f, err := c.parseFile(rf)
+		if err != nil {
+			return []github.File{}, err
+		}
+
+		files = append(files, f...)
+	}
+
+	return files, nil
+}
+
+func (c *Config) parseMap(rawFile map[string]any) ([]github.File, error) {
 	f := github.File{}
 
 	f.Repo = parseRepoString(
@@ -50,7 +65,7 @@ func (c *Config) parseFileMap(rawFile map[string]any) ([]github.File, error) {
 }
 
 //nolint:funlen // This function doesn't need to be simplified.
-func (c *Config) parseFileString(s string) ([]github.File, error) {
+func (c *Config) parseString(s string) ([]github.File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
 	if m := regexp.
 		MustCompile(`^https://github.com/(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).

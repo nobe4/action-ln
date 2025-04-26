@@ -29,6 +29,8 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	links := Links{}
 
 	for i, rl := range raw {
+		log.Debug("parse link", "link", rl)
+
 		l, err := c.parseLink(rl)
 		if err != nil {
 			log.Debug("Failed to parse link", "index", i, "raw", rl, "error")
