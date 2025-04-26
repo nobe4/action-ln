@@ -49,6 +49,7 @@ func (c *Config) parseFileMap(rawFile map[string]any) ([]github.File, error) {
 	return []github.File{f}, nil
 }
 
+//nolint:funlen // This function doesn't need to be simplified.
 func (c *Config) parseFileString(s string) ([]github.File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
 	if m := regexp.
@@ -104,7 +105,6 @@ func (c *Config) parseFileString(s string) ([]github.File, error) {
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
-
 				Path: m[1],
 				Ref:  m[2],
 				Repo: c.Defaults.Repo,
