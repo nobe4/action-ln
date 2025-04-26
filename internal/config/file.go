@@ -64,7 +64,7 @@ func (c *Config) parseMap(rawFile map[string]any) ([]github.File, error) {
 	return []github.File{f}, nil
 }
 
-//nolint:funlen // This function doesn't need to be simplified.
+//nolint:revive // This function doesn't need to be simplified.
 func (c *Config) parseString(s string) ([]github.File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
 	if m := regexp.
@@ -110,6 +110,21 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 				},
 				Path: m[3],
 				Ref:  m[4],
+			},
+		}, nil
+	}
+
+	// 'owner/repo:path/to/file'
+	if m := regexp.
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>.+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return []github.File{
+			{
+				Repo: github.Repo{
+					Owner: github.User{Login: m[1]},
+					Repo:  m[2],
+				},
+				Path: m[3],
 			},
 		}, nil
 	}

@@ -14,6 +14,7 @@ linters:
     - nonamedreturns # using revive's confusing-results and bare-return
     - testpackage # keep the tests close to the code
     - varnamelen # short variable names are okay
+    - funlen # using revive's function-length
 
   settings:
 
@@ -80,7 +81,6 @@ linters:
       - linters:
           - bodyclose
           - cyclop
-          - funlen
           - gocognit
         path: _test.go
       - linters:
