@@ -290,25 +290,29 @@ func TestParseLink(t *testing.T) {
 	tests := []struct {
 		defaults Defaults
 		rl       RawLink
-		want     *Link
+		want     Links
 	}{
 		{
 			rl: RawLink{
 				From: "from",
 				To:   "to",
 			},
-			want: &Link{
-				From: github.File{Path: "from"},
-				To:   github.File{Path: "to"},
+			want: Links{
+				{
+					From: github.File{Path: "from"},
+					To:   github.File{Path: "to"},
+				},
 			},
 		},
 
 		{
 			defaults: Defaults{Repo: repo},
 			rl:       RawLink{From: "from", To: "to"},
-			want: &Link{
-				From: github.File{Path: "from", Repo: repo},
-				To:   github.File{Path: "to", Repo: repo},
+			want: Links{
+				{
+					From: github.File{Path: "from", Repo: repo},
+					To:   github.File{Path: "to", Repo: repo},
+				},
 			},
 		},
 
@@ -317,9 +321,11 @@ func TestParseLink(t *testing.T) {
 				From: map[string]any{"path": "from", "repo": "repo2"},
 				To:   "to",
 			},
-			want: &Link{
-				From: github.File{Path: "from", Repo: github.Repo{Repo: "repo2"}},
-				To:   github.File{Path: "to"},
+			want: Links{
+				{
+					From: github.File{Path: "from", Repo: github.Repo{Repo: "repo2"}},
+					To:   github.File{Path: "to"},
+				},
 			},
 		},
 
@@ -329,9 +335,11 @@ func TestParseLink(t *testing.T) {
 				From: map[string]any{"path": "from", "repo": "repo2", "owner": "owner2"},
 				To:   "to",
 			},
-			want: &Link{
-				From: github.File{Path: "from", Repo: repo2},
-				To:   github.File{Path: "to", Repo: repo},
+			want: Links{
+				{
+					From: github.File{Path: "from", Repo: repo2},
+					To:   github.File{Path: "to", Repo: repo},
+				},
 			},
 		},
 	}
