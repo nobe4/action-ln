@@ -13,6 +13,13 @@ links:
   # ... and more
 ```
 
+See [`all-cases.yaml`](../internal/config/all-cases.yaml) for a comprehensive
+list of supported cases in a YAML format.
+
+> [!IMPORTANT]
+> This document will be refactored as part of
+> https://github.com/nobe4/action-ln/issues/66.
+
 ## Link
 
 A link is composed of two parts:
