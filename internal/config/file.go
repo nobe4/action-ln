@@ -18,8 +18,12 @@ func (c *Config) parseFile(rawFile any) (github.File, error) {
 	log.Debug("Parse file", "raw", rawFile)
 
 	switch v := rawFile.(type) {
+	case nil:
+		return github.File{}, nil
+
 	case map[string]any:
 		return c.parseFileMap(v)
+
 	case string:
 		return c.parseFileString(v)
 
