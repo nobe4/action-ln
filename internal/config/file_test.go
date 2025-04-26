@@ -18,7 +18,7 @@ func TestParseFile(t *testing.T) {
 	tests := []struct {
 		defaults Defaults
 		input    any
-		want     github.File
+		want     []github.File
 	}{
 		// nil
 		{},
@@ -26,22 +26,24 @@ func TestParseFile(t *testing.T) {
 		// Map
 		{
 			input: map[string]any{"path": "path"},
-			want:  github.File{Path: "path"},
+			want:  []github.File{{Path: "path"}},
 		},
 
 		{
 			defaults: defaults,
 			input:    map[string]any{"path": "path"},
-			want:     github.File{Path: "path", Repo: repo},
+			want:     []github.File{{Path: "path", Repo: repo}},
 		},
 
 		{
 			input: map[string]any{"repo": "repo", "path": "path"},
-			want: github.File{
-				Repo: github.Repo{
-					Repo: "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Repo: "repo",
+					},
+					Path: "path",
 				},
-				Path: "path",
 			},
 		},
 
@@ -49,177 +51,201 @@ func TestParseFile(t *testing.T) {
 		{
 			defaults: defaults,
 			input:    map[string]any{"repo": "repo2", "path": "path"},
-			want: github.File{
-				Repo: github.Repo{Repo: "repo2"},
-				Path: "path",
+			want: []github.File{
+				{
+					Repo: github.Repo{Repo: "repo2"},
+					Path: "path",
+				},
 			},
 		},
 
 		{
 			input: map[string]any{"repo": "repo", "owner": "owner", "path": "path", "ref": "ref"},
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: map[string]any{"repo": "repo/owner", "path": "path"},
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "repo"},
-					Repo:  "owner",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "repo"},
+						Repo:  "owner",
+					},
+					Path: "path",
 				},
-				Path: "path",
 			},
 		},
 
 		// String
 		{
 			input: "https://github.com/owner/repo/blob/ref/path",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			defaults: defaults,
 			input:    "https://github.com/owner/repo/blob/ref/path",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "https://github.com/owner/repo/blob/ref/" + complexPath,
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: complexPath,
+					Ref:  "ref",
 				},
-				Path: complexPath,
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "owner/repo/blob/ref/path",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			defaults: defaults,
 			input:    "owner/repo/blob/ref/path",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "owner/repo/blob/ref/" + complexPath,
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: complexPath,
+					Ref:  "ref",
 				},
-				Path: complexPath,
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "owner/repo:path@ref",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			defaults: defaults,
 			input:    "owner/repo:path@ref",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
 				},
-				Path: "path",
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "owner/repo:" + complexPath + "@ref",
-			want: github.File{
-				Repo: github.Repo{
-					Owner: github.User{Login: "owner"},
-					Repo:  "repo",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+						Repo:  "repo",
+					},
+					Path: complexPath,
+					Ref:  "ref",
 				},
-				Path: complexPath,
-				Ref:  "ref",
 			},
 		},
 
 		{
 			input: "path@ref",
-			want:  github.File{Path: "path", Ref: "ref"},
+			want:  []github.File{{Path: "path", Ref: "ref"}},
 		},
 
 		{
 			defaults: defaults,
 			input:    "path@ref",
-			want:     github.File{Path: "path", Ref: "ref", Repo: repo},
+			want:     []github.File{{Path: "path", Ref: "ref", Repo: repo}},
 		},
 
 		{
 			input: complexPath + "@ref",
-			want:  github.File{Path: complexPath, Ref: "ref"},
+			want:  []github.File{{Path: complexPath, Ref: "ref"}},
 		},
 
 		{
 			input: "path",
-			want:  github.File{Path: "path"},
+			want:  []github.File{{Path: "path"}},
 		},
 
 		{
 			defaults: defaults,
 			input:    "path",
-			want:     github.File{Path: "path", Repo: repo},
+			want:     []github.File{{Path: "path", Repo: repo}},
 		},
 
 		{
 			input: complexPath,
-			want:  github.File{Path: complexPath},
+			want:  []github.File{{Path: complexPath}},
 		},
 	}
 
@@ -235,8 +261,14 @@ func TestParseFile(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if !test.want.Equal(got) {
-				t.Errorf("want %+v, but got %+v", test.want, got)
+			if lg, lw := len(got), len(test.want); lg != lw {
+				t.Fatalf("want %d files, but got %d", lw, lg)
+			}
+
+			for i, f := range got {
+				if !f.Equal(test.want[i]) {
+					t.Errorf("file %d: want %+v, but got %+v", i, test.want, got)
+				}
 			}
 		})
 	}

@@ -11,6 +11,20 @@ import (
 
 type Links []*Link
 
+func (l *Links) Equal(other []*Link) bool {
+	if len(*l) != len(other) {
+		return false
+	}
+
+	for i, link := range *l {
+		if !link.Equal(other[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	links := Links{}
 
@@ -22,7 +36,7 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 			return nil, err
 		}
 
-		links = append(links, l)
+		links = append(links, l...)
 	}
 
 	return links, nil

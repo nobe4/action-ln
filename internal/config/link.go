@@ -99,18 +99,26 @@ func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Format
 	return nil
 }
 
-func (c *Config) parseLink(raw RawLink) (*Link, error) {
-	from, err := c.parseFile(raw.From)
+func (c *Config) parseLink(raw RawLink) (Links, error) {
+	froms, err := c.parseFile(raw.From)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
 	}
 
-	to, err := c.parseFile(raw.To)
+	tos, err := c.parseFile(raw.To)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errInvalidTo, err)
 	}
 
-	return &Link{From: from, To: to}, nil
+	links := Links{}
+
+	for _, from := range froms {
+		for _, to := range tos {
+			links = append(links, &Link{From: from, To: to})
+		}
+	}
+
+	return links, nil
 }
 
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
