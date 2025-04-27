@@ -95,15 +95,15 @@ links:
     to:
       owner: a
       repo: b
-      path: c
-      ref: d
+      path: e
+      ref: f
 `),
 			config: &Config{},
 			want: Config{
 				Links: Links{
 					{
 						From: github.File{Repo: repo, Path: "c", Ref: "d"},
-						To:   github.File{Repo: repo, Path: "c", Ref: "d"},
+						To:   github.File{Repo: repo, Path: "e", Ref: "f"},
 					},
 				},
 			},

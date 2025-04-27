@@ -16,9 +16,6 @@ links:
   # wants nothing
   -
 
-  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
-  - from: a.txt
-
   # want: owner/repo:a.txt@ -> owner/repo:b.txt@
   - from: a.txt
     to: b.txt

@@ -64,29 +64,30 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 	return links, nil
 }
 
+//nolint:revive // This function cannot be easily simplified.
 func combineLinks(froms, tos []github.File) Links {
 	if len(froms) == 0 {
+		log.Warn("Found no `from`, make sure you reference one.")
+
+		return Links{}
+	}
+
+	if len(tos) == 0 {
+		log.Warn("Found no `to`, make sure you reference one.")
+
 		return Links{}
 	}
 
 	links := Links{}
 
-	// TODO: This is probably unnecessary, a link from one file to the same will
-	// result in updating in-place. Maybe there should be a warning here
-	// instead an return Links{}.
-	if len(tos) == 0 {
-		for _, from := range froms {
-			links = append(links, &Link{From: from, To: from})
-		}
-
-		return links
-	}
-
 	for _, from := range froms {
 		for _, to := range tos {
-			// TODO: It's possible here for `from` to equal `to`.
-			// In such case, we probably should warn instead of adding the link
-			// in the list.
+			if from.Equal(to) {
+				log.Warn("Identiqual from and to, ignoring.", "from/to", from)
+
+				continue
+			}
+
 			links = append(links, &Link{From: from, To: to})
 		}
 	}
