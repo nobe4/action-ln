@@ -100,7 +100,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:path/to/file@ref'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>.+)@(?P<ref>[\w-]+)$`).
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>[^@]+)@(?P<ref>[\w-]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
@@ -116,7 +116,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:path/to/file'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>.+)$`).
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>[^@]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
@@ -125,6 +125,35 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 					Repo:  m[2],
 				},
 				Path: m[3],
+			},
+		}, nil
+	}
+
+	// 'owner/repo:@ref'
+	if m := regexp.
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):@(?P<ref>[\w-]+)$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return []github.File{
+			{
+				Repo: github.Repo{
+					Owner: github.User{Login: m[1]},
+					Repo:  m[2],
+				},
+				Ref: m[3],
+			},
+		}, nil
+	}
+
+	// 'owner/repo:'
+	if m := regexp.
+		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):$`).
+		FindStringSubmatch(s); len(m) > 0 {
+		return []github.File{
+			{
+				Repo: github.Repo{
+					Owner: github.User{Login: m[1]},
+					Repo:  m[2],
+				},
 			},
 		}, nil
 	}

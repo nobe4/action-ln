@@ -38,6 +38,15 @@ links:
 
   # want: owner/repo:a.txt@ -> own/rep:a.txt@
   - from: a.txt
+    # needs quotes, because YAML wants to read the second : as a mapping.
+    to: "own/rep:"
+
+  # want: owner/repo:a.txt@ -> own/rep:a.txt@ref
+  - from: a.txt
+    to: own/rep:@ref
+
+  # want: owner/repo:a.txt@ -> own/rep:a.txt@
+  - from: a.txt
     to:
       repo: own/rep
 
