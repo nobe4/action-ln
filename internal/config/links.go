@@ -44,6 +44,56 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	return links, nil
 }
 
+func (c *Config) parseLink(raw RawLink) (Links, error) {
+	froms, err := c.parseFile(raw.From)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
+	}
+
+	tos, err := c.parseFile(raw.To)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidTo, err)
+	}
+
+	links := combineLinks(froms, tos)
+
+	for _, l := range links {
+		l.fillMissing()
+	}
+
+	return links, nil
+}
+
+func combineLinks(froms, tos []github.File) Links {
+	if len(froms) == 0 {
+		return Links{}
+	}
+
+	links := Links{}
+
+	// TODO: This is probably unnecessary, a link from one file to the same will
+	// result in updating in-place. Maybe there should be a warning here
+	// instead an return Links{}.
+	if len(tos) == 0 {
+		for _, from := range froms {
+			links = append(links, &Link{From: from, To: from})
+		}
+
+		return links
+	}
+
+	for _, from := range froms {
+		for _, to := range tos {
+			// TODO: It's possible here for `from` to equal `to`.
+			// In such case, we probably should warn instead of adding the link
+			// in the list.
+			links = append(links, &Link{From: from, To: to})
+		}
+	}
+
+	return links
+}
+
 func (l *Links) Update(
 	ctx context.Context,
 	g github.FileGetterUpdater,

@@ -7,6 +7,7 @@
 # parsed _exactly_ the same way.
 
 # The default is fixed to avoid embiguity.
+# It corresponds also to the current repo.
 defaults:
   owner: owner
   repo: repo
@@ -15,9 +16,8 @@ links:
   # wants nothing
   -
 
-  # TODO: this is not yet supported
-  # # want: owner/repo:a.txt@ -> owner/repo:a.txt@
-  # - from: a.txt
+  # want: owner/repo:a.txt@ -> owner/repo:a.txt@
+  - from: a.txt
 
   # want: owner/repo:a.txt@ -> owner/repo:b.txt@
   - from: a.txt
@@ -39,11 +39,10 @@ links:
   - from: own/rep/blob/ref/a.txt
     to: b.txt
 
-  # TODO: this is not yet supported
-  # # want: owner/repo:a.txt@ -> own/rep:a.txt@
-  # - from: a.txt
-  #   to:
-  #     repo: own/rep
+  # want: owner/repo:a.txt@ -> own/rep:a.txt@
+  - from: a.txt
+    to:
+      repo: own/rep
 
   # want: owner/repo:a.txt@main -> owner/repo:b.txt@
   - from:
@@ -66,15 +65,26 @@ links:
       ref: main
     to: b.txt
 
-  # TODO: not yet supported
-  # # want: owner/repo:a.txt@ -> owner/repo:a.txt@
-  # # want: own/rep:b.txt@ -> owner/repo:b.txt@
-  # - from:
-  #     - a.txt
-  #     - path: b.txt
-  #       repo: own/rep
-  #   to:
-  #     repo: own/rep
+  # want: owner/repo:a.txt@ -> own/rep:a.txt@
+  # want: owner/repo:b.txt@ -> own/rep:b.txt@
+  # want: owner/repo:c.txt@ -> own/rep:c.txt@
+  - from:
+      - a.txt
+      - b.txt
+      - c.txt
+    to:
+      repo: own/rep
+
+  # want: owner/repo:a.txt@ -> own/rep:a.txt@
+  # want: own/rep:b.txt@ -> own/rep:b.txt@
+  # want: owner/repo:path/to/c.txt@ -> own/rep:path/to/c.txt@
+  - from:
+      - a.txt
+      - path: b.txt
+        repo: own/rep
+      - path/to/c.txt
+    to:
+      repo: own/rep
 
   # want: owner/repo:a.txt@ -> owner/repo:c.txt@
   # want: own/rep:b.txt@ -> owner/repo:c.txt@
