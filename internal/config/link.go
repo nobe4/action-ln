@@ -99,28 +99,6 @@ func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Format
 	return nil
 }
 
-func (c *Config) parseLink(raw RawLink) (Links, error) {
-	froms, err := c.parseFile(raw.From)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
-	}
-
-	tos, err := c.parseFile(raw.To)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w", errInvalidTo, err)
-	}
-
-	links := Links{}
-
-	for _, from := range froms {
-		for _, to := range tos {
-			links = append(links, &Link{From: from, To: to})
-		}
-	}
-
-	return links, nil
-}
-
 func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 	if err := g.GetFile(ctx, &l.From); err != nil {
 		return fmt.Errorf("%w %#v: %w", errMissingFrom, l.From, err)
@@ -135,4 +113,14 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 	}
 
 	return nil
+}
+
+func (l *Link) fillMissing() {
+	if l.To.Path == "" {
+		l.To.Path = l.From.Path
+	}
+
+	if l.To.Repo.Empty() {
+		l.To.Repo = l.From.Repo
+	}
 }

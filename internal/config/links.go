@@ -44,6 +44,57 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	return links, nil
 }
 
+func (c *Config) parseLink(raw RawLink) (Links, error) {
+	froms, err := c.parseFile(raw.From)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
+	}
+
+	tos, err := c.parseFile(raw.To)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", errInvalidTo, err)
+	}
+
+	links := combineLinks(froms, tos)
+
+	for _, l := range links {
+		l.fillMissing()
+	}
+
+	return links, nil
+}
+
+//nolint:revive // This function cannot be easily simplified.
+func combineLinks(froms, tos []github.File) Links {
+	if len(froms) == 0 {
+		log.Warn("Found no `from`, make sure you reference one.")
+
+		return Links{}
+	}
+
+	if len(tos) == 0 {
+		log.Warn("Found no `to`, make sure you reference one.")
+
+		return Links{}
+	}
+
+	links := Links{}
+
+	for _, from := range froms {
+		for _, to := range tos {
+			if from.Equal(to) {
+				log.Warn("Identiqual from and to, ignoring.", "from/to", from)
+
+				continue
+			}
+
+			links = append(links, &Link{From: from, To: to})
+		}
+	}
+
+	return links
+}
+
 func (l *Links) Update(
 	ctx context.Context,
 	g github.FileGetterUpdater,

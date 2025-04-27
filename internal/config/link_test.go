@@ -324,7 +324,7 @@ func TestParseLink(t *testing.T) {
 			want: Links{
 				{
 					From: github.File{Path: "from", Repo: github.Repo{Repo: "repo2"}},
-					To:   github.File{Path: "to"},
+					To:   github.File{Path: "to", Repo: github.Repo{Repo: "repo2"}},
 				},
 			},
 		},
