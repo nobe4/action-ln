@@ -67,6 +67,7 @@ func (c *Config) Populate(ctx context.Context, g github.FileGetter) error {
 			return fmt.Errorf("failed to populate link %#v: %w", l, err)
 		}
 
+		// TODO: check if this is really necessary.
 		c.Links[i] = l
 	}
 
