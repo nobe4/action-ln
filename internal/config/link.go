@@ -13,7 +13,7 @@ import (
 const (
 	commitMsgTemplate = `auto(ln): update {{ .Data.To.Path }}
 
-Source: {{ .Environment.Server }}{{ .Data.From.HTMLPath }}
+Source: {{ .Data.From.HTMLURL }}
 `
 )
 
