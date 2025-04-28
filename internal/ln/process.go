@@ -21,7 +21,7 @@ This automated PR updates the following files:
 | From | To  |
 | ---  | --- |
 {{ range .Data -}}
-| {{ $b }}{{ .From }}{{ $b }} | {{ $b }}{{ .To }}{{ $b }} |
+| [{{ $b }}{{ .From }}{{ $b }}]({{ .From.HTMLURL }}) | {{ $b }}{{ .To.Path }}{{ $b }} |
 {{ end }}
 
 ---
@@ -74,6 +74,8 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 	if err != nil {
 		return fmt.Errorf("failed to create pull request body: %w", err)
 	}
+
+	log.Debug("Pull body", "body", pullBody)
 
 	pull, err := g.GetOrCreatePull(ctx, toRepo, base.Name, head.Name, pullTitle, pullBody)
 	if err != nil {

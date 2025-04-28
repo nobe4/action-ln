@@ -16,6 +16,7 @@ type File struct {
 	Path    string `json:"path"`
 	Content string `json:"content"`
 	SHA     string `json:"sha"` // Blob hash.
+	HTMLURL string `json:"html_url"`
 
 	// Content from the config
 	Repo   Repo   `json:"repo"`
