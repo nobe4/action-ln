@@ -111,6 +111,7 @@ links:
 			},
 		},
 
+		// TODO: redo
 		// 		{
 		// 			name:  "uses defaults",
 		// 			input: `links: []`,
