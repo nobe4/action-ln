@@ -52,8 +52,6 @@ func (c *Config) Parse(r io.Reader) error {
 
 	c.Defaults.parse(rawC.Defaults)
 
-	log.Debug("Parse links", "raw", rawC.Links)
-
 	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
 		return fmt.Errorf("%w: %w", errInvalidLinks, err)
 	}
@@ -62,6 +60,9 @@ func (c *Config) Parse(r io.Reader) error {
 }
 
 func (c *Config) Populate(ctx context.Context, g github.FileGetter) error {
+	log.Group("Populate config")
+	defer log.GroupEnd()
+
 	for i, l := range c.Links {
 		if err := l.populate(ctx, g); err != nil {
 			return fmt.Errorf("failed to populate link %#v: %w", l, err)
