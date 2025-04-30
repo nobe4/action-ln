@@ -1,22 +1,36 @@
 package config
 
 import (
-	"github.com/nobe4/action-ln/internal/github"
+	"github.com/nobe4/action-ln/internal/log"
 )
 
+type RawDefaults struct {
+	Link RawLink `yaml:"link"`
+}
+
 type Defaults struct {
-	Repo github.Repo `json:"repo" yaml:"repo"`
+	Link *Link `json:"link" yaml:"link"`
 }
 
 func (d *Defaults) Equal(o *Defaults) bool {
-	return d.Repo.Equal(o.Repo)
+	return d.Link.Equal(o.Link)
 }
 
-func (d *Defaults) parse(raw map[string]any) {
-	if r := parseRepoString(
-		getMapKey(raw, "owner"),
-		getMapKey(raw, "repo"),
-	); !r.Empty() {
-		d.Repo = r
+func (c *Config) parseDefaults(raw RawDefaults) error {
+	log.Debug("Parse defaults", "raw", raw)
+
+	links, err := c.parseLink(raw.Link)
+	if err != nil {
+		return err
 	}
+
+	switch len(links) {
+	case 0:
+	case 1:
+		c.Defaults.Link = links[0]
+	default:
+		log.Warn("Defaults has more than one link, using the first", "links", links)
+	}
+
+	return nil
 }

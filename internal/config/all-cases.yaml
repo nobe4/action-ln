@@ -9,8 +9,13 @@
 # The default is fixed to avoid embiguity.
 # It corresponds also to the current repo.
 defaults:
-  owner: owner
-  repo: repo
+  link:
+    from:
+      owner: owner
+      repo: repo
+    to:
+      owner: owner
+      repo: repo
 
 links:
   # wants nothing

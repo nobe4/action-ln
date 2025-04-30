@@ -20,13 +20,14 @@ import (
 )
 
 var (
-	errInvalidYAML  = errors.New("invalid YAML")
-	errInvalidLinks = errors.New("invalid links")
+	errInvalidYAML     = errors.New("invalid YAML")
+	errInvalidLinks    = errors.New("invalid links")
+	errInvalidDefaults = errors.New("invalid defaults")
 )
 
 type RawConfig struct {
-	Defaults map[string]any `yaml:"defaults"`
-	Links    []RawLink      `yaml:"links"`
+	Defaults RawDefaults `yaml:"defaults"`
+	Links    []RawLink   `yaml:"links"`
 }
 
 type Config struct {
@@ -48,9 +49,9 @@ func (c *Config) Parse(r io.Reader) error {
 		return fmt.Errorf("%w: %w", errInvalidYAML, err)
 	}
 
-	log.Debug("Parse defaults", "raw", rawC.Defaults)
-
-	c.Defaults.parse(rawC.Defaults)
+	if err := c.parseDefaults(rawC.Defaults); err != nil {
+		return fmt.Errorf("%w: %w", errInvalidDefaults, err)
+	}
 
 	if c.Links, err = c.parseLinks(rawC.Links); err != nil {
 		return fmt.Errorf("%w: %w", errInvalidLinks, err)
@@ -86,6 +87,7 @@ func (c *Config) String() string {
 	return string(out)
 }
 
+// TODO: refactor into `config/file/file.go`.
 func getMapKey(m map[string]any, k string) string {
 	if v, ok := m[k]; ok {
 		if vs, ok := v.(string); ok {
