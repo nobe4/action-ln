@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	fmock "github.com/nobe4/action-ln/internal/format/mock"
@@ -353,6 +354,121 @@ func TestParseLink(t *testing.T) {
 
 			if !test.want.Equal(got) {
 				t.Fatalf("expected\n%+v\ngot\n%+v", test.want, got)
+			}
+		})
+	}
+}
+
+func TestFillMissing(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		def  string
+		link string
+		want string
+	}{
+		{},
+
+		{
+			link: "o1/r1:p1 -> r2/o2:p2",
+			want: "o1/r1:p1 -> r2/o2:p2",
+		},
+
+		{
+			link: "o1/r1:p1 -> p2",
+			want: "o1/r1:p1 -> o1/r1:p2",
+		},
+
+		{
+			link: "p1 -> r2/o2:p2",
+			want: "p1 -> r2/o2:p2",
+		},
+
+		{
+			link: "p1 -> p2",
+			want: "p1 -> p2",
+		},
+
+		{
+			def:  "o3/r3:p3 -> o4/r4:p4",
+			link: "",
+			want: "o3/r3:p3 -> o4/r4:p4",
+		},
+
+		{
+			def:  "o3/r3:p3 -> o4/r4:p4",
+			link: "o1/r1:p1 -> r2/o2:p2",
+			want: "o1/r1:p1 -> r2/o2:p2",
+		},
+
+		{
+			def:  "o3/r3:p3 -> o4/r4:p4",
+			link: "o1/r1:p1 -> p2",
+			want: "o1/r1:p1 -> o4/r4:p2",
+		},
+
+		{
+			def:  "o3/r3:p3 -> o4/r4:p4",
+			link: "p1 -> r2/o2:p2",
+			want: "o3/r3:p1 -> r2/o2:p2",
+		},
+
+		{
+			def:  "o3/r3:p3 -> o4/r4:p4",
+			link: "p1 -> p2",
+			want: "o3/r3:p1 -> o4/r4:p2",
+		},
+
+		// TODO: do missing repo / owner, once the string parsing works, see
+		// note in config/file.go:parseString
+	}
+
+	parseLink := func(t *testing.T, c *Config, s string) *Link {
+		t.Helper()
+
+		if s == "" {
+			return &Link{}
+		}
+
+		p := strings.Split(s, " -> ")
+
+		if l := len(p); l != 2 {
+			t.Fatalf("expected 2 parts, got %d for %q", l, s)
+		}
+
+		from, err := c.parseString(p[0])
+		if err != nil {
+			t.Fatalf("failed to parse file %q: %v", p[0], err)
+		}
+
+		to, err := c.parseString(p[1])
+		if err != nil {
+			t.Fatalf("failed to parse file %q: %v", p[0], err)
+		}
+
+		return &Link{From: from[0], To: to[0]}
+	}
+
+	prepare := func(t *testing.T, c *Config, linkStr, wantStr, defaultsStr string) (*Link, *Link, *Link) {
+		t.Helper()
+
+		return parseLink(t, c, linkStr), parseLink(t, c, wantStr), parseLink(t, c, defaultsStr)
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			c := New()
+
+			link, want, defaults := prepare(t, c, test.link, test.want, test.def)
+
+			c.Defaults.Link = defaults
+
+			c.fillMissing(link)
+
+			if !link.Equal(want) {
+				t.Fatalf("expected\n%v => %v\ngot\n%v => %v", test.want, want, test.link, link)
 			}
 		})
 	}
