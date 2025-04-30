@@ -1,3 +1,4 @@
+// TODO: refactor into `config/file/file.go`
 package config
 
 import (
@@ -47,16 +48,13 @@ func (c *Config) parseSlice(rawFiles []any) ([]github.File, error) {
 	return files, nil
 }
 
-func (c *Config) parseMap(rawFile map[string]any) ([]github.File, error) {
+func (*Config) parseMap(rawFile map[string]any) ([]github.File, error) {
 	f := github.File{}
 
 	f.Repo = parseRepoString(
 		getMapKey(rawFile, "owner"),
 		getMapKey(rawFile, "repo"),
 	)
-	if f.Repo.Empty() {
-		f.Repo = c.Defaults.Repo
-	}
 
 	f.Path = getMapKey(rawFile, "path")
 	f.Ref = getMapKey(rawFile, "ref")
@@ -70,7 +68,7 @@ func (c *Config) parseMap(rawFile map[string]any) ([]github.File, error) {
 // This is less readable, but very useful for testsing.
 //
 //nolint:revive // This function doesn't need to be simplified.
-func (c *Config) parseString(s string) ([]github.File, error) {
+func (*Config) parseString(s string) ([]github.File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
 	if m := regexp.
 		MustCompile(`^https://github.com/(?P<owner>[\w-]+)/(?P<repo>[\w-]+)/blob/(?P<ref>[\w-]+)/(?P<path>.+)$`).
@@ -171,7 +169,6 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 			{
 				Path: m[1],
 				Ref:  m[2],
-				Repo: c.Defaults.Repo,
 			},
 		}, nil
 	}
@@ -183,7 +180,6 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 		return []github.File{
 			{
 				Path: m[1],
-				Repo: c.Defaults.Repo,
 			},
 		}, nil
 	}

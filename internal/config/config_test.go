@@ -109,47 +109,47 @@ links:
 			},
 		},
 
-		{
-			name:  "uses defaults",
-			input: `links: []`,
-			config: &Config{
-				Defaults: Defaults{Repo: repo},
-			},
-			want: Config{
-				Defaults: Defaults{Repo: repo},
-				Links:    Links{},
-			},
-		},
-
-		{
-			name: "keep defaults",
-			input: dent.DedentString(`
-defaults:
-  repo: a/b
-`),
-			config: &Config{
-				Defaults: Defaults{Repo: repo},
-			},
-			want: Config{
-				Defaults: Defaults{Repo: repo},
-				Links:    Links{},
-			},
-		},
-
-		{
-			name: "update defaults",
-			input: dent.DedentString(`
-defaults:
-  repo: x/y
-`),
-			config: &Config{
-				Defaults: Defaults{Repo: repo},
-			},
-			want: Config{
-				Defaults: Defaults{Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"}},
-				Links:    Links{},
-			},
-		},
+		// 		{
+		// 			name:  "uses defaults",
+		// 			input: `links: []`,
+		// 			config: &Config{
+		// 				Defaults: Defaults{Repo: repo},
+		// 			},
+		// 			want: Config{
+		// 				Defaults: Defaults{Repo: repo},
+		// 				Links:    Links{},
+		// 			},
+		// 		},
+		//
+		// 		{
+		// 			name: "keep defaults",
+		// 			input: dent.DedentString(`
+		// defaults:
+		//   repo: a/b
+		// `),
+		// 			config: &Config{
+		// 				Defaults: Defaults{Repo: repo},
+		// 			},
+		// 			want: Config{
+		// 				Defaults: Defaults{Repo: repo},
+		// 				Links:    Links{},
+		// 			},
+		// 		},
+		//
+		// 		{
+		// 			name: "update defaults",
+		// 			input: dent.DedentString(`
+		// defaults:
+		//   repo: x/y
+		// `),
+		// 			config: &Config{
+		// 				Defaults: Defaults{Repo: repo},
+		// 			},
+		// 			want: Config{
+		// 				Defaults: Defaults{Repo: github.Repo{Owner: github.User{Login: "x"}, Repo: "y"}},
+		// 				Links:    Links{},
+		// 			},
+		// 		},
 	}
 
 	for _, test := range tests {

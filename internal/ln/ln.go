@@ -45,7 +45,6 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	}
 
 	c := config.New()
-	c.Defaults.Repo = e.Repo
 	c.Source = f
 
 	if err := c.Parse(strings.NewReader(f.Content)); err != nil {

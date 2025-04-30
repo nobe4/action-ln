@@ -1,21 +1,16 @@
-links:
-  - from:
-      repo: nobe4/ln-source
-      path: script/tag-release
+defaults:
+  repo: nobe4/ln-source
 
-  - from:
-      repo: nobe4/ln-source
-      path: go/script/lint
+links:
+  - from: script/tag-release
+
+  - from: go/script/lint
     to: script/lint
 
-  - from:
-      repo: nobe4/ln-source
-      path: go/script/test
+  - from: go/script/test
     to: script/test
 
-  - from:
-      repo: nobe4/ln-source
-      path: go/.golangci.yaml
+  - from: go/.golangci.yaml
     to: .golangci.yaml
 
   # Do this bootstrap later

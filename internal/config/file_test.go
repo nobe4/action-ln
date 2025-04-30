@@ -13,13 +13,9 @@ func TestParseFile(t *testing.T) {
 
 	const complexPath = "a/b-c/d_f/f.txt"
 
-	repo := github.Repo{Owner: github.User{Login: "owner"}, Repo: "repo"}
-	defaults := Defaults{Repo: repo}
-
 	tests := []struct {
-		defaults Defaults
-		input    any
-		want     []github.File
+		input any
+		want  []github.File
 	}{
 		// nil
 		{},
@@ -47,14 +43,13 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
 			input: []any{
 				map[string]any{"path": "path"},
 				"path2",
 			},
 			want: []github.File{
-				{Path: "path", Repo: repo},
-				{Path: "path2", Repo: repo},
+				{Path: "path"},
+				{Path: "path2"},
 			},
 		},
 
@@ -65,9 +60,8 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    map[string]any{"path": "path"},
-			want:     []github.File{{Path: "path", Repo: repo}},
+			input: map[string]any{"path": "path"},
+			want:  []github.File{{Path: "path"}},
 		},
 
 		{
@@ -82,10 +76,8 @@ func TestParseFile(t *testing.T) {
 			},
 		},
 
-		// TODO: might want to inherite the owner from the defaults
 		{
-			defaults: defaults,
-			input:    map[string]any{"repo": "repo2", "path": "path"},
+			input: map[string]any{"repo": "repo2", "path": "path"},
 			want: []github.File{
 				{
 					Repo: github.Repo{Repo: "repo2"},
@@ -137,8 +129,7 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    "https://github.com/owner/repo/blob/ref/path",
+			input: "https://github.com/owner/repo/blob/ref/path",
 			want: []github.File{
 				{
 					Repo: github.Repo{
@@ -180,8 +171,7 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    "owner/repo/blob/ref/path",
+			input: "owner/repo/blob/ref/path",
 			want: []github.File{
 				{
 					Repo: github.Repo{
@@ -223,8 +213,7 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    "owner/repo:path@ref",
+			input: "owner/repo:path@ref",
 			want: []github.File{
 				{
 					Repo: github.Repo{
@@ -305,9 +294,8 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    "path@ref",
-			want:     []github.File{{Path: "path", Ref: "ref", Repo: repo}},
+			input: "path@ref",
+			want:  []github.File{{Path: "path", Ref: "ref"}},
 		},
 
 		{
@@ -321,9 +309,8 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
-			defaults: defaults,
-			input:    "path",
-			want:     []github.File{{Path: "path", Repo: repo}},
+			input: "path",
+			want:  []github.File{{Path: "path"}},
 		},
 
 		{
@@ -337,7 +324,6 @@ func TestParseFile(t *testing.T) {
 			t.Parallel()
 
 			c := New()
-			c.Defaults = test.defaults
 
 			got, err := c.parseFile(test.input)
 			if err != nil {
