@@ -41,17 +41,18 @@ type App struct {
 }
 
 type Environment struct {
-	Noop     bool        `json:"noop"`     // INPUT_NOOP
-	Token    string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
-	Repo     github.Repo `json:"repo"`     // GITHUB_REPOSITORY
-	Server   string      `json:"server"`   // GITHUB_SERVER_URL
-	Endpoint string      `json:"endpoint"` // GITHUB_API_URL
-	RunID    string      `json:"run_id"`   // GITHUB_RUN_ID
-	Config   string      `json:"config"`   // INPUT_CONFIG
-	App      App         `json:"app"`
-	OnAction bool        `json:"on_action"`
-	ExecURL  string      `json:"exec_url"`
-	Debug    bool        `json:"debug"` // RUNNER_DEBUG
+	Noop        bool        `json:"noop"`     // INPUT_NOOP
+	Token       string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
+	Repo        github.Repo `json:"repo"`     // GITHUB_REPOSITORY
+	Server      string      `json:"server"`   // GITHUB_SERVER_URL
+	Endpoint    string      `json:"endpoint"` // GITHUB_API_URL
+	RunID       string      `json:"run_id"`   // GITHUB_RUN_ID
+	Config      string      `json:"config"`   // INPUT_CONFIG
+	App         App         `json:"app"`
+	OnAction    bool        `json:"on_action"`
+	ExecURL     string      `json:"exec_url"`
+	Debug       bool        `json:"debug"`        // RUNNER_DEBUG
+	LocalConfig string      `json:"local_config"` // Read config from the filesystem.
 }
 
 //nolint:revive // No, I don't want to leak secrets.
@@ -102,6 +103,7 @@ func Parse() (Environment, error) {
 	e.App = parseApp()
 	e.OnAction = parseOnAction()
 	e.Debug = parseDebug()
+	e.LocalConfig = parseLocalConfig()
 
 	e.ExecURL = fmt.Sprintf("%s/%s/actions/runs/%s", e.Server, e.Repo, e.RunID)
 
@@ -188,6 +190,10 @@ func parseOnAction() bool {
 
 func parseDebug() bool {
 	return truthy(os.Getenv("RUNNER_DEBUG"))
+}
+
+func parseLocalConfig() string {
+	return os.Getenv("INPUT_LOCAL_CONFIG")
 }
 
 func truthy(s string) bool {

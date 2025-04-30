@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Only @nobe4 can run this.
+
+set -e
+
+GITHUB_TOKEN=$(gh auth token) \
+	GITHUB_REPOSITORY=nobe4/action-ln \
+	RUNNER_DEBUG=1 \
+	INPUT_NOOP=1 \
+	INPUT_LOCAL_CONFIG="./.github/ln-config.yaml" \
+	go run cmd/action-ln/main.go
