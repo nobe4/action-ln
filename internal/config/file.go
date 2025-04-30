@@ -64,6 +64,11 @@ func (c *Config) parseMap(rawFile map[string]any) ([]github.File, error) {
 	return []github.File{f}, nil
 }
 
+// NOTE: only the github and blob path require `owner` and `repo` to match, all
+// others concerned can omit either/both.
+// E.g. `/:path`, `owner/:path`, `/repo:path`, ...
+// This is less readable, but very useful for testsing.
+//
 //nolint:revive // This function doesn't need to be simplified.
 func (c *Config) parseString(s string) ([]github.File, error) {
 	// 'https://github.com/owner/repo/blob/ref/path/to/file'
@@ -100,7 +105,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:path/to/file@ref'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>[^@]+)@(?P<ref>[\w-]+)$`).
+		MustCompile(`^(?P<owner>[\w-]*)/(?P<repo>[\w-]*):(?P<path>[^@]+)@(?P<ref>[\w-]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
@@ -116,7 +121,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:path/to/file'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):(?P<path>[^@]+)$`).
+		MustCompile(`^(?P<owner>[\w-]*)/(?P<repo>[\w-]*):(?P<path>[^@]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
@@ -131,7 +136,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:@ref'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):@(?P<ref>[\w-]+)$`).
+		MustCompile(`^(?P<owner>[\w-]*)/(?P<repo>[\w-]*):@(?P<ref>[\w-]+)$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{
@@ -146,7 +151,7 @@ func (c *Config) parseString(s string) ([]github.File, error) {
 
 	// 'owner/repo:'
 	if m := regexp.
-		MustCompile(`^(?P<owner>[\w-]+)/(?P<repo>[\w-]+):$`).
+		MustCompile(`^(?P<owner>[\w-]*)/(?P<repo>[\w-]*):$`).
 		FindStringSubmatch(s); len(m) > 0 {
 		return []github.File{
 			{

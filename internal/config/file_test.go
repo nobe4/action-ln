@@ -252,6 +252,54 @@ func TestParseFile(t *testing.T) {
 		},
 
 		{
+			input: "owner/:path@ref",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+					},
+					Path: "path",
+					Ref:  "ref",
+				},
+			},
+		},
+
+		{
+			input: "/repo:path@ref",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Repo: "repo",
+					},
+					Path: "path",
+					Ref:  "ref",
+				},
+			},
+		},
+
+		{
+			input: "owner/:",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Owner: github.User{Login: "owner"},
+					},
+				},
+			},
+		},
+
+		{
+			input: "/repo:",
+			want: []github.File{
+				{
+					Repo: github.Repo{
+						Repo: "repo",
+					},
+				},
+			},
+		},
+
+		{
 			input: "path@ref",
 			want:  []github.File{{Path: "path", Ref: "ref"}},
 		},
