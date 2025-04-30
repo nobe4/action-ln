@@ -8,6 +8,8 @@ package ln
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/nobe4/action-ln/internal/config"
@@ -42,19 +44,9 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	log.Group("Get config")
 	defer log.GroupEnd()
 
-	log.Debug("Get config commit", "repo", e.Repo)
-
-	b, err := g.GetDefaultBranch(ctx, e.Repo)
+	f, err := readConfig(ctx, g, e)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get default branch: %w", err)
-	}
-
-	f := github.File{Repo: e.Repo, Path: e.Config, Commit: b.Commit.SHA, Ref: b.Name}
-
-	log.Debug("Get config file", "file", f)
-
-	if err := g.GetFile(ctx, &f); err != nil {
-		return nil, fmt.Errorf("failed to get config %#v: %w", f, err)
+		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
 	log.Debug("Create config object", "default.repo", e.Repo)
@@ -72,4 +64,53 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	log.Debug("Parsed config", "config", c)
 
 	return c, nil
+}
+
+func readConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (github.File, error) {
+	if e.LocalConfig == "" {
+		return readConfigFromGitHub(ctx, g, e)
+	}
+
+	return readConfigFromFS(e.LocalConfig)
+}
+
+func readConfigFromGitHub(ctx context.Context, g *github.GitHub, e environment.Environment) (github.File, error) {
+	log.Debug("Get config commit", "repo", e.Repo)
+
+	b, err := g.GetDefaultBranch(ctx, e.Repo)
+	if err != nil {
+		return github.File{}, fmt.Errorf("failed to get default branch: %w", err)
+	}
+
+	f := github.File{Repo: e.Repo, Path: e.Config, Commit: b.Commit.SHA, Ref: b.Name}
+
+	log.Debug("Get config file", "file", f)
+
+	if err := g.GetFile(ctx, &f); err != nil {
+		return github.File{}, fmt.Errorf("failed to get config %#v: %w", f, err)
+	}
+
+	return f, nil
+}
+
+func readConfigFromFS(path string) (github.File, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return github.File{}, fmt.Errorf("failed to read config file %s: %w", path, err)
+	}
+
+	return github.File{
+		Content: string(content),
+		Name:    filepath.Base(path),
+		Path:    path,
+		HTMLURL: "file://" + path,
+		Commit:  "local_commit",
+		Ref:     "local_ref",
+		SHA:     "local_sha",
+
+		Repo: github.Repo{
+			Owner: github.User{Login: "local_owner"},
+			Repo:  "local_repo",
+		},
+	}, nil
 }
