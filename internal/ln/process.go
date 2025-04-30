@@ -45,7 +45,7 @@ func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, gr
 func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l config.Links) error {
 	toRepo := l[0].To.Repo
 
-	log.Group("Processing links " + toRepo.String())
+	log.Group("Processing links for " + toRepo.String())
 	defer log.GroupEnd()
 
 	base, head, err := g.GetBaseAndHeadBranches(ctx, toRepo, headName)

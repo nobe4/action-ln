@@ -25,13 +25,11 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 		return err
 	}
 
-	if err := c.Populate(ctx, g); err != nil {
-		return fmt.Errorf("failed to populate config: %w", err)
-	}
-
 	f := contextfmt.New(c, e)
 
 	groups := c.Links.Groups()
+
+	log.Debug("Processing groups", "groups", "\n"+groups.String())
 
 	if err := processGroups(ctx, g, f, groups); err != nil {
 		return fmt.Errorf("failed to process the groups: %w", err)
@@ -41,24 +39,21 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 }
 
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
-	log.Group("Get config")
-	defer log.GroupEnd()
-
 	f, err := readConfig(ctx, g, e)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
-	log.Debug("Create config object", "default.repo", e.Repo)
-
 	c := config.New()
 	c.Defaults.Repo = e.Repo
 	c.Source = f
 
-	log.Debug("Parse config file", "sha", f.Commit)
-
 	if err := c.Parse(strings.NewReader(f.Content)); err != nil {
 		return nil, fmt.Errorf("failed to parse config %#v: %w", f, err)
+	}
+
+	if err := c.Populate(ctx, g); err != nil {
+		return nil, fmt.Errorf("failed to populate config: %w", err)
 	}
 
 	log.Debug("Parsed config", "config", c)
@@ -67,6 +62,9 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 }
 
 func readConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (github.File, error) {
+	log.Group("Read config")
+	defer log.GroupEnd()
+
 	if e.LocalConfig == "" {
 		return readConfigFromGitHub(ctx, g, e)
 	}
@@ -75,7 +73,7 @@ func readConfig(ctx context.Context, g *github.GitHub, e environment.Environment
 }
 
 func readConfigFromGitHub(ctx context.Context, g *github.GitHub, e environment.Environment) (github.File, error) {
-	log.Debug("Get config commit", "repo", e.Repo)
+	log.Info("Read config from GitHub", "repo", e.Repo)
 
 	b, err := g.GetDefaultBranch(ctx, e.Repo)
 	if err != nil {
@@ -84,7 +82,7 @@ func readConfigFromGitHub(ctx context.Context, g *github.GitHub, e environment.E
 
 	f := github.File{Repo: e.Repo, Path: e.Config, Commit: b.Commit.SHA, Ref: b.Name}
 
-	log.Debug("Get config file", "file", f)
+	log.Info("Get config file", "file", f)
 
 	if err := g.GetFile(ctx, &f); err != nil {
 		return github.File{}, fmt.Errorf("failed to get config %#v: %w", f, err)
@@ -94,6 +92,8 @@ func readConfigFromGitHub(ctx context.Context, g *github.GitHub, e environment.E
 }
 
 func readConfigFromFS(path string) (github.File, error) {
+	log.Info("Read config from Filesystem", "path", path)
+
 	content, err := os.ReadFile(path)
 	if err != nil {
 		return github.File{}, fmt.Errorf("failed to read config file %s: %w", path, err)

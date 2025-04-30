@@ -29,8 +29,6 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 	links := Links{}
 
 	for i, rl := range raw {
-		log.Debug("parse link", "link", rl)
-
 		l, err := c.parseLink(rl)
 		if err != nil {
 			log.Debug("Failed to parse link", "index", i, "raw", rl, "error")
@@ -45,6 +43,9 @@ func (c *Config) parseLinks(raw []RawLink) (Links, error) {
 }
 
 func (c *Config) parseLink(raw RawLink) (Links, error) {
+	log.Group(fmt.Sprintf("Parse link: %+v", raw))
+	defer log.GroupEnd()
+
 	froms, err := c.parseFile(raw.From)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errInvalidFrom, err)
@@ -132,4 +133,18 @@ func (l *Links) Groups() Groups {
 	}
 
 	return g
+}
+
+func (g Groups) String() string {
+	out := ""
+
+	for n, l := range g {
+		out += fmt.Sprintf("Group %q:\n", n)
+
+		for _, link := range l {
+			out += fmt.Sprintf("\t%s\n", link)
+		}
+	}
+
+	return out
 }
