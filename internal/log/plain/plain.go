@@ -23,7 +23,6 @@ type Handler struct {
 	out  io.Writer
 
 	indent int
-	group  string
 }
 
 func New(out io.Writer, o log.Options) *Handler {
@@ -58,11 +57,10 @@ func (h *Handler) Handle(_ context.Context, r slog.Record) error {
 
 	case log.LevelGroup:
 		level = "[G]"
-		h.group = r.Message
 	case log.LevelGroupEnd:
 		h.indent = 0
 		level = "[/G]"
-		r.Message = h.group + "\n"
+		r.Message = "\n"
 	}
 
 	buf := make([]byte, 0, buflen)

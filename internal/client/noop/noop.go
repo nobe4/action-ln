@@ -34,7 +34,7 @@ func (c Client) noopPost(req *http.Request) (*http.Response, error) {
 		return c.fallback.Do(req)
 	}
 
-	log.Notice("NOOP POST request", "path", req.URL.Path)
+	log.Notice("[NOOP] HTTP", "method", req.Method, "path", req.URL.Path)
 
 	switch {
 	// github.CreateBranch

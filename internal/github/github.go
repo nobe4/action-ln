@@ -78,7 +78,7 @@ func (g *GitHub) req(ctx context.Context, method, path string, body io.Reader, o
 	}
 	defer res.Body.Close()
 
-	log.Debug("Request", "method", method, "url", url, "status", res.StatusCode)
+	log.Debug("HTTP", "method", method, "url", url, "status", res.StatusCode)
 
 	code2XX := res.StatusCode >= http.StatusOK && res.StatusCode < http.StatusMultipleChoices
 	if !code2XX {
