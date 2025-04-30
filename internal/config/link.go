@@ -117,20 +117,22 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 
 func (c *Config) fillMissing(l *Link) {
 	// Set from defaults
-	if l.From.Repo.Empty() {
-		l.From.Repo = c.Defaults.Link.From.Repo
-	}
+	if c.Defaults.Link != nil {
+		if l.From.Repo.Empty() {
+			l.From.Repo = c.Defaults.Link.From.Repo
+		}
 
-	if l.From.Path == "" {
-		l.From.Path = c.Defaults.Link.From.Path
-	}
+		if l.From.Path == "" {
+			l.From.Path = c.Defaults.Link.From.Path
+		}
 
-	if l.To.Repo.Empty() {
-		l.To.Repo = c.Defaults.Link.To.Repo
-	}
+		if l.To.Repo.Empty() {
+			l.To.Repo = c.Defaults.Link.To.Repo
+		}
 
-	if l.To.Path == "" {
-		l.To.Path = c.Defaults.Link.To.Path
+		if l.To.Path == "" {
+			l.To.Path = c.Defaults.Link.To.Path
+		}
 	}
 
 	// Set To from From
