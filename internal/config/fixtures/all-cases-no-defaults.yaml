@@ -1,59 +1,60 @@
 # see all-cases.yaml for explanation.
 
 # In this file, defaults is left empty on purpose.
+# The current repo will be used in most places instead.
 
 links:
   # wants nothing
   -
 
-  # want: /:a.txt@ -> /:b.txt@
+  # want: current_owner/current_repo:a.txt@ -> current_owner/current_repo:b.txt@
   - from: a.txt
     to: b.txt
 
-  # want: /:a.txt@ref -> /:b.txt@
+  # want: current_owner/current_repo:a.txt@ref -> current_owner/current_repo:b.txt@
   - from: a.txt@ref
     to: b.txt
 
-  # want: own/rep:a.txt@ref -> own/rep:b.txt@
+  # want: own/rep:a.txt@ref -> current_owner/current_repo:b.txt@
   - from: own/rep:a.txt@ref
     to: b.txt
 
-  # want: own/rep:a.txt@ref -> own/rep:b.txt@
+  # want: own/rep:a.txt@ref -> current_owner/current_repo:b.txt@
   - from: https://github.com/own/rep/blob/ref/a.txt
     to: b.txt
 
-  # want: own/rep:a.txt@ref -> own/rep:b.txt@
+  # want: own/rep:a.txt@ref -> current_owner/current_repo:b.txt@
   - from: own/rep/blob/ref/a.txt
     to: b.txt
 
-  # want: /:a.txt@ -> own/rep:a.txt@
+  # want: current_owner/current_repo:a.txt@ -> own/rep:a.txt@
   - from: a.txt
     # needs quotes, because YAML wants to read the second : as a mapping.
     to: "own/rep:"
 
-  # want: /:a.txt@ -> own/rep:a.txt@ref
+  # want: current_owner/current_repo:a.txt@ -> own/rep:a.txt@ref
   - from: a.txt
     to: own/rep:@ref
 
-  # want: /:a.txt@ -> own/rep:a.txt@
+  # want: current_owner/current_repo:a.txt@ -> own/rep:a.txt@
   - from: a.txt
     to:
       repo: own/rep
 
-  # want: /:a.txt@main -> /:b.txt@
+  # want: current_owner/current_repo:a.txt@main -> current_owner/current_repo:b.txt@
   - from:
       path: a.txt
       ref: main
     to: b.txt
 
-  # want: own/rep:a.txt@main -> own/rep:b.txt@
+  # want: own/rep:a.txt@main -> current_owner/current_repo:b.txt@
   - from:
       repo: own/rep
       path: a.txt
       ref: main
     to: b.txt
 
-  # want: own/rep:a.txt@main -> own/rep:b.txt@
+  # want: own/rep:a.txt@main -> current_owner/current_repo:b.txt@
   - from:
       owner: own
       repo: rep
@@ -61,9 +62,9 @@ links:
       ref: main
     to: b.txt
 
-  # want: /:a.txt@ -> own/rep:a.txt@
-  # want: /:b.txt@ -> own/rep:b.txt@
-  # want: /:c.txt@ -> own/rep:c.txt@
+  # want: current_owner/current_repo:a.txt@ -> own/rep:a.txt@
+  # want: current_owner/current_repo:b.txt@ -> own/rep:b.txt@
+  # want: current_owner/current_repo:c.txt@ -> own/rep:c.txt@
   - from:
       - a.txt
       - b.txt
@@ -71,9 +72,9 @@ links:
     to:
       repo: own/rep
 
-  # want: /:a.txt@ -> own/rep:a.txt@
+  # want: current_owner/current_repo:a.txt@ -> own/rep:a.txt@
   # want: own/rep:b.txt@ -> own/rep:b.txt@
-  # want: /:path/to/c.txt@ -> own/rep:path/to/c.txt@
+  # want: current_owner/current_repo:path/to/c.txt@ -> own/rep:path/to/c.txt@
   - from:
       - a.txt
       - path: b.txt
@@ -82,8 +83,8 @@ links:
     to:
       repo: own/rep
 
-  # want: /:a.txt@ -> /:c.txt@
-  # want: own/rep:b.txt@ -> own/rep:c.txt@
+  # want: current_owner/current_repo:a.txt@ -> current_owner/current_repo:c.txt@
+  # want: own/rep:b.txt@ -> current_owner/current_repo:c.txt@
   - from:
       - a.txt
       - path: b.txt
@@ -91,6 +92,6 @@ links:
     to: c.txt
 
   # TODO: this is not yet supported
-  # # want: /:a.txt@ -> owner/:a.txt@
-  # # want: /:b.txt@ -> owner/:b.txt@
+  # # want: current_owner/current_repo:a.txt@ -> owner/current_repo:a.txt@
+  # # want: current_owner/current_repo:b.txt@ -> owner/current_repo:b.txt@
   # - from: *.txt

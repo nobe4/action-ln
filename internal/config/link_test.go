@@ -344,7 +344,7 @@ func TestParseLink(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
-			c := New()
+			c := New(github.File{}, github.Repo{})
 
 			got, err := c.parseLink(test.rl)
 			if err != nil {
