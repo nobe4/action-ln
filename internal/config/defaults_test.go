@@ -3,90 +3,93 @@ package config
 import (
 	"strings"
 	"testing"
+
+	"github.com/nobe4/action-ln/internal/github"
 )
 
-// TODO: redo
-// func TestDefaultsParse(t *testing.T) {
-// 	t.Parallel()
-//
-// 	tests := []struct {
-// 		input map[string]any
-// 		want  Defaults
-// 	}{
-// 		{},
-// 		{
-// 			input: map[string]any{"repo": "x"},
-// 			want:  Defaults{Repo: github.Repo{Repo: "x"}},
-// 		},
-// 		{
-// 			input: map[string]any{"repo": "x", "owner": "y"},
-// 			want: Defaults{
-// 				Repo: github.Repo{
-// 					Owner: github.User{Login: "y"},
-// 					Repo:  "x",
-// 				},
-// 			},
-// 		},
-// 		{
-// 			input: map[string]any{"owner": "y"},
-// 			want: Defaults{
-// 				Repo: github.Repo{
-// 					Owner: github.User{Login: "y"},
-// 				},
-// 			},
-// 		},
-// 		{
-// 			input: map[string]any{"repo": "x/y"},
-// 			want: Defaults{
-// 				Repo: github.Repo{
-// 					Owner: github.User{Login: "x"},
-// 					Repo:  "y",
-// 				},
-// 			},
-// 		},
-// 	}
-//
-// 	for _, test := range tests {
-// 		t.Run(fmt.Sprintf("%v", test.input), func(t *testing.T) {
-// 			t.Parallel()
-//
-// 			d := &Defaults{}
-// 			d.parse(test.input)
-//
-// 			if !test.want.Equal(d) {
-// 				t.Errorf("want %+v, but got %+v", test.want, d)
-// 			}
-// 		})
-// 	}
-//
-// 	t.Run("overwite existing values", func(t *testing.T) {
-// 		t.Parallel()
-//
-// 		input := map[string]any{
-// 			"repo": "a/b",
-// 		}
-//
-// 		want := &Defaults{
-// 			Repo: github.Repo{
-// 				Owner: github.User{Login: "a"},
-// 				Repo:  "b",
-// 			},
-// 		}
-//
-// 		d := &Defaults{
-// 			Repo: github.Repo{
-// 				Owner: github.User{Login: "x"},
-// 				Repo:  "y",
-// 			},
-// 		}
-//
-// 		d.parse(input)
-//
-// 		if !d.Equal(want) {
-// 			t.Errorf("want %+v, but got %+v", want, d)
-// 		}
-// 	})
-// }
+func TestParseDefault(t *testing.T) {
+	t.Parallel()
+
+	t.Run("parses no link", func(t *testing.T) {
+		t.Parallel()
+
+		c := New()
+		raw := RawDefaults{}
+
+		if err := c.parseDefaults(raw); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if c.Defaults.Link != nil {
+			t.Fatalf("expected nil default link, got %v", c.Defaults.Link)
+		}
+	})
+
+	t.Run("parses one link", func(t *testing.T) {
+		t.Parallel()
+
+		c := New()
+		raw := RawDefaults{
+			Link: RawLink{
+				From: "o1/r1:p1",
+				To:   "o2/r2:p2",
+			},
+		}
+
+		want := Link{
+			From: github.File{
+				Repo: github.Repo{Owner: github.User{Login: "o1"}, Repo: "r1"},
+				Path: "p1",
+			},
+			To: github.File{
+				Repo: github.Repo{Owner: github.User{Login: "o2"}, Repo: "r2"},
+				Path: "p2",
+			},
+		}
+
+		if err := c.parseDefaults(raw); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !want.Equal(c.Defaults.Link) {
+			t.Fatalf("expected %v, got %v", want, c.Defaults.Link)
+		}
+	})
+
+	t.Run("parses more than one link", func(t *testing.T) {
+		t.Parallel()
+
+		c := New()
+		raw := RawDefaults{
+			Link: RawLink{
+				From: []any{
+					"o1/r1:p1",
+					"o2/r2:p2",
+				},
+				To: "o3/r3:p3",
+			},
+		}
+
+		want := Link{
+			From: github.File{
+				Repo: github.Repo{Owner: github.User{Login: "o1"}, Repo: "r1"},
+				Path: "p1",
+			},
+			To: github.File{
+				Repo: github.Repo{Owner: github.User{Login: "o3"}, Repo: "r3"},
+				Path: "p3",
+			},
+		}
+
+		if err := c.parseDefaults(raw); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !want.Equal(c.Defaults.Link) {
+			t.Fatalf("expected %v, got %v", want, c.Defaults.Link)
+		}
+	})
+}
 
 // Parse link from `o/r:p -> o/r:p` for simpler test cases.
 func parseLink(t *testing.T, c *Config, s string) *Link {
@@ -194,31 +197,6 @@ func TestFillDefaults(t *testing.T) {
 		want string
 	}{
 		{},
-
-		{
-			link: "o1/r1:p1 -> o2/r2:p2",
-			want: "o1/r1:p1 -> o2/r2:p2",
-		},
-
-		{
-			link: "p1 -> o2/r2:p2",
-			want: "p1 -> o2/r2:p2",
-		},
-
-		{
-			link: "p1 -> o2/:p2",
-			want: "p1 -> o2/:p2",
-		},
-
-		{
-			link: "p1 -> /r2:p2",
-			want: "p1 -> /r2:p2",
-		},
-
-		{
-			link: "p1 -> p2",
-			want: "p1 -> p2",
-		},
 
 		{
 			def:  "o3/r3:p3 -> o4/r4:p4",

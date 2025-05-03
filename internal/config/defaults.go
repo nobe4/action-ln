@@ -30,6 +30,7 @@ func (c *Config) parseDefaults(raw RawDefaults) error {
 		c.Defaults.Link = links[0]
 	default:
 		log.Warn("Defaults has more than one link, using the first", "links", links)
+		c.Defaults.Link = links[0]
 	}
 
 	return nil
