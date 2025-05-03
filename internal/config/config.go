@@ -36,7 +36,17 @@ type Config struct {
 	Links    Links       `json:"links"    yaml:"links"`
 }
 
-func New() *Config { return &Config{} }
+func New(source github.File, repo github.Repo) *Config {
+	return &Config{
+		Source: source,
+		Defaults: Defaults{
+			Link: &Link{
+				From: github.File{Repo: repo},
+				To:   github.File{Repo: repo},
+			},
+		},
+	}
+}
 
 func (c *Config) Parse(r io.Reader) error {
 	var err error

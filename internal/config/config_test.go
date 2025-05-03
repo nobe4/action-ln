@@ -29,11 +29,7 @@ func TestConfigParseAll(t *testing.T) {
 				Owner: github.User{Login: "current_owner"},
 			}
 
-			c := New()
-			c.Defaults.Link = &Link{
-				From: github.File{Repo: repo},
-				To:   github.File{Repo: repo},
-			}
+			c := New(github.File{}, repo)
 
 			t.Log(content)
 

@@ -323,7 +323,7 @@ func TestParseFile(t *testing.T) {
 		t.Run(fmt.Sprintf("%v", test.input), func(t *testing.T) {
 			t.Parallel()
 
-			c := New()
+			c := New(github.File{}, github.Repo{})
 
 			got, err := c.parseFile(test.input)
 			if err != nil {

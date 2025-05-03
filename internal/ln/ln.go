@@ -39,20 +39,15 @@ func Run(ctx context.Context, e environment.Environment, g *github.GitHub) error
 }
 
 func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment) (*config.Config, error) {
-	f, err := readConfig(ctx, g, e)
+	source, err := readConfig(ctx, g, e)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
 
-	c := config.New()
-	c.Defaults.Link = &config.Link{
-		From: github.File{Repo: e.Repo},
-		To:   github.File{Repo: e.Repo},
-	}
-	c.Source = f
+	c := config.New(source, e.Repo)
 
-	if err := c.Parse(strings.NewReader(f.Content)); err != nil {
-		return nil, fmt.Errorf("failed to parse config %#v: %w", f, err)
+	if err := c.Parse(strings.NewReader(source.Content)); err != nil {
+		return nil, fmt.Errorf("failed to parse config %#v: %w", source, err)
 	}
 
 	if err := c.Populate(ctx, g); err != nil {

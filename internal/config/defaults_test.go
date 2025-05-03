@@ -13,22 +13,22 @@ func TestParseDefault(t *testing.T) {
 	t.Run("parses no link", func(t *testing.T) {
 		t.Parallel()
 
-		c := New()
+		c := New(github.File{}, github.Repo{})
 		raw := RawDefaults{}
 
 		if err := c.parseDefaults(raw); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if c.Defaults.Link != nil {
-			t.Fatalf("expected nil default link, got %v", c.Defaults.Link)
+		if !c.Defaults.Link.From.Repo.Empty() && c.Defaults.Link.To.Repo.Empty() {
+			t.Fatalf("expected empty default link, got %v", c.Defaults.Link)
 		}
 	})
 
 	t.Run("parses one link", func(t *testing.T) {
 		t.Parallel()
 
-		c := New()
+		c := New(github.File{}, github.Repo{})
 		raw := RawDefaults{
 			Link: RawLink{
 				From: "o1/r1:p1",
@@ -59,7 +59,7 @@ func TestParseDefault(t *testing.T) {
 	t.Run("parses more than one link", func(t *testing.T) {
 		t.Parallel()
 
-		c := New()
+		c := New(github.File{}, github.Repo{})
 		raw := RawDefaults{
 			Link: RawLink{
 				From: []any{
@@ -172,7 +172,7 @@ func TestFillMissing(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
-			c := New()
+			c := New(github.File{}, github.Repo{})
 
 			link, want := parseLink(t, c, test.link), parseLink(t, c, test.want)
 
@@ -245,7 +245,7 @@ func TestFillDefaults(t *testing.T) {
 		t.Run("", func(t *testing.T) {
 			t.Parallel()
 
-			c := New()
+			c := New(github.File{}, github.Repo{})
 
 			link, want, defaults := parseLink(t, c, test.link), parseLink(t, c, test.want), parseLink(t, c, test.def)
 
