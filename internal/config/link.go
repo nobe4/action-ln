@@ -114,13 +114,3 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 
 	return nil
 }
-
-func (l *Link) fillMissing() {
-	if l.To.Path == "" {
-		l.To.Path = l.From.Path
-	}
-
-	if l.To.Repo.Empty() {
-		l.To.Repo = l.From.Repo
-	}
-}

@@ -59,7 +59,7 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 	links := combineLinks(froms, tos)
 
 	for _, l := range links {
-		l.fillMissing()
+		c.fillMissing(l)
 	}
 
 	return links, nil
