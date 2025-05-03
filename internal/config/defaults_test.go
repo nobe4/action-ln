@@ -13,15 +13,17 @@ func TestParseDefault(t *testing.T) {
 	t.Run("parses no link", func(t *testing.T) {
 		t.Parallel()
 
-		c := New(github.File{}, github.Repo{})
+		repo := github.Repo{}
+
+		c := New(github.File{}, repo)
 		raw := RawDefaults{}
 
 		if err := c.parseDefaults(raw); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		if !c.Defaults.Link.From.Repo.Empty() && c.Defaults.Link.To.Repo.Empty() {
-			t.Fatalf("expected empty default link, got %v", c.Defaults.Link)
+		if !c.Defaults.Link.From.Repo.Equal(repo) && c.Defaults.Link.To.Repo.Equal(repo) {
+			t.Fatalf("expected default repo %v, got %v", repo, c.Defaults.Link)
 		}
 	})
 
