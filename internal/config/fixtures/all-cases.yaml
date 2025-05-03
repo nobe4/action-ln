@@ -2,10 +2,10 @@
 #
 # It demonstrats all the possible configuration cases while being part of the
 # test suite. See config.TestConfigParseAll.
-
+#
 # In most cases, only `from` if fully specified, since both `from` and `to` are
 # parsed _exactly_ the same way.
-
+#
 # The default is fixed to avoid embiguity.
 # It corresponds also to the current repo.
 defaults:

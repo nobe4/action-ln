@@ -45,6 +45,10 @@ func getConfig(ctx context.Context, g *github.GitHub, e environment.Environment)
 	}
 
 	c := config.New()
+	c.Defaults.Link = &config.Link{
+		From: github.File{Repo: e.Repo},
+		To:   github.File{Repo: e.Repo},
+	}
 	c.Source = f
 
 	if err := c.Parse(strings.NewReader(f.Content)); err != nil {

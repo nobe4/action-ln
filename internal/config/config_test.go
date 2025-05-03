@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/nobe4/action-ln/internal/github"
 )
 
 //go:embed fixtures/all-cases.yaml
@@ -22,7 +24,16 @@ func TestConfigParseAll(t *testing.T) {
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 
+			repo := github.Repo{
+				Repo:  "current_repo",
+				Owner: github.User{Login: "current_owner"},
+			}
+
 			c := New()
+			c.Defaults.Link = &Link{
+				From: github.File{Repo: repo},
+				To:   github.File{Repo: repo},
+			}
 
 			t.Log(content)
 
