@@ -58,14 +58,17 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 
 	links := combineLinks(froms, tos)
 
+	// TODO: make this `l.fillMissing(c)`, and handle the rest from the
+	// function, like `l.Filter()` is doing.
 	for _, l := range links {
 		c.fillMissing(l)
 	}
 
+	links.Filter()
+
 	return links, nil
 }
 
-//nolint:revive // This function cannot be easily simplified.
 func combineLinks(froms, tos []github.File) Links {
 	if len(froms) == 0 {
 		log.Warn("Found no `from`, make sure you reference one.")
@@ -73,27 +76,36 @@ func combineLinks(froms, tos []github.File) Links {
 		return Links{}
 	}
 
-	if len(tos) == 0 {
-		log.Warn("Found no `to`, make sure you reference one.")
-
-		return Links{}
-	}
-
 	links := Links{}
 
 	for _, from := range froms {
+		// TODO: inherit the `ref` as well?
+		if len(tos) == 0 {
+			tos = []github.File{{Path: from.Path}}
+		}
+
 		for _, to := range tos {
-			if from.Equal(to) {
-				log.Warn("Identiqual from and to, ignoring.", "from/to", from)
-
-				continue
-			}
-
 			links = append(links, &Link{From: from, To: to})
 		}
 	}
 
 	return links
+}
+
+func (l *Links) Filter() {
+	newL := Links{}
+
+	for _, l := range *l {
+		if l.From.Equal(l.To) {
+			log.Warn("Found moot link, ignoring", "link", l)
+
+			continue
+		}
+
+		newL = append(newL, l)
+	}
+
+	*l = newL
 }
 
 func (l *Links) Update(

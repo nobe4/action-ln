@@ -9,6 +9,82 @@ import (
 	gmock "github.com/nobe4/action-ln/internal/github/mock"
 )
 
+func TestFilter(t *testing.T) {
+	t.Parallel()
+
+	mkLink := func(f, t string) *Link {
+		return &Link{
+			From: github.File{
+				Path: f + "_path",
+				Repo: github.Repo{
+					Owner: github.User{Login: f + "_owner"},
+					Repo:  f + "_repo",
+				},
+			},
+			To: github.File{
+				Path: t + "_path",
+				Repo: github.Repo{
+					Owner: github.User{Login: t + "_owner"},
+					Repo:  t + "_repo",
+				},
+			},
+		}
+	}
+
+	tests := []struct {
+		links Links
+		want  Links
+	}{
+		{},
+
+		{
+			links: Links{
+				mkLink("a", "b"),
+				mkLink("c", "d"),
+				mkLink("e", "f"),
+			},
+			want: Links{
+				mkLink("a", "b"),
+				mkLink("c", "d"),
+				mkLink("e", "f"),
+			},
+		},
+
+		{
+			links: Links{
+				mkLink("a", "b"),
+				mkLink("c", "c"),
+				mkLink("d", "e"),
+			},
+			want: Links{
+				mkLink("a", "b"),
+				mkLink("d", "e"),
+			},
+		},
+
+		{
+			links: Links{
+				mkLink("a", "a"),
+				mkLink("b", "b"),
+				mkLink("c", "c"),
+			},
+			want: Links{},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			test.links.Filter()
+
+			if !test.want.Equal(test.links) {
+				t.Fatalf("expected %+v, got %+v", test.want, test.links)
+			}
+		})
+	}
+}
+
 func TestLinksUpdate(t *testing.T) {
 	t.Parallel()
 
