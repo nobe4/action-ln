@@ -10,4 +10,5 @@ else
 	cat "${tmp}"
 fi
 
+rm coverage
 go tool cover -html=coverage -o coverage.html
