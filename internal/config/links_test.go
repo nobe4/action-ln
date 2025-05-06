@@ -9,6 +9,93 @@ import (
 	gmock "github.com/nobe4/action-ln/internal/github/mock"
 )
 
+func TestCombineLinks(t *testing.T) {
+	t.Parallel()
+
+	mkFile := func(n string) github.File {
+		return github.File{
+			Path: n,
+		}
+	}
+	mkLink := func(from, to string) *Link {
+		return &Link{
+			From: mkFile(from),
+			To:   mkFile(to),
+		}
+	}
+
+	tests := []struct {
+		froms []github.File
+		tos   []github.File
+		want  Links
+	}{
+		{},
+
+		{
+			froms: []github.File{},
+			tos: []github.File{
+				mkFile("0"),
+				mkFile("1"),
+			},
+			want: Links{},
+		},
+
+		{
+			froms: []github.File{
+				mkFile("0"),
+				mkFile("1"),
+			},
+			tos: []github.File{},
+			want: Links{
+				mkLink("0", "0"),
+				mkLink("1", "1"),
+			},
+		},
+
+		{
+			froms: []github.File{
+				mkFile("0"),
+				mkFile("1"),
+			},
+			tos: []github.File{
+				mkFile("2"),
+			},
+			want: Links{
+				mkLink("0", "2"),
+				mkLink("1", "2"),
+			},
+		},
+
+		{
+			froms: []github.File{
+				mkFile("0"),
+				mkFile("1"),
+			},
+			tos: []github.File{
+				mkFile("2"),
+				mkFile("3"),
+			},
+			want: Links{
+				mkLink("0", "2"),
+				mkLink("0", "3"),
+				mkLink("1", "2"),
+				mkLink("1", "3"),
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			got := combineLinks(test.froms, test.tos)
+			if !got.Equal(test.want) {
+				t.Fatalf("expected %+v, got %+v", test.want, got)
+			}
+		})
+	}
+}
+
 func TestFilter(t *testing.T) {
 	t.Parallel()
 

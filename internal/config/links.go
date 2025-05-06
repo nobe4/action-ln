@@ -76,11 +76,13 @@ func combineLinks(froms, tos []github.File) Links {
 		return Links{}
 	}
 
+	useFrom := len(tos) == 0
+
 	links := Links{}
 
 	for _, from := range froms {
-		// TODO: inherit the `ref` as well?
-		if len(tos) == 0 {
+		if useFrom {
+			// TODO: inherit the `ref` as well?
 			tos = []github.File{{Path: from.Path}}
 		}
 
