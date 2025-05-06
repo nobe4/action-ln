@@ -1,5 +1,6 @@
 defaults:
-  repo: nobe4/ln-source
+  link:
+    from: "nobe4/ln-source:"
 
 links:
   - from: script/tag-release
@@ -15,7 +16,6 @@ links:
 
   # Do this bootstrap later
   # - from:
-  #     repo: nobe4/ln-source
   #     path: .github/workflows/link.yaml
   #   to:
   #     path: .github/workflows/link.yaml
