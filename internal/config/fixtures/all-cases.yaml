@@ -21,24 +21,49 @@ links:
   # wants nothing
   -
 
+  # Various ways to specify a `from` and `to`.
+  # If unspecified, the `to` inherit information from `from` and the defaults.
+
+  # want: from_owner/from_repo:a.txt@ -> to_owner/to_repo:a.txt@
+  - from: a.txt
+
+  # want: from_owner/from_repo:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from: a.txt@ref
+
+  # want: own/rep:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from: own/rep:a.txt@ref
+
+  # want: own/rep:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from: https://github.com/own/rep/blob/ref/a.txt
+
+  # want: own/rep:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from: own/rep/blob/ref/a.txt
+
+  # want: own/rep:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from:
+      repo: own/rep
+      path: a.txt
+      ref: ref
+
+  # want: own/rep:a.txt@ref -> to_owner/to_repo:a.txt@
+  - from:
+      owner: own
+      repo: rep
+      path: a.txt
+      ref: ref
+
+  # want: from_owner/from_repo:a.txt@ -> to_owner/to_repo:a.txt@
+  # want: from_owner/from_repo:b.txt@ -> to_owner/to_repo:b.txt@
+  # want: from_owner/from_repo:c.txt@ -> to_owner/to_repo:c.txt@
+  - from:
+      - a.txt
+      - b.txt
+      - c.txt
+
+  # From here, we specify the `to`
+
   # want: from_owner/from_repo:a.txt@ -> to_owner/to_repo:b.txt@
   - from: a.txt
-    to: b.txt
-
-  # want: from_owner/from_repo:a.txt@ref -> to_owner/to_repo:b.txt@
-  - from: a.txt@ref
-    to: b.txt
-
-  # want: own/rep:a.txt@ref -> to_owner/to_repo:b.txt@
-  - from: own/rep:a.txt@ref
-    to: b.txt
-
-  # want: own/rep:a.txt@ref -> to_owner/to_repo:b.txt@
-  - from: https://github.com/own/rep/blob/ref/a.txt
-    to: b.txt
-
-  # want: own/rep:a.txt@ref -> to_owner/to_repo:b.txt@
-  - from: own/rep/blob/ref/a.txt
     to: b.txt
 
   # want: from_owner/from_repo:a.txt@ -> own/rep:a.txt@
@@ -46,35 +71,9 @@ links:
     # needs quotes, because YAML wants to read the second : as a mapping.
     to: "own/rep:"
 
-  # want: from_owner/from_repo:a.txt@ -> own/rep:a.txt@ref
-  - from: a.txt
-    to: own/rep:@ref
-
   # want: from_owner/from_repo:a.txt@ -> own/rep:a.txt@
   - from: a.txt
-    to:
-      repo: own/rep
-
-  # want: from_owner/from_repo:a.txt@main -> to_owner/to_repo:b.txt@
-  - from:
-      path: a.txt
-      ref: main
-    to: b.txt
-
-  # want: own/rep:a.txt@main -> to_owner/to_repo:b.txt@
-  - from:
-      repo: own/rep
-      path: a.txt
-      ref: main
-    to: b.txt
-
-  # want: own/rep:a.txt@main -> to_owner/to_repo:b.txt@
-  - from:
-      owner: own
-      repo: rep
-      path: a.txt
-      ref: main
-    to: b.txt
+    to: "own/rep:"
 
   # want: from_owner/from_repo:a.txt@ -> own/rep:a.txt@
   # want: from_owner/from_repo:b.txt@ -> own/rep:b.txt@
@@ -83,27 +82,7 @@ links:
       - a.txt
       - b.txt
       - c.txt
-    to:
-      repo: own/rep
-
-  # want: from_owner/from_repo:a.txt@ -> own/rep:a.txt@
-  # want: own/rep:b.txt@ -> own/rep:b.txt@
-  # want: from_owner/from_repo:path/to/c.txt@ -> own/rep:path/to/c.txt@
-  - from:
-      - a.txt
-      - path: b.txt
-        repo: own/rep
-      - path/to/c.txt
-    to:
-      repo: own/rep
-
-  # want: from_owner/from_repo:a.txt@ -> to_owner/to_repo:c.txt@
-  # want: own/rep:b.txt@ -> to_owner/to_repo:c.txt@
-  - from:
-      - a.txt
-      - path: b.txt
-        repo: own/rep
-    to: c.txt
+    to: "own/rep:"
 
   # TODO: this is not yet supported
   # # want: from_owner/from_repo:a.txt@ -> owner/to_repo:a.txt@

@@ -31,8 +31,6 @@ func TestConfigParseAll(t *testing.T) {
 
 			c := New(github.File{}, repo)
 
-			t.Log(content)
-
 			err := c.Parse(strings.NewReader(content))
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
