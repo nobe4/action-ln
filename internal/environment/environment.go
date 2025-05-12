@@ -28,7 +28,7 @@ var (
 const (
 	defaultEndpoint = "https://api.github.com"
 	defaultServer   = "https://github.com"
-	defaultConfig   = ".github/ln-config.yaml"
+	defaultConfig   = ".ln-config.yaml"
 	defaultRunID    = ""
 	redacted        = "[redacted]"
 	missing         = "[missing]"
