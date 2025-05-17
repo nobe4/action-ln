@@ -9,6 +9,8 @@ import (
 	gmock "github.com/nobe4/action-ln/internal/github/mock"
 )
 
+const gotTo = "got to"
+
 var errTest = errors.New("test")
 
 func TestLinkNeedUpdate(t *testing.T) {
@@ -220,8 +222,118 @@ func TestPopulate(t *testing.T) {
 			t.Fatalf("expected from to be populated, got %#v", l.From)
 		}
 
-		if l.To.Content != "got to" {
+		if l.To.Content != gotTo {
 			t.Fatalf("expected from to be populated, got %#v", l.To)
+		}
+	})
+}
+
+func TestPopulateTo(t *testing.T) {
+	t.Parallel()
+
+	t.Run("fails to get the file on head branch", func(t *testing.T) {
+		t.Parallel()
+
+		f := gmock.FileGetter{Handler: func(_ *github.File) error { return errTest }}
+
+		l := &Link{}
+
+		if err := l.populateTo(t.Context(), f); !errors.Is(err, errMissingTo) {
+			t.Fatalf("expected error %v, got %v", errMissingTo, err)
+		}
+	})
+
+	t.Run("gets the file on head branch", func(t *testing.T) {
+		t.Parallel()
+
+		f := gmock.FileGetter{
+			Handler: func(f *github.File) error {
+				f.Content = gotTo
+
+				return nil
+			},
+		}
+
+		l := &Link{}
+
+		if err := l.populateTo(t.Context(), f); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if l.To.Content != gotTo {
+			t.Fatalf("expected to be populated, got %#v", l.To)
+		}
+	})
+
+	t.Run("fails to get the file on ref", func(t *testing.T) {
+		t.Parallel()
+
+		i := 0
+		f := gmock.FileGetter{
+			Handler: func(_ *github.File) error {
+				if i == 0 {
+					i++
+
+					return github.ErrMissingFile
+				}
+
+				return errTest
+			},
+		}
+
+		l := &Link{}
+
+		if err := l.populateTo(t.Context(), f); !errors.Is(err, errMissingTo) {
+			t.Fatalf("expected error %v, got %v", errMissingTo, err)
+		}
+	})
+
+	t.Run("gets the file on ref", func(t *testing.T) {
+		t.Parallel()
+
+		i := 0
+		f := gmock.FileGetter{
+			Handler: func(f *github.File) error {
+				if i == 0 {
+					i++
+
+					return github.ErrMissingFile
+				}
+
+				f.Content = gotTo
+
+				return nil
+			},
+		}
+
+		l := &Link{}
+
+		if err := l.populateTo(t.Context(), f); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if l.To.Content != gotTo {
+			t.Fatalf("expected to be populated, got %#v", l.To)
+		}
+	})
+
+	t.Run("both files are missing", func(t *testing.T) {
+		t.Parallel()
+
+		f := gmock.FileGetter{
+			Handler: func(_ *github.File) error {
+				return github.ErrMissingFile
+			},
+		}
+
+		l := &Link{}
+
+		if err := l.populateTo(t.Context(), f); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if l.To.Content != "" {
+			t.Fatalf("expected to not be populated, got %#v", l.To)
 		}
 	})
 }
