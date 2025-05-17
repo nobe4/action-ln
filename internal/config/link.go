@@ -104,12 +104,27 @@ func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
 		return fmt.Errorf("%w %#v: %w", errMissingFrom, l.From, err)
 	}
 
-	if err := g.GetFile(ctx, &l.To); err != nil {
-		if !errors.Is(err, github.ErrMissingFile) {
-			return fmt.Errorf("%w %#v: %w", errMissingTo, l.To, err)
+	return l.populateTo(ctx, g)
+}
+
+func (l *Link) populateTo(ctx context.Context, g github.FileGetter) error {
+	refs := []string{"auto-action-ln", l.To.Ref}
+
+	for _, ref := range refs {
+		l.To.Ref = ref
+
+		err := g.GetFile(ctx, &l.To)
+		if err == nil {
+			return nil
 		}
 
-		log.Debug("file does not exist", "file", l.To)
+		if errors.Is(err, github.ErrMissingFile) {
+			log.Debug("file does not exist", "file", l.To, "ref", l.To.Ref)
+
+			continue
+		}
+
+		return fmt.Errorf("%w %#v: %w", errMissingTo, l.To, err)
 	}
 
 	return nil
