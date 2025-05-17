@@ -1,7 +1,7 @@
 # Configuration
 
 > [!IMPORTANT]
-> See[`all-cases.yaml`](../internal/config/all-cases.yaml) for a comprehensive
+> See[`all-cases.yaml`](../internal/config/fixtures/all-cases.yaml) for a comprehensive
 > list of supported cases in a YAML format. It is the canonical reference for
 > configuration.
 
