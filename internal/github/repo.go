@@ -33,6 +33,7 @@ func (r Repo) APIPath() string {
 	return fmt.Sprintf("/repos/%s", r)
 }
 
+// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g *GitHub) GetRepo(ctx context.Context, r *Repo) error {
 	if _, err := g.req(ctx, http.MethodGet, r.APIPath(), nil, &r); err != nil {
 		return fmt.Errorf("%w: %w", errGetRepo, err)
@@ -41,7 +42,6 @@ func (g *GitHub) GetRepo(ctx context.Context, r *Repo) error {
 	return nil
 }
 
-// https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28
 func (g *GitHub) GetDefaultBranchName(ctx context.Context, r Repo) (string, error) {
 	log.Debug("Get default branch name", "repo", r)
 
@@ -52,6 +52,7 @@ func (g *GitHub) GetDefaultBranchName(ctx context.Context, r Repo) (string, erro
 	return r.DefaultBranch, nil
 }
 
+// https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#get-a-branch
 func (g *GitHub) GetDefaultBranch(ctx context.Context, r Repo) (Branch, error) {
 	log.Debug("Get default branch", "repo", r)
 
