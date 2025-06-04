@@ -27,7 +27,18 @@ var (
 type Link struct {
 	From github.File `json:"from" yaml:"from"`
 	To   github.File `json:"to"   yaml:"to"`
+
+	Status Status `json:"status" yaml:"status"`
 }
+
+type Status string
+
+const (
+	StatusFailedToCheck   Status = "failed to check for update"
+	StatusFailedToUpdate  Status = "failed to update"
+	StatusUpdateNotNeeded Status = "update not needed"
+	StatusUpdated         Status = "updated"
+)
 
 // The parsing can be done from a couple of various format, see ParseFile.
 type RawLink struct {
