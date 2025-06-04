@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"testing"
 
 	fmock "github.com/nobe4/action-ln/internal/format/mock"
@@ -193,9 +192,10 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, fmock.New(), head)
-		if !errors.Is(err, errTest) {
-			t.Fatalf("want error %v, got %v", errTest, err)
+		updated := l.Update(t.Context(), g, fmock.New(), head)
+
+		if s := (*l)[0].Status; s != "failed to check for update" {
+			t.Fatalf("want status 'failed to check for update', got '%s'", s)
 		}
 
 		if updated {
@@ -215,11 +215,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, fmock.New(), head)
-		if err != nil {
-			t.Fatalf("want no error, got %v", err)
-		}
-
+		updated := l.Update(t.Context(), g, fmock.New(), head)
 		if updated {
 			t.Fatal("want to not be updated")
 		}
@@ -246,9 +242,10 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, fmock.New(), head)
-		if !errors.Is(err, errTest) {
-			t.Fatalf("want error %v, got %v", errTest, err)
+		updated := l.Update(t.Context(), g, fmock.New(), head)
+
+		if s := (*l)[0].Status; s != "failed to update" {
+			t.Fatalf("want status 'failed to update', got '%s'", s)
 		}
 
 		if updated {
@@ -277,10 +274,7 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, fmock.New(), head)
-		if err != nil {
-			t.Fatalf("want no error, got %v", err)
-		}
+		updated := l.Update(t.Context(), g, fmock.New(), head)
 
 		if !updated {
 			t.Fatal("want to be updated")
@@ -325,9 +319,18 @@ func TestLinksUpdate(t *testing.T) {
 			},
 		}
 
-		updated, err := l.Update(t.Context(), g, fmock.New(), head)
-		if !errors.Is(err, errTest) {
-			t.Fatalf("want error %v, got %v", errTest, err)
+		updated := l.Update(t.Context(), g, fmock.New(), head)
+
+		if s := (*l)[0].Status; s != "update not needed" {
+			t.Fatalf("want status 'update not needed', got '%s'", s)
+		}
+
+		if s := (*l)[1].Status; s != "updated" {
+			t.Fatalf("want status 'updated', got '%s'", s)
+		}
+
+		if s := (*l)[2].Status; s != "failed to update" {
+			t.Fatalf("want status 'failed to update', got '%s'", s)
 		}
 
 		// The function failed but we had a valid update.

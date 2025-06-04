@@ -115,26 +115,37 @@ func (l *Links) Update(
 	g github.FileGetterUpdater,
 	f format.Formatter,
 	head github.Branch,
-) (bool, error) {
+) bool {
 	updated := false
 
 	for _, link := range *l {
-		if needUpdate, err := link.NeedUpdate(ctx, g, head); err != nil {
-			return updated, fmt.Errorf("failed to check if link %q needs update: %w", link, err)
-		} else if !needUpdate {
+		needUpdate, err := link.NeedUpdate(ctx, g, head)
+		if err != nil {
+			log.Error("failed to check if link needs update", "link", link, "error", err)
+			link.Status = StatusFailedToCheck
+
+			continue
+		}
+
+		if !needUpdate {
 			log.Info("Update not needed", "link", link)
+			link.Status = StatusUpdateNotNeeded
 
 			continue
 		}
 
 		if err := link.Update(ctx, g, f, head); err != nil {
-			return updated, fmt.Errorf("failed to process link %q: %w", l, err)
+			log.Error("failed to update", "link", link, "error", err)
+			link.Status = StatusFailedToUpdate
+
+			continue
 		}
 
 		updated = true
+		link.Status = StatusUpdated
 	}
 
-	return updated, nil
+	return updated
 }
 
 type Groups map[string]Links
