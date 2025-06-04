@@ -19,6 +19,7 @@ Source: {{ .Data.From.HTMLURL }}
 
 var (
 	errMissingFrom = errors.New("from is missing")
+	errGettingRepo = errors.New("failed to get repo")
 	errMissingTo   = errors.New("to is missing")
 	errInvalidFrom = errors.New("from is invalid")
 	errInvalidTo   = errors.New("to is invalid")
@@ -110,12 +111,31 @@ func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Format
 	return nil
 }
 
-func (l *Link) populate(ctx context.Context, g github.FileGetter) error {
+func (l *Link) populate(ctx context.Context, g github.FileRepoGetter) error {
+	if err := l.populateFrom(ctx, g); err != nil {
+		return err
+	}
+
+	return l.populateTo(ctx, g)
+}
+
+func (l *Link) populateFrom(ctx context.Context, g github.FileRepoGetter) error {
+	// NOTE: Technically speaking, having the `Ref` is not needed to get the
+	// content on the default branch. However, there's no way to get it from
+	// `GetFile`, so getting it in advance is nicer for displaying it later.
+	if l.From.Ref == "" {
+		if err := g.GetRepo(ctx, &l.From.Repo); err != nil {
+			return fmt.Errorf("%w %#v: %w", errGettingRepo, l.From, err)
+		}
+
+		l.From.Ref = l.From.Repo.DefaultBranch
+	}
+
 	if err := g.GetFile(ctx, &l.From); err != nil {
 		return fmt.Errorf("%w %#v: %w", errMissingFrom, l.From, err)
 	}
 
-	return l.populateTo(ctx, g)
+	return nil
 }
 
 func (l *Link) populateTo(ctx context.Context, g github.FileGetter) error {
