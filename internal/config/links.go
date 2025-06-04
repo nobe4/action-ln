@@ -112,7 +112,7 @@ func (l *Links) Filter() {
 
 func (l *Links) Update(
 	ctx context.Context,
-	g github.FileGetterUpdater,
+	g github.GetterUpdater,
 	f format.Formatter,
 	head github.Branch,
 ) bool {

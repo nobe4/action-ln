@@ -70,7 +70,7 @@ func (c *Config) Parse(r io.Reader) error {
 	return nil
 }
 
-func (c *Config) Populate(ctx context.Context, g github.FileRepoGetter) error {
+func (c *Config) Populate(ctx context.Context, g github.Getter) error {
 	log.Group("Populate config")
 	defer log.GroupEnd()
 

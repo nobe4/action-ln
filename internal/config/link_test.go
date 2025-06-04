@@ -22,7 +22,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is the same on base branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileRepoGetter{
+		g := gmock.Getter{
 			FileHandler: func(_ *github.File) error { return errTest },
 		}
 		head := github.Branch{New: false}
@@ -44,7 +44,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("to is missing", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileRepoGetter{
+		g := gmock.Getter{
 			FileHandler: func(_ *github.File) error { return github.ErrMissingFile },
 		}
 		head := github.Branch{New: false}
@@ -69,7 +69,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 		//nolint:err113 // This is just for this test.
 		errWant := errors.New("test")
 
-		g := gmock.FileRepoGetter{
+		g := gmock.Getter{
 			FileHandler: func(_ *github.File) error { return errWant },
 		}
 		head := github.Branch{New: false}
@@ -87,7 +87,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is the same on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileRepoGetter{
+		g := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = content
 
@@ -113,7 +113,7 @@ func TestLinkNeedUpdate(t *testing.T) {
 	t.Run("content is different on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileRepoGetter{
+		g := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = "content2"
 
@@ -143,7 +143,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("fails to get from", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			RepoHandler: func(_ *github.Repo) error { return errTest },
 		}
 
@@ -157,7 +157,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("fails to get to", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				if f.Path == "from" {
 					return nil
@@ -179,7 +179,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("succeeds with a missing to", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				if f.Path == "from" {
 					f.Content = "got"
@@ -208,7 +208,7 @@ func TestPopulate(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = "got " + f.Path
 
@@ -243,7 +243,7 @@ func TestPopulateFrom(t *testing.T) {
 	t.Run("fails to get the repo", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			RepoHandler: func(_ *github.Repo) error { return errTest },
 		}
 
@@ -257,7 +257,7 @@ func TestPopulateFrom(t *testing.T) {
 	t.Run("fails to get the file", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(_ *github.File) error { return errTest },
 			RepoHandler: func(r *github.Repo) error {
 				r.DefaultBranch = branch
@@ -276,7 +276,7 @@ func TestPopulateFrom(t *testing.T) {
 	t.Run("gets the file with default ref", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = content
 
@@ -307,7 +307,7 @@ func TestPopulateFrom(t *testing.T) {
 	t.Run("gets the file with set ref", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = content
 
@@ -344,7 +344,7 @@ func TestPopulateTo(t *testing.T) {
 	t.Run("fails to get the file on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(_ *github.File) error { return errTest },
 		}
 
@@ -358,7 +358,7 @@ func TestPopulateTo(t *testing.T) {
 	t.Run("gets the file on head branch", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				f.Content = gotTo
 
@@ -381,7 +381,7 @@ func TestPopulateTo(t *testing.T) {
 		t.Parallel()
 
 		i := 0
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(_ *github.File) error {
 				if i == 0 {
 					i++
@@ -404,7 +404,7 @@ func TestPopulateTo(t *testing.T) {
 		t.Parallel()
 
 		i := 0
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(f *github.File) error {
 				if i == 0 {
 					i++
@@ -432,7 +432,7 @@ func TestPopulateTo(t *testing.T) {
 	t.Run("both files are missing", func(t *testing.T) {
 		t.Parallel()
 
-		f := gmock.FileRepoGetter{
+		f := gmock.Getter{
 			FileHandler: func(_ *github.File) error {
 				return github.ErrMissingFile
 			},
@@ -458,7 +458,7 @@ func TestLinkUpdate(t *testing.T) {
 	t.Run("fail to update", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileUpdater{
+		g := gmock.Updater{
 			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
 				return github.File{}, errTest
 			},
@@ -483,7 +483,7 @@ func TestLinkUpdate(t *testing.T) {
 	t.Run("update", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileUpdater{
+		g := gmock.Updater{
 			Handler: func(_ github.File, _ string, _ string) (github.File, error) {
 				// NOTE: the returned file is currently not used.
 				return github.File{}, nil

@@ -181,8 +181,8 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("fail to check if the link needs an update", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileGetterUpdater{
-			GetHandler: func(*github.File) error { return errTest },
+		g := gmock.GetterUpdater{
+			GetFileHandler: func(*github.File) error { return errTest },
 		}
 
 		l := &Links{
@@ -206,7 +206,7 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("do not update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileGetterUpdater{}
+		g := gmock.GetterUpdater{}
 
 		l := &Links{
 			{
@@ -224,8 +224,8 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("fail to update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileGetterUpdater{
-			GetHandler: func(f *github.File) error {
+		g := gmock.GetterUpdater{
+			GetFileHandler: func(f *github.File) error {
 				f.Content = got
 
 				return nil
@@ -256,8 +256,8 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("update the link", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileGetterUpdater{
-			GetHandler: func(f *github.File) error {
+		g := gmock.GetterUpdater{
+			GetFileHandler: func(f *github.File) error {
 				f.Content = got
 
 				return nil
@@ -284,8 +284,8 @@ func TestLinksUpdate(t *testing.T) {
 	t.Run("multiple links", func(t *testing.T) {
 		t.Parallel()
 
-		g := gmock.FileGetterUpdater{
-			GetHandler: func(f *github.File) error {
+		g := gmock.GetterUpdater{
+			GetFileHandler: func(f *github.File) error {
 				f.Content = got
 
 				return nil
