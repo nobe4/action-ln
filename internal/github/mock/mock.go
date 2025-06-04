@@ -14,6 +14,19 @@ func (g FileGetter) GetFile(_ context.Context, f *github.File) error {
 	return g.Handler(f)
 }
 
+type FileRepoGetter struct {
+	FileHandler func(*github.File) error
+	RepoHandler func(*github.Repo) error
+}
+
+func (g FileRepoGetter) GetFile(_ context.Context, f *github.File) error {
+	return g.FileHandler(f)
+}
+
+func (g FileRepoGetter) GetRepo(_ context.Context, r *github.Repo) error {
+	return g.RepoHandler(r)
+}
+
 type FileUpdater struct {
 	Handler func(github.File, string, string) (github.File, error)
 }
