@@ -55,7 +55,7 @@ func (l *Link) Equal(other *Link) bool {
 	return l.From.Equal(other.From) && l.To.Equal(other.To)
 }
 
-func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.Branch) (bool, error) {
+func (l *Link) NeedUpdate(ctx context.Context, g github.Getter, head github.Branch) (bool, error) {
 	if l.From.Content == l.To.Content {
 		log.Debug("Content is the same", "from", l.From, "to", l.To)
 
@@ -91,7 +91,7 @@ func (l *Link) NeedUpdate(ctx context.Context, g github.FileGetter, head github.
 	return true, nil
 }
 
-func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Formatter, head github.Branch) error {
+func (l *Link) Update(ctx context.Context, g github.Updater, f format.Formatter, head github.Branch) error {
 	log.Info("Processing link", "link", l)
 
 	l.To.Content = l.From.Content
@@ -111,7 +111,7 @@ func (l *Link) Update(ctx context.Context, g github.FileUpdater, f format.Format
 	return nil
 }
 
-func (l *Link) populate(ctx context.Context, g github.FileRepoGetter) error {
+func (l *Link) populate(ctx context.Context, g github.Getter) error {
 	if err := l.populateFrom(ctx, g); err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (l *Link) populate(ctx context.Context, g github.FileRepoGetter) error {
 	return l.populateTo(ctx, g)
 }
 
-func (l *Link) populateFrom(ctx context.Context, g github.FileRepoGetter) error {
+func (l *Link) populateFrom(ctx context.Context, g github.Getter) error {
 	// NOTE: Technically speaking, having the `Ref` is not needed to get the
 	// content on the default branch. However, there's no way to get it from
 	// `GetFile`, so getting it in advance is nicer for displaying it later.
@@ -138,7 +138,7 @@ func (l *Link) populateFrom(ctx context.Context, g github.FileRepoGetter) error 
 	return nil
 }
 
-func (l *Link) populateTo(ctx context.Context, g github.FileGetter) error {
+func (l *Link) populateTo(ctx context.Context, g github.Getter) error {
 	refs := []string{"auto-action-ln", l.To.Ref}
 
 	for _, ref := range refs {

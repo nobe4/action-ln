@@ -4,7 +4,6 @@ Package github implements common interactions with GitHub's API.
 Refs:
 - https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api?apiVersion=2022-11-28
 */
-//revive:disable:max-public-structs // TODO: simplify this with the interfaces.
 package github
 
 import (
@@ -19,25 +18,18 @@ import (
 	"github.com/nobe4/action-ln/internal/log"
 )
 
-// TODO: simplify this to `Getter`.
-type FileGetter interface {
-	GetFile(ctx context.Context, f *File) error
-}
-
-type FileRepoGetter interface {
+type Getter interface {
 	GetFile(ctx context.Context, f *File) error
 	GetRepo(ctx context.Context, r *Repo) error
 }
 
-// TODO: simplify this to `Updater`.
-type FileUpdater interface {
+type Updater interface {
 	UpdateFile(ctx context.Context, f File, head string, msg string) (File, error)
 }
 
-// TODO: simplify this to `GetterUpdater`.
-type FileGetterUpdater interface {
-	FileGetter
-	FileUpdater
+type GetterUpdater interface {
+	Getter
+	Updater
 }
 
 var (
