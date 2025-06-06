@@ -1,7 +1,6 @@
 package config
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/nobe4/action-ln/internal/github"
@@ -93,33 +92,6 @@ func TestParseDefault(t *testing.T) {
 	})
 }
 
-// Parse link from `o/r:p -> o/r:p` for simpler test cases.
-func parseLink(t *testing.T, c *Config, s string) *Link {
-	t.Helper()
-
-	if s == "" {
-		return &Link{}
-	}
-
-	p := strings.Split(s, " -> ")
-
-	if l := len(p); l != 2 {
-		t.Fatalf("expected 2 parts, got %d for %q", l, s)
-	}
-
-	from, err := c.parseString(p[0])
-	if err != nil {
-		t.Fatalf("failed to parse file %q: %v", p[0], err)
-	}
-
-	to, err := c.parseString(p[1])
-	if err != nil {
-		t.Fatalf("failed to parse file %q: %v", p[0], err)
-	}
-
-	return &Link{From: from[0], To: to[0]}
-}
-
 func TestFillMissing(t *testing.T) {
 	t.Parallel()
 
@@ -176,14 +148,22 @@ func TestFillMissing(t *testing.T) {
 
 			c := New(github.File{}, github.Repo{})
 
-			link, want := parseLink(t, c, test.link), parseLink(t, c, test.want)
+			link, err := c.ParseLinkString(test.link)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+
+			want, err := c.ParseLinkString(test.want)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
 			// force to only consider the From to To filling
 			c.Defaults.Link = nil
 
-			c.fillMissing(link)
+			c.fillMissing(&link)
 
-			if !link.Equal(want) {
+			if !link.Equal(&want) {
 				t.Fatalf("expected\n%v => %v\ngot\n%v => %v", test.want, want, test.link, link)
 			}
 		})
@@ -249,13 +229,26 @@ func TestFillDefaults(t *testing.T) {
 
 			c := New(github.File{}, github.Repo{})
 
-			link, want, defaults := parseLink(t, c, test.link), parseLink(t, c, test.want), parseLink(t, c, test.def)
+			link, err := c.ParseLinkString(test.link)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
-			c.Defaults.Link = defaults
+			want, err := c.ParseLinkString(test.want)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
-			c.fillDefaults(link)
+			defaults, err := c.ParseLinkString(test.def)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
-			if !link.Equal(want) {
+			c.Defaults.Link = &defaults
+
+			c.fillDefaults(&link)
+
+			if !link.Equal(&want) {
 				t.Fatalf("expected\n%v => %v\ngot\n%v => %v", test.want, want, test.link, link)
 			}
 		})

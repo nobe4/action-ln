@@ -137,6 +137,64 @@ func TestLinkNeedUpdate(t *testing.T) {
 	})
 }
 
+func TestParseLinkString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		s    string
+		want Link
+		err  error
+	}{
+		{},
+
+		{
+			s: "a -> b",
+			want: Link{
+				From: github.File{Path: "a"},
+				To:   github.File{Path: "b"},
+			},
+		},
+
+		{
+			s: "o/r:p@r -> b",
+			want: Link{
+				From: github.File{
+					Repo: github.Repo{
+						Owner: github.User{Login: "o"},
+						Repo:  "r",
+					},
+					Path: "p",
+					Ref:  "r",
+				},
+				To: github.File{Path: "b"},
+			},
+		},
+
+		{
+			s:   "a -> b -> c",
+			err: errInvalidLinkFormat,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.s, func(t *testing.T) {
+			t.Parallel()
+
+			c := Config{}
+
+			got, err := c.ParseLinkString(test.s)
+
+			if !errors.Is(err, test.err) {
+				t.Fatalf("expected error %v, got %v", test.err, err)
+			}
+
+			if !test.want.Equal(&got) {
+				t.Fatalf("expected\n%+v\ngot\n%+v", test.want, got)
+			}
+		})
+	}
+}
+
 func TestPopulate(t *testing.T) {
 	t.Parallel()
 

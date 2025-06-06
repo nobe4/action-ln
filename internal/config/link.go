@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
@@ -15,14 +16,16 @@ const (
 
 Source: {{ .Data.From.HTMLURL }}
 `
+	linkStringPartCount = 2
 )
 
 var (
-	errMissingFrom = errors.New("from is missing")
-	errGettingRepo = errors.New("failed to get repo")
-	errMissingTo   = errors.New("to is missing")
-	errInvalidFrom = errors.New("from is invalid")
-	errInvalidTo   = errors.New("to is invalid")
+	errMissingFrom       = errors.New("from is missing")
+	errGettingRepo       = errors.New("failed to get repo")
+	errMissingTo         = errors.New("to is missing")
+	errInvalidFrom       = errors.New("from is invalid")
+	errInvalidTo         = errors.New("to is invalid")
+	errInvalidLinkFormat = errors.New("link format invalid, want 'from -> to'")
 )
 
 type Link struct {
@@ -109,6 +112,30 @@ func (l *Link) Update(ctx context.Context, g github.Updater, f format.Formatter,
 	log.Info("Updated file", "new to", newTo)
 
 	return nil
+}
+
+func (c *Config) ParseLinkString(s string) (Link, error) {
+	if s == "" {
+		return Link{}, nil
+	}
+
+	p := strings.Split(s, " -> ")
+
+	if l := len(p); l != linkStringPartCount {
+		return Link{}, fmt.Errorf("%w, got %d for %q", errInvalidLinkFormat, l, s)
+	}
+
+	from, err := c.parseString(p[0])
+	if err != nil {
+		return Link{}, fmt.Errorf("%w %q: %w", errInvalidFrom, p[0], err)
+	}
+
+	to, err := c.parseString(p[1])
+	if err != nil {
+		return Link{}, fmt.Errorf("%w %q: %w", errInvalidTo, p[0], err)
+	}
+
+	return Link{From: from[0], To: to[0]}, nil
 }
 
 func (l *Link) populate(ctx context.Context, g github.Getter) error {
