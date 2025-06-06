@@ -28,8 +28,12 @@ func TestConfigParseAll(t *testing.T) {
 				Repo:  "current_repo",
 				Owner: github.User{Login: "current_owner"},
 			}
+			source := github.File{
+				Path: ".ln-config.yaml",
+				Repo: repo,
+			}
 
-			c := New(github.File{}, repo)
+			c := New(source, repo)
 
 			err := c.Parse(strings.NewReader(content))
 			if err != nil {
