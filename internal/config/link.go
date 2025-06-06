@@ -239,18 +239,18 @@ func (l *Link) applyTemplate(c *Config) error {
 		{name: "From.Path", value: &l.From.Path},
 		{name: "From.Ref", value: &l.From.Ref},
 		{name: "From.Repo.Owner.Login", value: &l.From.Repo.Owner.Login},
-		{name: "From.Ref", value: &l.From.Ref},
+		{name: "From.Repo.Repo", value: &l.From.Repo.Repo},
 
 		{name: "To.Name", value: &l.To.Name},
 		{name: "To.Path", value: &l.To.Path},
 		{name: "To.Ref", value: &l.To.Ref},
 		{name: "To.Repo.Owner.Login", value: &l.To.Repo.Owner.Login},
-		{name: "To.Ref", value: &l.To.Ref},
+		{name: "To.Repo.Repo", value: &l.To.Repo.Repo},
 	}
 
 	for _, f := range fields {
 		if err := template.Update(f.value, data); err != nil {
-			return fmt.Errorf("%w %s: %w", errFailTemplate, f.name, err)
+			return fmt.Errorf("%w to %q: %w", errFailTemplate, f.name, err)
 		}
 	}
 
