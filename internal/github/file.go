@@ -36,7 +36,7 @@ func (f File) String() string {
 }
 
 func (f File) Equal(o File) bool {
-	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit
+	return f.Repo.Equal(o.Repo) && f.Path == o.Path && f.SHA == o.SHA && f.Commit == o.Commit && f.Ref == o.Ref
 }
 
 func (f File) APIPath() string {

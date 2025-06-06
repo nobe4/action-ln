@@ -176,14 +176,21 @@ func TestFillMissing(t *testing.T) {
 
 			c := New(github.File{}, github.Repo{})
 
-			link, want := parseLink(t, c, test.link), parseLink(t, c, test.want)
+			link, err := c.ParseLinkString(test.link)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 
+			want, err := c.ParseLinkString(test.want)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
 			// force to only consider the From to To filling
 			c.Defaults.Link = nil
 
-			c.fillMissing(link)
+			c.fillMissing(&link)
 
-			if !link.Equal(want) {
+			if !link.Equal(&want) {
 				t.Fatalf("expected\n%v => %v\ngot\n%v => %v", test.want, want, test.link, link)
 			}
 		})
