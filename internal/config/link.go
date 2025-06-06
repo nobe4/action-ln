@@ -187,3 +187,35 @@ func (l *Link) populateTo(ctx context.Context, g github.Getter) error {
 
 	return nil
 }
+
+func (l *Link) fillMissing() {
+	if l.To.Repo.Empty() {
+		l.To.Repo = l.From.Repo
+	}
+
+	if l.To.Path == "" {
+		l.To.Path = l.From.Path
+	}
+}
+
+func (l *Link) fillDefaults(d Defaults) {
+	if d.Link == nil {
+		return
+	}
+
+	if l.From.Repo.Empty() {
+		l.From.Repo = d.Link.From.Repo
+	}
+
+	if l.From.Path == "" {
+		l.From.Path = d.Link.From.Path
+	}
+
+	if l.To.Repo.Empty() {
+		l.To.Repo = d.Link.To.Repo
+	}
+
+	if l.To.Path == "" {
+		l.To.Path = d.Link.To.Path
+	}
+}

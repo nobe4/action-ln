@@ -58,12 +58,8 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 
 	links := combineLinks(froms, tos)
 
-	// TODO: make this `l.fillMissing(c)`, and handle the rest from the
-	// function, like `l.Filter()` is doing.
-	for _, l := range links {
-		c.fillMissing(l)
-	}
-
+	links.FillDefaults(c.Defaults)
+	links.FillMissing()
 	links.Filter()
 
 	return links, nil
@@ -92,6 +88,18 @@ func combineLinks(froms, tos []github.File) Links {
 	}
 
 	return links
+}
+
+func (l *Links) FillMissing() {
+	for _, l := range *l {
+		l.fillMissing()
+	}
+}
+
+func (l *Links) FillDefaults(d Defaults) {
+	for _, l := range *l {
+		l.fillDefaults(d)
+	}
 }
 
 func (l *Links) Filter() {
