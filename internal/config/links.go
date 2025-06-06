@@ -60,6 +60,7 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 
 	links.FillDefaults(c.Defaults)
 	links.FillMissing()
+	links.ApplyTemplate(c)
 	links.Filter()
 
 	return links, nil
@@ -99,6 +100,12 @@ func (l *Links) FillMissing() {
 func (l *Links) FillDefaults(d Defaults) {
 	for _, l := range *l {
 		l.fillDefaults(d)
+	}
+}
+
+func (l *Links) ApplyTemplate(c *Config) {
+	for _, l := range *l {
+		l.applyTemplate(c)
 	}
 }
 
