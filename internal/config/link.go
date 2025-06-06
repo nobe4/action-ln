@@ -9,6 +9,7 @@ import (
 	"github.com/nobe4/action-ln/internal/format"
 	"github.com/nobe4/action-ln/internal/github"
 	"github.com/nobe4/action-ln/internal/log"
+	"github.com/nobe4/action-ln/internal/template"
 )
 
 const (
@@ -26,6 +27,7 @@ var (
 	errInvalidFrom       = errors.New("from is invalid")
 	errInvalidTo         = errors.New("to is invalid")
 	errInvalidLinkFormat = errors.New("link format invalid, want 'from -> to'")
+	errFailTemplate      = errors.New("failed to apply template")
 )
 
 type Link struct {
@@ -218,4 +220,39 @@ func (l *Link) fillDefaults(d Defaults) {
 	if l.To.Path == "" {
 		l.To.Path = d.Link.To.Path
 	}
+}
+
+func (l *Link) applyTemplate(c *Config) error {
+	data := struct {
+		Config *Config
+		Link   *Link
+	}{
+		Config: c,
+		Link:   l,
+	}
+
+	fields := []struct {
+		name  string
+		value *string
+	}{
+		{name: "From.Name", value: &l.From.Name},
+		{name: "From.Path", value: &l.From.Path},
+		{name: "From.Ref", value: &l.From.Ref},
+		{name: "From.Repo.Owner.Login", value: &l.From.Repo.Owner.Login},
+		{name: "From.Ref", value: &l.From.Ref},
+
+		{name: "To.Name", value: &l.To.Name},
+		{name: "To.Path", value: &l.To.Path},
+		{name: "To.Ref", value: &l.To.Ref},
+		{name: "To.Repo.Owner.Login", value: &l.To.Repo.Owner.Login},
+		{name: "To.Ref", value: &l.To.Ref},
+	}
+
+	for _, f := range fields {
+		if err := template.Update(f.value, data); err != nil {
+			return fmt.Errorf("%w %s: %w", errFailTemplate, f.name, err)
+		}
+	}
+
+	return nil
 }

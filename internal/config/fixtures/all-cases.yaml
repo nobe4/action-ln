@@ -86,6 +86,25 @@ links:
       - c.txt
     to: "own/rep:"
 
+  # want: from_owner/from_repo:a@ -> to_owner/to_repo:a.txt@
+  # want: from_owner/from_repo:a@ -> to_owner/to_repo:a.md@
+  # want: from_owner/from_repo:b@ -> to_owner/to_repo:b.txt@
+  # want: from_owner/from_repo:b@ -> to_owner/to_repo:b.md@
+  - from:
+      - a
+      - b
+    to:
+      - "{{ .Link.From.Path }}.txt"
+      - "{{ .Link.From.Path }}.md"
+
+  # TODO: support multiline for complex experssions
+  # - |
+  #   {{ if eq .Link.From.Name "a" }}
+  #     a.txt
+  #   {{ else }}
+  #     {{ .link.From.Name }}.md
+  #   {{ end }}
+
   # TODO: this is not yet supported
   # # want: from_owner/from_repo:a.txt@ -> owner/to_repo:a.txt@
   # # want: from_owner/from_repo:b.txt@ -> owner/to_repo:b.txt@

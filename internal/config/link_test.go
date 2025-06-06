@@ -799,3 +799,73 @@ func TestFillDefaults(t *testing.T) {
 		})
 	}
 }
+
+func TestApplyTemplate(t *testing.T) {
+	t.Parallel()
+
+	// The template applies to all field similarly, this test only checks for a
+	// single field.
+	tests := []struct {
+		value string
+		want  string
+	}{
+		{},
+
+		{
+			value: "no template",
+			want:  "no template",
+		},
+
+		{
+			value: "{{ 1 }}",
+			want:  "1",
+		},
+
+		{
+			value: "{{ .Link.From.Name }}",
+			want:  "from",
+		},
+
+		{
+			value: "{{ .Config.Source.Path }}",
+			want:  ".ln-config.yaml",
+		},
+
+		{
+			value: "{{ .Config.Defaults.Link.From.Name }}",
+			want:  "default_from",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			t.Parallel()
+
+			c := New(
+				github.File{Path: ".ln-config.yaml"},
+				github.Repo{Repo: "repo"},
+			)
+
+			c.Defaults = Defaults{
+				Link: &Link{
+					From: github.File{Name: "default_from"},
+					To:   github.File{Name: "default_to"},
+				},
+			}
+
+			link := Link{
+				From: github.File{Name: "from"},
+				To:   github.File{Name: test.value},
+			}
+
+			err := link.applyTemplate(c)
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+
+			if link.To.Name != test.want {
+				t.Fatalf("expected %q, got %q", test.want, link.To.Name)
+			}
+		})
+	}
+}
