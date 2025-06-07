@@ -72,15 +72,14 @@ func TestConfigParseAll(t *testing.T) {
 	}
 
 	for _, f := range fs {
-		name := f.Name()
-		path := filepath.Join("fixtures", name)
+		path := filepath.Join("fixtures", f.Name())
 
 		content, err := fixtures.ReadFile(path)
 		if err != nil {
-			t.Fatalf("failed to read fixtures %q: %v", name, err)
+			t.Fatalf("failed to read fixtures %q: %v", path, err)
 		}
 
-		test(t, name, string(content))
+		test(t, path, string(content))
 	}
 }
 
