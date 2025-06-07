@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
+
+	"github.com/nobe4/action-ln/internal/template/functions/path"
 )
 
 var (
@@ -14,7 +16,14 @@ var (
 
 // Update replaces the parameter s with its content executed as a template.
 func Update(s *string, data any) error {
-	t, err := template.New("").Parse(*s)
+	funcMap := map[string]any{
+		"pathTrimN": path.TrimN,
+	}
+
+	t, err := template.
+		New("").
+		Funcs(funcMap).
+		Parse(*s)
 	if err != nil {
 		return fmt.Errorf("%w: %q: %w", ErrInvalidTemplate, *s, err)
 	}
