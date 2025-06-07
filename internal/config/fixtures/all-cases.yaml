@@ -10,6 +10,7 @@
 # It corresponds also to the current repo.
 #
 # See ./all-cases-no-defaults.yaml for the same links without default values.
+# See ./templates.yaml for template examples.
 # See ./functions.yaml for functions examples.
 defaults:
   link:
@@ -86,37 +87,6 @@ links:
       - b.txt
       - c.txt
     to: "own/rep:"
-
-  # This is configured in internal/config/config_test.go
-  # want: from_owner/from_repo:.ln-config.yaml@ -> to_owner/to_repo:.ln-config.yaml@
-  - from: "{{ .Config.Source.Path }}"
-
-  # want: from_owner/from_repo:a@ -> to_owner/to_repo:a.txt@
-  # want: from_owner/from_repo:a@ -> to_owner/to_repo:a.md@
-  # want: from_owner/from_repo:b@ -> to_owner/to_repo:b.txt@
-  # want: from_owner/from_repo:b@ -> to_owner/to_repo:b.md@
-  - from:
-      - a
-      - b
-    to:
-      - "{{ .Link.From.Path }}.txt"
-      - "{{ .Link.From.Path }}.md"
-
-  # want: from_owner/from_repo:a@ -> from_owner/to_repo:a.txt@
-  # want: from_owner/from_repo:b@ -> from_owner/to_repo:b.md@
-  # want: from_owner/from_repo:c@ -> from_owner/to_repo:c.md@
-  - from:
-      - a
-      - b
-      - c
-    to:
-      repo: "{{ .Link.From.Repo.Owner.Login }}/{{ .Config.Defaults.Link.To.Repo.Repo }}"
-      path: |
-        {{- if eq .Link.From.Path "a" -}}
-          a.txt
-        {{- else -}}
-          {{ .Link.From.Path }}.md
-        {{- end -}}
 
   # TODO: this is not yet supported
   # # want: from_owner/from_repo:a.txt@ -> owner/to_repo:a.txt@

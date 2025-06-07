@@ -5,8 +5,8 @@
 # Defaults kept for brevity.
 defaults:
   link:
-    from: "fo/fr:"
-    to: "to/tr:"
+    from: "fo/fr:fp"
+    to: "to/tr:tp"
 
 links:
   # pathTrimN removes the start/end of a path.
