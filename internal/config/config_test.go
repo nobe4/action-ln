@@ -1,7 +1,8 @@
 package config
 
 import (
-	_ "embed"
+	"embed"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -9,11 +10,8 @@ import (
 	"github.com/nobe4/action-ln/internal/github"
 )
 
-//go:embed fixtures/all-cases.yaml
-var allCases string
-
-//go:embed fixtures/all-cases-no-defaults.yaml
-var allCasesNoDefaults string
+//go:embed fixtures/*
+var fixtures embed.FS
 
 func TestConfigParseAll(t *testing.T) {
 	t.Parallel()
@@ -68,8 +66,21 @@ func TestConfigParseAll(t *testing.T) {
 		})
 	}
 
-	test(t, "all-cases.yaml", allCases)
-	test(t, "all-cases-no-defaults.yaml", allCasesNoDefaults)
+	fs, err := fixtures.ReadDir("fixtures")
+	if err != nil {
+		t.Fatalf("failed to list fixtures: %v", err)
+	}
+
+	for _, f := range fs {
+		path := filepath.Join("fixtures", f.Name())
+
+		content, err := fixtures.ReadFile(path)
+		if err != nil {
+			t.Fatalf("failed to read fixtures %q: %v", path, err)
+		}
+
+		test(t, path, string(content))
+	}
 }
 
 func TestGetMapKey(t *testing.T) {
