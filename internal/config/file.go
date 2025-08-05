@@ -9,10 +9,7 @@ import (
 	"github.com/nobe4/action-ln/internal/github"
 )
 
-var (
-	ErrInvalidFileType   = errors.New("invalid file type")
-	ErrInvalidFileFormat = errors.New("invalid file format")
-)
+var ErrInvalidFileType = errors.New("invalid file type")
 
 func (c *Config) parseFile(rawFile any) ([]github.File, error) {
 	switch v := rawFile.(type) {
@@ -174,15 +171,10 @@ func (*Config) parseString(s string) ([]github.File, error) {
 	}
 
 	// 'path/to/file'
-	if m := regexp.
-		MustCompile(`^(?P<path>.+)$`).
-		FindStringSubmatch(s); len(m) > 0 {
-		return []github.File{
-			{
-				Path: m[1],
-			},
-		}, nil
-	}
-
-	return []github.File{}, fmt.Errorf("%w: '%v'", ErrInvalidFileFormat, s)
+	// Also capture multiline strings for templates.
+	return []github.File{
+		{
+			Path: s,
+		},
+	}, nil
 }

@@ -24,9 +24,9 @@ synchronization.
 
 ## Quickstart
 
-1. Create a config file in `.github/ln-config.yaml`.
+1. Create a config file in `.ln-config.yaml`.
 
-    E.g. [`ln-config.yaml`](.github/ln-config.yaml)
+    E.g. [`ln-config.yaml`](.ln-config.yaml)
 
 2. Create a workflow.
 

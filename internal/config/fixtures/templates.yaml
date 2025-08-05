@@ -1,0 +1,56 @@
+# see all-cases.yaml for explanation.
+
+# In this file, only the templates are tested.
+# See ./functions.yaml for template functions examples.
+
+# Defaults kept for brevity.
+defaults:
+  link:
+    from: "fo/fr:fp"
+    to: "to/tr:tp"
+
+links:
+  # This is configured in internal/config/config_test.go
+  # want: fo/fr:.ln-config.yaml@ -> to/tr:.ln-config.yaml@
+  - from: "{{ .Config.Source.Path }}"
+
+  # want: owner/current_repo:fp@ -> to/tr:tp@
+  - from:
+      repo: "owner/{{ .Config.Source.Repo.Repo }}"
+
+  # want: owner/fr:fp@ -> to/tr:tp@
+  - from:
+      repo: "owner/{{ .Config.Defaults.Link.From.Repo.Repo }}"
+
+  # want: fo/fr:a@ -> to/tr:a.txt@
+  # want: fo/fr:a@ -> to/tr:a.md@
+  # want: fo/fr:b@ -> to/tr:b.txt@
+  # want: fo/fr:b@ -> to/tr:b.md@
+  - from:
+      - a
+      - b
+    to:
+      - "{{ .Link.From.Path }}.txt"
+      - "{{ .Link.From.Path }}.md"
+
+  # want: fo/fr:a@ -> fo/tr:a.txt@
+  # want: fo/fr:b@ -> fo/tr:b.md@
+  # want: fo/fr:c@ -> fo/tr:c.md@
+  - from:
+      - a
+      - b
+      - c
+    to:
+      # Multiline is supported, but needs to fit on one line.
+      # Use {{- and -}} for this.
+      # See https://pkg.go.dev/text/template#hdr-Text_and_spaces
+      repo: |
+        {{- .Link.From.Repo.Owner.Login -}}
+        /
+        {{- .Config.Defaults.Link.To.Repo.Repo -}}
+      path: |
+        {{- if eq .Link.From.Path "a" -}}
+          a.txt
+        {{- else -}}
+          {{ .Link.From.Path }}.md
+        {{- end -}}

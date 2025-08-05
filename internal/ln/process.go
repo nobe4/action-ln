@@ -18,10 +18,10 @@ const (
 {{- $b := "` + "`" + `" -}}
 This automated PR updates the following files:
 
-| From | To  |
-| ---  | --- |
+| From | To  | Status |
+| ---  | --- | ---    |
 {{ range .Data -}}
-| [{{ $b }}{{ .From }}{{ $b }}]({{ .From.HTMLURL }}) | {{ $b }}{{ .To.Path }}{{ $b }} |
+| [{{ $b }}{{ .From }}{{ $b }}]({{ .From.HTMLURL }}) | {{ $b }}{{ .To.Path }}{{ $b }} | {{ .Status }} |
 {{ end }}
 
 ---
@@ -41,7 +41,6 @@ func processGroups(ctx context.Context, g *github.GitHub, f format.Formatter, gr
 	return nil
 }
 
-//nolint:revive // Will try to refactor that later
 func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l config.Links) error {
 	toRepo := l[0].To.Repo
 
@@ -55,16 +54,12 @@ func processLinks(ctx context.Context, g *github.GitHub, f format.Formatter, l c
 
 	log.Debug("Parsed branches", "head", head, "base", base)
 
-	updated, err := l.Update(ctx, g, f, head)
-	if err != nil {
-		return fmt.Errorf("failed to update the links: %w", err)
-	}
-
+	updated := l.Update(ctx, g, f, head)
 	if !updated && head.New {
 		log.Info("No link was updated, cleaning up.", "repo", toRepo, "branch", head.Name)
 
-		if err := g.DeleteBranch(ctx, toRepo, head.Name); err != nil {
-			return fmt.Errorf("failed to delete un-updated branch: %w", err)
+		if err = g.DeleteBranch(ctx, toRepo, head.Name); err != nil {
+			return fmt.Errorf("failed to delete non-updated branch: %w", err)
 		}
 
 		return nil

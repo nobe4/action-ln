@@ -18,17 +18,18 @@ import (
 	"github.com/nobe4/action-ln/internal/log"
 )
 
-type FileGetter interface {
+type Getter interface {
 	GetFile(ctx context.Context, f *File) error
+	GetRepo(ctx context.Context, r *Repo) error
 }
 
-type FileUpdater interface {
+type Updater interface {
 	UpdateFile(ctx context.Context, f File, head string, msg string) (File, error)
 }
 
-type FileGetterUpdater interface {
-	FileGetter
-	FileUpdater
+type GetterUpdater interface {
+	Getter
+	Updater
 }
 
 var (

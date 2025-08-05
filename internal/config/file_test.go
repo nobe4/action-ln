@@ -13,6 +13,12 @@ func TestParseFile(t *testing.T) {
 
 	const complexPath = "a/b-c/d_f/f.txt"
 
+	const multilinePath = `something
+	multiline
+	is
+	acceptable
+	`
+
 	tests := []struct {
 		input any
 		want  []github.File
@@ -316,6 +322,11 @@ func TestParseFile(t *testing.T) {
 		{
 			input: complexPath,
 			want:  []github.File{{Path: complexPath}},
+		},
+
+		{
+			input: multilinePath,
+			want:  []github.File{{Path: multilinePath}},
 		},
 	}
 

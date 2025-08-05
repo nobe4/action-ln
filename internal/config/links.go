@@ -58,10 +58,11 @@ func (c *Config) parseLink(raw RawLink) (Links, error) {
 
 	links := combineLinks(froms, tos)
 
-	// TODO: make this `l.fillMissing(c)`, and handle the rest from the
-	// function, like `l.Filter()` is doing.
-	for _, l := range links {
-		c.fillMissing(l)
+	links.FillDefaults(c.Defaults)
+	links.FillMissing()
+
+	if err := links.ApplyTemplate(c); err != nil {
+		return nil, err
 	}
 
 	links.Filter()
@@ -94,6 +95,28 @@ func combineLinks(froms, tos []github.File) Links {
 	return links
 }
 
+func (l *Links) FillMissing() {
+	for _, l := range *l {
+		l.fillMissing()
+	}
+}
+
+func (l *Links) FillDefaults(d Defaults) {
+	for _, l := range *l {
+		l.fillDefaults(d)
+	}
+}
+
+func (l *Links) ApplyTemplate(c *Config) error {
+	for _, l := range *l {
+		if err := l.applyTemplate(c); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (l *Links) Filter() {
 	newL := Links{}
 
@@ -112,29 +135,40 @@ func (l *Links) Filter() {
 
 func (l *Links) Update(
 	ctx context.Context,
-	g github.FileGetterUpdater,
+	g github.GetterUpdater,
 	f format.Formatter,
 	head github.Branch,
-) (bool, error) {
+) bool {
 	updated := false
 
 	for _, link := range *l {
-		if needUpdate, err := link.NeedUpdate(ctx, g, head); err != nil {
-			return updated, fmt.Errorf("failed to check if link %q needs update: %w", link, err)
-		} else if !needUpdate {
+		needUpdate, err := link.NeedUpdate(ctx, g, head)
+		if err != nil {
+			log.Error("failed to check if link needs update", "link", link, "error", err)
+			link.Status = StatusFailedToCheck
+
+			continue
+		}
+
+		if !needUpdate {
 			log.Info("Update not needed", "link", link)
+			link.Status = StatusUpdateNotNeeded
 
 			continue
 		}
 
 		if err := link.Update(ctx, g, f, head); err != nil {
-			return updated, fmt.Errorf("failed to process link %q: %w", l, err)
+			log.Error("failed to update", "link", link, "error", err)
+			link.Status = StatusFailedToUpdate
+
+			continue
 		}
 
 		updated = true
+		link.Status = StatusUpdated
 	}
 
-	return updated, nil
+	return updated
 }
 
 type Groups map[string]Links

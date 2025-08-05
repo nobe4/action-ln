@@ -24,7 +24,7 @@ jobs:
           token: ${{ secret.GITHUB_ORG_TOKEN }}
           config-path: .action-ln-config.yaml
 
-# .action-ln-config.yaml
+# .ln-config.yaml
 links:
   - from:
       path: LICENSE
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: nobe4/action-ln@v0
 
-# .github/ln-config.yaml
+# .ln-config.yaml
 links:
   - from: cli/go-gh:pkg/text/text.go
     to: internal/text/text.go
@@ -86,7 +86,7 @@ jobs:
           app-private-key: ${{ secrets.ACTION_LN_APP_PRIVATE_KEY }}
           app-install-id: ${{ secrets.ACTION_LN_APP_INSTALL_ID }}
 
-# .github/ln-config.yaml
+# .ln-config.yaml
 links:
   - from:
       owner: ccoVeille

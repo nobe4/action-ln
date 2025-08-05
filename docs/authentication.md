@@ -38,6 +38,10 @@ jobs:
 > GitHub action's provided token don't trigger CI checks[^automatic-token-ci-checks-trigger].
 > You need to use another authentication method if you need that.
 
+> [!NOTE]
+> GitHub action's provided token can't write into `.github/workflows` (_citation
+> needed_). You need to use another authentication method if you need that.
+
 ## Custom GitHub token
 
 You can use a custom token if you require more permissions, want to act on

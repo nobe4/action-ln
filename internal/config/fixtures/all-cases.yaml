@@ -8,6 +8,10 @@
 #
 # The default is fixed to avoid embiguity.
 # It corresponds also to the current repo.
+#
+# See ./all-cases-no-defaults.yaml for the same links without default values.
+# See ./templates.yaml for template examples.
+# See ./functions.yaml for functions examples.
 defaults:
   link:
     from:

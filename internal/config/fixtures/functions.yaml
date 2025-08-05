@@ -1,0 +1,27 @@
+# see all-cases.yaml for explanation.
+
+# In this file, only the different functions are tested.
+
+# Defaults kept for brevity.
+defaults:
+  link:
+    from: "fo/fr:fp"
+    to: "to/tr:tp"
+
+links:
+  # pathTrimN removes the start/end of a path.
+  #
+  # Usage: pathTrimN PATH N
+  #   If N > 0, it cuts from the front of the path.
+  #   If N < 0, it cuts from the end of the path.
+  #
+  # want: fo/fr:go/a.txt@ -> to/tr:a.txt@
+  # want: fo/fr:go/a.txt@ -> to/tr:go.txt@
+  # want: fo/fr:ruby/b.txt@ -> to/tr:b.txt@
+  # want: fo/fr:ruby/b.txt@ -> to/tr:ruby.txt@
+  - from:
+      - go/a.txt
+      - ruby/b.txt
+    to:
+      - path: "{{ pathTrimN .Link.From.Path 1 }}"
+      - path: "{{ pathTrimN .Link.From.Path -1 }}.txt"

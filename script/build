@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
-#/ usage: build.sh [VERSION]
+#/ usage: build.sh [-h] [VERSION]
+
+set -e
+
+show_help() { grep ^#/ <"${0}" | cut -c4- ; }
+[[ "$*" == "-h" ]] && show_help && exit 0
 
 VERSION="${1:-dev}"
 
@@ -16,7 +21,7 @@ build (){
 			./cmd/action-ln/
 }
 
-rm ./dist/main-*
+rm -f ./dist/main-*
 build linux arm64
 build linux amd64
 
