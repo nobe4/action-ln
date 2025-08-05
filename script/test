@@ -11,3 +11,5 @@ else
 fi
 
 go tool cover -html=coverage -o coverage.html
+
+rm coverage
