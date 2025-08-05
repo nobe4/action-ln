@@ -6,14 +6,15 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/nobe4/action-ln/internal/client"
-	"github.com/nobe4/action-ln/internal/client/noop"
+	"github.com/nobe4/gh-ln/pkg/client"
+	"github.com/nobe4/gh-ln/pkg/client/noop"
+	"github.com/nobe4/gh-ln/pkg/github"
+	"github.com/nobe4/gh-ln/pkg/ln"
+	"github.com/nobe4/gh-ln/pkg/log"
+	glog "github.com/nobe4/gh-ln/pkg/log/github"
+	"github.com/nobe4/gh-ln/pkg/log/plain"
+
 	"github.com/nobe4/action-ln/internal/environment"
-	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/ln"
-	"github.com/nobe4/action-ln/internal/log"
-	glog "github.com/nobe4/action-ln/internal/log/github"
-	"github.com/nobe4/action-ln/internal/log/plain"
 )
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 
 	setLogger(e.Debug, e.OnAction)
 
-	e.PrintDebug()
+	log.Info("Environment", "parsed", e)
 
 	var c client.Doer = &http.Client{}
 	if e.Noop {

@@ -3,19 +3,21 @@ package environment
 import (
 	"errors"
 	"testing"
+
+	"github.com/nobe4/gh-ln/pkg/environment"
 )
 
 func TestParseNoop(t *testing.T) {
 	t.Setenv("INPUT_NOOP", "")
 
 	if parseNoop() {
-		t.Fatalf("want false but got true")
+		t.Fatal("want false but got true")
 	}
 
 	t.Setenv("INPUT_NOOP", "1")
 
 	if !parseNoop() {
-		t.Fatalf("want true but got false")
+		t.Fatal("want true but got false")
 	}
 }
 
@@ -53,42 +55,8 @@ func TestParseToken(t *testing.T) {
 		t.Setenv("INPUT_TOKEN", "")
 
 		_, err := parseToken()
-		if !errors.Is(err, ErrNoToken) {
-			t.Fatalf("want %v but got error: %v", ErrNoToken, err)
-		}
-	})
-}
-
-func TestParseRepo(t *testing.T) {
-	t.Run("gets nothing", func(t *testing.T) {
-		// Need to force an empty value to not conflict with GitHub Action's Env
-		t.Setenv("GITHUB_REPOSITORY", "")
-
-		_, err := parseRepo()
-		if !errors.Is(err, ErrNoRepo) {
-			t.Fatalf("want %v but got error: %v", ErrNoRepo, err)
-		}
-	})
-
-	t.Run("gets nothing", func(t *testing.T) {
-		t.Setenv("GITHUB_REPOSITORY", "owner+repo+is+invalid")
-
-		_, err := parseRepo()
-		if !errors.Is(err, ErrInvalidRepo) {
-			t.Fatalf("want %v but got error: %v", ErrInvalidRepo, err)
-		}
-	})
-
-	t.Run("gets the parsed Repo", func(t *testing.T) {
-		t.Setenv("GITHUB_REPOSITORY", "owner/repo")
-
-		got, err := parseRepo()
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-
-		if got.Owner.Login != "owner" || got.Repo != "repo" {
-			t.Fatalf("want %v but got %+v", "owner/repo", got)
+		if !errors.Is(err, environment.ErrNoToken) {
+			t.Fatalf("want %v but got error: %v", environment.ErrNoToken, err)
 		}
 	})
 }
@@ -99,8 +67,8 @@ func TestParseEndpoint(t *testing.T) {
 		t.Setenv("GITHUB_REPOSITORY", "")
 
 		got := parseEndpoint()
-		if defaultEndpoint != got {
-			t.Fatalf("want %v but got %v", defaultEndpoint, got)
+		if environment.DefaultEndpoint != got {
+			t.Fatalf("want %v but got %v", environment.DefaultEndpoint, got)
 		}
 	})
 
@@ -121,8 +89,8 @@ func TestParseServer(t *testing.T) {
 		t.Setenv("GITHUB_SERVER_URL", "")
 
 		got := parseServer()
-		if defaultServer != got {
-			t.Fatalf("want %v but got %v", defaultServer, got)
+		if environment.DefaultServer != got {
+			t.Fatalf("want %v but got %v", environment.DefaultServer, got)
 		}
 	})
 
@@ -143,8 +111,8 @@ func TestParseRunID(t *testing.T) {
 		t.Setenv("GITHUB_RUN_ID", "")
 
 		got := parseRunID()
-		if defaultRunID != got {
-			t.Fatalf("want %v but got %v", defaultRunID, got)
+		if environment.DefaultRunID != got {
+			t.Fatalf("want %v but got %v", environment.DefaultRunID, got)
 		}
 	})
 
@@ -165,8 +133,8 @@ func TestParseConfig(t *testing.T) {
 		t.Setenv("INPUT_CONFIG", "")
 
 		got := parseConfig()
-		if defaultConfig != got {
-			t.Fatalf("want %v but got %v", defaultConfig, got)
+		if environment.DefaultConfig != got {
+			t.Fatalf("want %v but got %v", environment.DefaultConfig, got)
 		}
 	})
 
@@ -206,13 +174,13 @@ func TestParseOnAction(t *testing.T) {
 	t.Setenv("GITHUB_RUN_ID", "")
 
 	if parseOnAction() {
-		t.Fatalf("want false but got true")
+		t.Fatal("want false but got true")
 	}
 
 	t.Setenv("GITHUB_RUN_ID", "1234")
 
 	if !parseOnAction() {
-		t.Fatalf("want true but got false")
+		t.Fatal("want true but got false")
 	}
 }
 
@@ -220,13 +188,13 @@ func TestParseDebug(t *testing.T) {
 	t.Setenv("RUNNER_DEBUG", "")
 
 	if parseDebug() {
-		t.Fatalf("want false but got true")
+		t.Fatal("want false but got true")
 	}
 
 	t.Setenv("RUNNER_DEBUG", "1")
 
 	if !parseDebug() {
-		t.Fatalf("want true but got false")
+		t.Fatal("want true but got false")
 	}
 }
 
@@ -256,17 +224,5 @@ func TestTruthy(t *testing.T) {
 				t.Fatalf("want %v but got %v", test.want, truthy(test.s))
 			}
 		})
-	}
-}
-
-func TestMissingOrRedacted(t *testing.T) {
-	t.Parallel()
-
-	if missingOrRedacted("token") != redacted {
-		t.Fatalf("want redacted but got something else")
-	}
-
-	if missingOrRedacted("") != missing {
-		t.Fatalf("want missingd but got something else")
 	}
 }
