@@ -8,91 +8,23 @@ https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow
 package environment
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/nobe4/action-ln/internal/github"
-	"github.com/nobe4/action-ln/internal/log"
+	"github.com/nobe4/gh-ln/pkg/environment"
 )
 
-var (
-	ErrInvalidEnvironment = errors.New("error parsing environment")
-	ErrNoToken            = errors.New("github token not found")
-	ErrNoRepo             = errors.New("github repository not found")
-	ErrInvalidRepo        = errors.New("github repository invalid: want owner/repo")
-)
-
-const (
-	defaultEndpoint = "https://api.github.com"
-	defaultServer   = "https://github.com"
-	defaultConfig   = ".ln-config.yaml"
-	defaultRunID    = ""
-	redacted        = "[redacted]"
-	missing         = "[missing]"
-)
-
-type App struct {
-	ID         string `json:"app_id"`          // INPUT_APP_ID
-	PrivateKey string `json:"app_private_key"` // INPUT_APP_PRIVATE_KEY
-	InstallID  string `json:"app_install_id"`  // INPUT_APP_INSTALL_ID
-}
-
-type Environment struct {
-	Noop        bool        `json:"noop"`     // INPUT_NOOP
-	Token       string      `json:"token"`    // GITHUB_TOKEN / INPUT_TOKEN
-	Repo        github.Repo `json:"repo"`     // GITHUB_REPOSITORY
-	Server      string      `json:"server"`   // GITHUB_SERVER_URL
-	Endpoint    string      `json:"endpoint"` // GITHUB_API_URL
-	RunID       string      `json:"run_id"`   // GITHUB_RUN_ID
-	Config      string      `json:"config"`   // INPUT_CONFIG
-	App         App         `json:"app"`
-	OnAction    bool        `json:"on_action"`
-	ExecURL     string      `json:"exec_url"`
-	Debug       bool        `json:"debug"`        // RUNNER_DEBUG
-	LocalConfig string      `json:"local_config"` // Read config from the filesystem.
-}
-
-//nolint:revive // No, I don't want to leak secrets.
-func (e Environment) String() string {
-	e.Token = missingOrRedacted(e.Token)
-	e.App.ID = missingOrRedacted(e.App.ID)
-	e.App.PrivateKey = missingOrRedacted(e.App.PrivateKey)
-	e.App.InstallID = missingOrRedacted(e.App.InstallID)
-
-	out, err := json.MarshalIndent(e, "", "  ")
-	if err != nil {
-		return err.Error()
-	}
-
-	return string(out)
-}
-
-func (e Environment) PrintDebug() {
-	log.Info("Environment", "parsed", e)
-
-	log.Group("Environment keys")
-	defer log.GroupEnd()
-
-	for _, env := range os.Environ() {
-		parts := strings.Split(env, "=")
-		log.Debug(parts[0])
-	}
-}
-
-func Parse() (Environment, error) {
-	e := Environment{}
+func Parse() (environment.Environment, error) {
+	e := environment.Environment{}
 
 	var err error
-
 	if e.Token, err = parseToken(); err != nil {
-		return e, fmt.Errorf("%w: %w", ErrInvalidEnvironment, err)
+		return e, fmt.Errorf("%w: %w", environment.ErrInvalidEnvironment, err)
 	}
 
-	if e.Repo, err = parseRepo(); err != nil {
-		return e, fmt.Errorf("%w: %w", ErrInvalidEnvironment, err)
+	if e.Repo, err = environment.ParseRepo(os.Getenv("GITHUB_REPOSITORY")); err != nil {
+		return e, fmt.Errorf("%w: %w", environment.ErrInvalidEnvironment, err)
 	}
 
 	e.Noop = parseNoop()
@@ -123,25 +55,7 @@ func parseToken() (string, error) {
 		return token, nil
 	}
 
-	return "", ErrNoToken
-}
-
-func parseRepo() (github.Repo, error) {
-	repo := github.Repo{}
-	repoName := os.Getenv("GITHUB_REPOSITORY")
-
-	if repoName == "" {
-		return repo, ErrNoRepo
-	}
-
-	var found bool
-	repo.Owner.Login, repo.Repo, found = strings.Cut(repoName, "/")
-
-	if !found {
-		return repo, ErrInvalidRepo
-	}
-
-	return repo, nil
+	return "", environment.ErrNoToken
 }
 
 func parseEndpoint() string {
@@ -149,7 +63,7 @@ func parseEndpoint() string {
 		return endpoint
 	}
 
-	return defaultEndpoint
+	return environment.DefaultEndpoint
 }
 
 func parseServer() string {
@@ -157,7 +71,7 @@ func parseServer() string {
 		return server
 	}
 
-	return defaultServer
+	return environment.DefaultServer
 }
 
 func parseRunID() string {
@@ -165,7 +79,7 @@ func parseRunID() string {
 		return runID
 	}
 
-	return defaultRunID
+	return environment.DefaultRunID
 }
 
 func parseConfig() string {
@@ -173,11 +87,11 @@ func parseConfig() string {
 		return config
 	}
 
-	return defaultConfig
+	return environment.DefaultConfig
 }
 
-func parseApp() App {
-	return App{
+func parseApp() environment.App {
+	return environment.App{
 		ID:         os.Getenv("INPUT_APP_ID"),
 		PrivateKey: os.Getenv("INPUT_APP_PRIVATE_KEY"),
 		InstallID:  os.Getenv("INPUT_APP_INSTALL_ID"),
@@ -200,15 +114,7 @@ func truthy(s string) bool {
 	switch strings.ToLower(s) {
 	case "1", "true", "yes":
 		return true
+	default:
+		return false
 	}
-
-	return false
-}
-
-func missingOrRedacted(s string) string {
-	if s == "" {
-		return missing
-	}
-
-	return redacted
 }
