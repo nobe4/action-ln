@@ -1,4 +1,10 @@
 github.com/goccy/go-yaml v1.15.23 h1:WS0GAX1uNPDLUvLkNU2vXq6oTnsmfVFocjQ/4qA48qo=
 github.com/goccy/go-yaml v1.15.23/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7LkFRi1kA=
+github.com/goccy/go-yaml v1.18.0 h1:8W7wMFS12Pcas7KU+VVkaiCng+kG8QiFeFwzFb+rwuw=
+github.com/goccy/go-yaml v1.18.0/go.mod h1:XBurs7gK8ATbW4ZPGKgcbrY1Br56PdM69F7LkFRi1kA=
 github.com/nobe4/gh-ln v0.0.0-20250805122747-9c218aa6778b h1:FEkI6RfEuS18i9ZCtjaC6lXKCalu+lBajjXe6nAqxiU=
 github.com/nobe4/gh-ln v0.0.0-20250805122747-9c218aa6778b/go.mod h1:12Cb8ea9+TaId+2RrtZQljO3kiB0AOfuNiUSrthlb1c=
+github.com/nobe4/gh-ln v0.0.1 h1:D1z8YVQwV4P9Mg/qWKvRuGAziTly5ZqsMDGEv95TQNo=
+github.com/nobe4/gh-ln v0.0.1/go.mod h1:12Cb8ea9+TaId+2RrtZQljO3kiB0AOfuNiUSrthlb1c=
+github.com/nobe4/gh-ln v0.0.2 h1:r6ENXggx+K5l38AUQIpNoQpTcHEAgNboK0zCV1e8flQ=
+github.com/nobe4/gh-ln v0.0.2/go.mod h1:WrJUGT+S/1htoNicb8mpo4iSxFwJuOjPl9kCsmFDqE0=
